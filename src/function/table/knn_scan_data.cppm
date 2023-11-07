@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import table_function;
 import parser;
 import global_block_id;

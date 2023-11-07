@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 
 export module table_ref;
 

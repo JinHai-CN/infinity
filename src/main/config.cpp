@@ -18,9 +18,12 @@ module;
 
 module config;
 //
-import third_party;
+import parser;
 import stl;
-import boost;
+import parser;
+import third_party;
+import parser;
+//import boost;
 import compilation_config;
 import default_values;
 import logger;
@@ -231,13 +234,13 @@ SharedPtr<String> Config::Init(const SharedPtr<String> &config_path) {
             option_.listen_address = network_config["listen_address"].value_or(default_listen_address);
 
             // Validate the address format
-            BoostErrorCode error;
-            asio_make_address(option_.listen_address, error);
-            if (error) {
-                String err_msg = Format("Not a valid IPv4 address: {}", option_.listen_address);
-                result = MakeShared<String>(err_msg);
-                return result;
-            }
+//            BoostErrorCode error;
+//            asio_make_address(option_.listen_address, error);
+//            if (error) {
+//                String err_msg = Format("Not a valid IPv4 address: {}", option_.listen_address);
+//                result = MakeShared<String>(err_msg);
+//                return result;
+//            }
 
             option_.pg_port = network_config["pg_port"].value_or(default_pg_port);
             option_.http_port = network_config["http_port"].value_or(default_http_port);

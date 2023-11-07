@@ -15,10 +15,12 @@
 module;
 
 import stl;
+import parser;
 import base_entry;
 import buffer_obj;
 import parser;
 import third_party;
+import parser;
 import column_buffer;
 import outline_info;
 import buffer_manager;

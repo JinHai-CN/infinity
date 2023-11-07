@@ -17,12 +17,14 @@ module;
 #include <string>
 
 import stl;
+import parser;
 import segment_entry;
 import buffer_manager;
 import buffer_handle;
 import buffer_obj;
 import logger;
 import third_party;
+import parser;
 
 import infinity_exception;
 import base_entry;

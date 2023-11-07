@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import query_context;
 import plan_fragment;
 import physical_operator;

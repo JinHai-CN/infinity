@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import physical_operator_type;
 import query_context;
 import operator_state;

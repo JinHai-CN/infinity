@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import doc_list_format_option;
 import pos_list_format_option;
 import posting_value;

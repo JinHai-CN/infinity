@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import global_resource_usage;
 import heap_chunk;
 

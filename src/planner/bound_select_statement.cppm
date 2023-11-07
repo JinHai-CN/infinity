@@ -18,6 +18,7 @@ import bound_statement;
 import logical_knn_scan;
 import base_expression;
 import stl;
+import parser;
 import bind_context;
 import logical_node;
 import table_ref;

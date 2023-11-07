@@ -17,6 +17,7 @@ module;
 module infinity_context;
 
 import stl;
+import parser;
 import logger;
 import config;
 import resource_manager;

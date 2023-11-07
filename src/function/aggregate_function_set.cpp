@@ -16,6 +16,7 @@ module;
 
 #include <sstream>
 import stl;
+import parser;
 import base_expression;
 import aggregate_function;
 

@@ -15,8 +15,10 @@
 module;
 
 import stl;
+import parser;
 import file_worker;
 import third_party;
+import parser;
 
 export module buffer_manager;
 

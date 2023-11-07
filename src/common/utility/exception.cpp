@@ -18,8 +18,9 @@ module;
 #include <cstdlib>
 
 import stl;
+import parser;
 import logger;
-import third_party;
+import parser;
 
 module infinity_exception;
 

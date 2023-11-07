@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import config;
 import new_catalog;
 import txn_manager;

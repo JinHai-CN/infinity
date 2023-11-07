@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import data_block;
 import parser;
 

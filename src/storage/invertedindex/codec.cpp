@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 module codec;
 
 namespace infinity {

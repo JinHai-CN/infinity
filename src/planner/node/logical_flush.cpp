@@ -18,6 +18,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import column_binding;
 
 module logical_flush;

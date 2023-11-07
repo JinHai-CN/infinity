@@ -14,6 +14,7 @@
 module;
 
 import stl;
+import parser;
 
 import infinity_exception;
 import global_resource_usage;

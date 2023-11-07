@@ -16,6 +16,7 @@ module;
 
 import singleton;
 import stl;
+import parser;
 
 export module resource_manager;
 

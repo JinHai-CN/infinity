@@ -19,9 +19,11 @@ module;
 #include <vector>
 
 import stl;
+import parser;
 import serialize;
 import ivfflat_index_def;
 import third_party;
+import parser;
 
 import infinity_exception;
 

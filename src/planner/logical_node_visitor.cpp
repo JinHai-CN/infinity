@@ -18,11 +18,13 @@ module;
 #include <vector>
 
 import stl;
+import parser;
 import base_expression;
 import logical_node_type;
 import infinity_exception;
 
 import third_party;
+import parser;
 import expression_type;
 import logical_node_type;
 import logical_node;

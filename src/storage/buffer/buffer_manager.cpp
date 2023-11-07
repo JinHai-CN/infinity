@@ -17,8 +17,10 @@ module;
 #include "concurrentqueue.h"
 
 import stl;
+import parser;
 import file_worker;
 import third_party;
+import parser;
 import local_file_system;
 
 import infinity_exception;

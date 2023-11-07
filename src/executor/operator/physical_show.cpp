@@ -16,6 +16,7 @@ module;
 
 #include <string>
 import stl;
+import parser;
 import txn;
 import query_context;
 import parser;
@@ -34,6 +35,7 @@ import table_collection_entry;
 import table_def;
 import data_table;
 import third_party;
+import parser;
 import index_def_meta;
 import index_def_entry;
 import index_def;

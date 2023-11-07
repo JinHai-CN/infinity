@@ -17,6 +17,7 @@ module;
 #include <algorithm>
 
 import stl;
+import parser;
 import table_ref;
 import table_collection_entry;
 import parser;

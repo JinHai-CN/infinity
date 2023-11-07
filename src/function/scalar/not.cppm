@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 
 export module not_func;
 

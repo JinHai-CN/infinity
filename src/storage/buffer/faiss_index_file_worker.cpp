@@ -19,10 +19,12 @@ module;
 #include "faiss/index_io.h"
 
 import stl;
+import parser;
 import infinity_exception;
 
 import file_system;
 import third_party;
+import parser;
 
 module faiss_index_file_worker;
 

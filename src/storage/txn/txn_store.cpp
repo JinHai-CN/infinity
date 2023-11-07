@@ -17,7 +17,9 @@ module;
 #include <vector>
 
 import stl;
+import parser;
 import third_party;
+import parser;
 import parser;
 import table_collection_entry;
 import table_collection_meta;

@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import base_entry;
 import db_entry;
 import db_meta;
@@ -23,6 +24,7 @@ import function;
 import function_set;
 import table_function;
 import third_party;
+import parser;
 import buffer_manager;
 
 export module new_catalog;

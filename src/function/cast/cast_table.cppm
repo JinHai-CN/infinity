@@ -17,6 +17,7 @@ module;
 import singleton;
 import stl;
 import parser;
+import parser;
 
 export module cast_table;
 

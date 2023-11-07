@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import data_table;
 import fragment_context;
 import physical_operator;

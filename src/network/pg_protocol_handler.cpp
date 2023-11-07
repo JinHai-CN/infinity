@@ -16,6 +16,7 @@ module;
 
 import boost;
 import stl;
+import parser;
 import pg_message;
 module pg_protocol_handler;
 

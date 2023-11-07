@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import txn;
 import query_context;
 import parser;
@@ -30,6 +31,7 @@ import block_index;
 import column_buffer;
 import block_column_entry;
 import third_party;
+import parser;
 import block_entry;
 import default_values;
 

@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import index_defines;
 import in_doc_pos_state;
 import pos_list_format_option;

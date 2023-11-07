@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import expression_type;
 import base_expression;
 import parser;

@@ -17,6 +17,7 @@ module;
 #include <sstream>
 
 import stl;
+import parser;
 import column_binding;
 import logical_node_type;
 import parser;

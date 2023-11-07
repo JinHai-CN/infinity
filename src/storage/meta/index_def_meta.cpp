@@ -20,6 +20,7 @@ module;
 import base_entry;
 import stl;
 import parser;
+import parser;
 import index_def;
 import txn_manager;
 import default_values;
@@ -27,6 +28,7 @@ import txn_state;
 import index_def_entry;
 import logger;
 import third_party;
+import parser;
 
 import infinity_exception;
 import table_collection_entry;

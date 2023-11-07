@@ -17,6 +17,7 @@ module;
 #include <algorithm>
 
 import stl;
+import parser;
 
 module file_writer;
 

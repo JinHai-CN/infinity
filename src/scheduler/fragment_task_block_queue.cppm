@@ -15,7 +15,9 @@
 module;
 
 import stl;
+import parser;
 import third_party;
+import parser;
 import fragment_task;
 
 export module fragment_task_block_queue;

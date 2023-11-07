@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import base_expression;
 import conjunction_expression;
 

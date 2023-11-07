@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import data_table;
 
 export module sql_runner;

@@ -17,6 +17,7 @@ module;
 #include <string>
 
 import stl;
+import parser;
 import logical_node;
 import logical_node_type;
 import logical_create_schema;
@@ -46,6 +47,7 @@ import logical_import;
 import logical_create_index;
 
 import third_party;
+import parser;
 import parser;
 import db_entry;
 import table_collection_entry;

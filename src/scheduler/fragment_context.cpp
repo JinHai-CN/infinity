@@ -18,6 +18,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import fragment_task;
 
 import infinity_exception;
@@ -37,6 +38,7 @@ import knn_expression;
 import value_expression;
 import column_expression;
 import third_party;
+import parser;
 import query_context;
 import physical_source;
 import physical_sink;

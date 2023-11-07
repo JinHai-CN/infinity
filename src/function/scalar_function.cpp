@@ -15,6 +15,7 @@ module;
 
 #include <sstream>
 import stl;
+import parser;
 import function;
 import parser;
 
@@ -23,6 +24,7 @@ import data_block;
 import base_expression;
 import column_vector;
 import third_party;
+import parser;
 
 module scalar_function;
 

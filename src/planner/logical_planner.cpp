@@ -18,6 +18,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import bind_context;
 
 import infinity_exception;
@@ -37,6 +38,7 @@ import txn;
 import table_collection_entry;
 import table_collection_type;
 import third_party;
+import parser;
 import table_def;
 import logical_create_table;
 import logical_create_collection;

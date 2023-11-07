@@ -19,6 +19,7 @@ module;
 import txn;
 import txn_state;
 import stl;
+import parser;
 import new_catalog;
 
 import infinity_exception;

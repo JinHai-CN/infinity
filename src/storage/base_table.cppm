@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import table_collection_type;
 
 import infinity_exception;

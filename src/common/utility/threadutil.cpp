@@ -18,6 +18,7 @@ module;
 #include <iostream>
 
 import stl;
+import parser;
 
 module threadutil;
 

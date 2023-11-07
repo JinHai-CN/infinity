@@ -18,6 +18,7 @@ module;
 #include <memory>
 
 import stl;
+import parser;
 import base_entry;
 import segment_entry;
 import default_values;
@@ -25,6 +26,7 @@ import block_entry;
 import block_column_entry;
 import logger;
 import third_party;
+import parser;
 import defer_op;
 import local_file_system;
 import serialize;

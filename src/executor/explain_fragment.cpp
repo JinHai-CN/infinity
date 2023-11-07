@@ -17,6 +17,7 @@ module;
 #include <string>
 
 import stl;
+import parser;
 import plan_fragment;
 import explain_physical_plan;
 import physical_operator;

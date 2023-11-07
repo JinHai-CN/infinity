@@ -18,6 +18,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import base_expression;
 import query_context;
 import logical_node;
@@ -50,6 +51,7 @@ import cast_table;
 import new_catalog;
 import column_binding;
 import third_party;
+import parser;
 
 import infinity_exception;
 

@@ -18,6 +18,7 @@ module;
 
 import infinity_exception;
 import stl;
+import parser;
 import expression_type;
 
 module in_expression;

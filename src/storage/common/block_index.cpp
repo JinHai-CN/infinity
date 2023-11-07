@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import segment_entry;
 import block_entry;
 import global_block_id;

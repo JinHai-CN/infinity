@@ -14,6 +14,7 @@
 module;
 
 import stl;
+import parser;
 import global_resource_usage;
 
 export module allocator;

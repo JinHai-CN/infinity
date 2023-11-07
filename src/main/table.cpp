@@ -17,6 +17,7 @@ module;
 module table;
 
 import stl;
+import parser;
 import query_options;
 import query_result;
 import infinity_context;

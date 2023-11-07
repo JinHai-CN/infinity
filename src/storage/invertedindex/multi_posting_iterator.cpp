@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import posting_iterator;
 import index_defines;
 import term_meta;

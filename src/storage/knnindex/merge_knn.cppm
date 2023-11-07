@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import knn_result_handler;
 
 import infinity_exception;

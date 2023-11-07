@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import new_catalog;
 
 import infinity_exception;
@@ -22,6 +23,7 @@ import aggregate_function;
 import aggregate_function_set;
 import parser;
 import third_party;
+import parser;
 
 module max;
 

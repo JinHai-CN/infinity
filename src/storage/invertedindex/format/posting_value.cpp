@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import int_encoder;
 
 module posting_value;

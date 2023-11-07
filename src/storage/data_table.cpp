@@ -16,10 +16,12 @@ module;
 
 #include <sstream>
 import stl;
+import parser;
 
 import infinity_exception;
 import parser;
 import third_party;
+import parser;
 import data_block;
 import table_def;
 import table_collection_type;

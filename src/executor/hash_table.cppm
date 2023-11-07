@@ -16,6 +16,7 @@ module;
 
 import parser;
 import stl;
+import parser;
 import column_vector;
 
 export module hash_table;

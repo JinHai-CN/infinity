@@ -14,6 +14,7 @@
 module;
 
 import stl;
+import parser;
 import default_values;
 import selection;
 import parser;

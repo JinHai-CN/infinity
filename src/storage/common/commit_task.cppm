@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import async_task;
 
 export module commit_task;

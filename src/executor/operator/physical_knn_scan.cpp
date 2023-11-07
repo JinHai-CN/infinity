@@ -16,6 +16,7 @@ module;
 
 #include <string>
 import stl;
+import parser;
 import query_context;
 import parser;
 import logger;
@@ -29,6 +30,7 @@ import column_buffer;
 import block_column_entry;
 import knn_distance;
 import third_party;
+import parser;
 
 import infinity_exception;
 import table_collection_entry;

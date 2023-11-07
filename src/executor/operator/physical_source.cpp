@@ -14,6 +14,7 @@
 module;
 
 import stl;
+import parser;
 import txn;
 import query_context;
 import table_def;

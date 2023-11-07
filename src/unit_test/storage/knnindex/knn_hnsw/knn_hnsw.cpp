@@ -14,7 +14,7 @@
 
 #include "unit_test/base_test.h"
 
-import knn_knsw;
+//import knn_knsw;
 import dist_func;
 
 class KnnHnswTest : public BaseTest {};

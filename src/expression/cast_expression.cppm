@@ -17,6 +17,7 @@ module;
 import column_binding;
 import parser;
 import stl;
+import parser;
 import expression_type;
 import bound_cast_func;
 import base_expression;

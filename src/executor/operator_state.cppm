@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import global_block_id;
 import physical_operator_type;
 import fragment_data_queue;

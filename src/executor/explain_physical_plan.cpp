@@ -17,6 +17,7 @@ module;
 #include <string>
 
 import stl;
+import parser;
 import db_entry;
 
 import parser;
@@ -83,6 +84,7 @@ import table_collection_entry;
 import base_expression;
 import knn_expression;
 import third_party;
+import parser;
 
 module explain_physical_plan;
 

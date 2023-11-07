@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import knn_heap;
 import knn_result_handler;
 import knn_distance;
@@ -22,6 +23,7 @@ import knn_partition;
 import faiss;
 import parser;
 import third_party;
+import parser;
 
 import infinity_exception;
 import default_values;

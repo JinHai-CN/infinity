@@ -18,6 +18,7 @@ import infinity;
 import infinity_exception;
 
 import stl;
+import parser;
 import buffer_manager;
 import buffer_handle;
 import buffer_obj;

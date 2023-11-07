@@ -19,7 +19,9 @@ module;
 #include "faiss/index_io.h"
 
 import stl;
+import parser;
 import third_party;
+import parser;
 import block_entry;
 import buffer_manager;
 import default_values;

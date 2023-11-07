@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 #include <memory>
 
 module memory_chunk;

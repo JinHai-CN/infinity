@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import block_index;
 import table_collection_entry;
 

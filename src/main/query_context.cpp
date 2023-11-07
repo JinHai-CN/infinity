@@ -17,6 +17,7 @@ module;
 #include <sstream>
 
 import stl;
+import parser;
 import session;
 import config;
 import fragment_scheduler;
@@ -36,6 +37,7 @@ import bind_context;
 import logical_node;
 import physical_operator;
 import third_party;
+import parser;
 import logger;
 
 module query_context;

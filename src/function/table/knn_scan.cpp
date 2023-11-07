@@ -17,6 +17,7 @@ module;
 #include <memory>
 
 import stl;
+import parser;
 import data_block;
 import table_function;
 import query_context;
@@ -32,6 +33,7 @@ import block_column_entry;
 import parser;
 import knn_distance;
 import third_party;
+import parser;
 import logger;
 
 module knn_scan;

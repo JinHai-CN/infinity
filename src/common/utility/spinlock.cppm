@@ -136,6 +136,7 @@ pthread_rwlock_t Read        728698     24us       101ns     7.28ms     194us
 module;
 
 import stl;
+import parser;
 
 #include "builtin.h"
 

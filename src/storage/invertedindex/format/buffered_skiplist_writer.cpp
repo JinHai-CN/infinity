@@ -2,6 +2,7 @@ module;
 #include <cassert>
 
 import stl;
+import parser;
 import byte_slice;
 import memory_pool;
 import file_writer;

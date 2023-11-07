@@ -17,8 +17,9 @@ module;
 module logger;
 
 import stl;
+import parser;
 import config;
-import third_party;
+import parser;
 
 namespace infinity {
 

@@ -17,6 +17,7 @@ module;
 #include "faiss/index_io.h"
 
 import stl;
+import parser;
 import faiss;
 import file_worker;
 

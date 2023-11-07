@@ -14,13 +14,16 @@
 module;
 
 import stl;
-import third_party;
+import parser;
+import parser;
 
 export module logger;
 
 //import config;
 //import third_party;
+import parser;
 //import stl;
+import parser;
 
 namespace infinity {
 

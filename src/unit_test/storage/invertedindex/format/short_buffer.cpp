@@ -2,6 +2,7 @@
 #include "unit_test/base_test.h"
 
 import stl;
+import parser;
 import memory_pool;
 import index_defines;
 import posting_value;

@@ -16,11 +16,13 @@ module;
 
 import parser;
 import stl;
+import parser;
 import global_resource_usage;
 import logger;
 
 import infinity_exception;
 import third_party;
+import parser;
 import bound_cast_func;
 import cast_function;
 import column_vector;

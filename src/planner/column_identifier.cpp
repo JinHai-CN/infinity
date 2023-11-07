@@ -16,9 +16,11 @@ module;
 
 import stl;
 import parser;
+import parser;
 
 import infinity_exception;
 import third_party;
+import parser;
 import query_context;
 
 module column_identifer;

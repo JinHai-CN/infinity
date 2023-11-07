@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 
 import stl;
+import parser;
 import buffer_manager;
 import data_file_worker;
 import buffer_obj;

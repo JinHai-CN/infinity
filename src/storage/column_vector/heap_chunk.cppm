@@ -16,6 +16,7 @@ module;
 
 import global_resource_usage;
 import stl;
+import parser;
 import allocator;
 
 export module heap_chunk;

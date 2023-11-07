@@ -16,6 +16,7 @@ module;
 
 #include <sstream>
 import stl;
+import parser;
 import selection;
 import parser;
 
@@ -27,6 +28,7 @@ import heap_chunk;
 import column_buffer;
 import serialize;
 import third_party;
+import parser;
 import logger;
 import value;
 

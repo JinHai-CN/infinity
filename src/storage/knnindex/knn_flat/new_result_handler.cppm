@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import knn_heap;
 import knn_partition;
 

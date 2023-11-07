@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 #include <string>
 import parser;
 import query_context;

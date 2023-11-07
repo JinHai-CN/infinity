@@ -15,6 +15,7 @@
 export module query_result;
 
 import stl;
+import parser;
 import data_table;
 import database_object;
 

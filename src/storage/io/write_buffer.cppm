@@ -18,6 +18,7 @@ import buffer_base;
 
 import infinity_exception;
 import stl;
+import parser;
 
 export module write_buffer;
 

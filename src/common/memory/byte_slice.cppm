@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import memory_pool;
 
 export module byte_slice;

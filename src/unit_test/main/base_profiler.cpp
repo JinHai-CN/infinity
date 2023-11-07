@@ -17,6 +17,7 @@
 import infinity_exception;
 
 import stl;
+import parser;
 import profiler;
 
 class BaseProfilerTest : public BaseTest {};

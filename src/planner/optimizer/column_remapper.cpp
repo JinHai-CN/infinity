@@ -17,10 +17,12 @@ module;
 import logical_node;
 import logical_node_type;
 import stl;
+import parser;
 import base_expression;
 import column_expression;
 import reference_expression;
 import third_party;
+import parser;
 import logger;
 
 module column_remapper;

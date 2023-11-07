@@ -15,10 +15,12 @@
 module;
 
 import stl;
+import parser;
 import base_entry;
 import parser;
 import txn_manager;
 import third_party;
+import parser;
 import index_def;
 
 export module index_def_meta;

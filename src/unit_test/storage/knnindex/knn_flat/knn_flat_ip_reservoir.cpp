@@ -17,8 +17,10 @@
 import infinity_exception;
 
 import stl;
+import parser;
 import global_resource_usage;
 import third_party;
+import parser;
 import logger;
 import parser;
 import knn_flat_ip_reservoir;

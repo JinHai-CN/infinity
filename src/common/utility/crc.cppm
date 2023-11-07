@@ -5,6 +5,7 @@
 module;
 
 import stl;
+import parser;
 
 export module crc;
 

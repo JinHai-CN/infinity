@@ -22,6 +22,7 @@ import float_cast;
 import varchar_cast;
 import parser;
 import third_party;
+import parser;
 
 module cast_function;
 

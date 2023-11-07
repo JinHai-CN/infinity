@@ -19,6 +19,7 @@ module;
 #include <memory>
 
 import stl;
+import parser;
 
 import infinity_exception;
 import parser;
@@ -38,6 +39,7 @@ import conjunction_expression;
 import column_expression;
 import expression_transformer;
 import third_party;
+import parser;
 import logger;
 import where_binder;
 import join_binder;

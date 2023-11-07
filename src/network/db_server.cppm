@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import singleton;
 import boost;
 import connection;

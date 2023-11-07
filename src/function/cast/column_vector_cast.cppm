@@ -17,6 +17,7 @@ module;
 import column_vector;
 import stl;
 import parser;
+import parser;
 import bitmask;
 import bound_cast_func;
 import unary_operator;

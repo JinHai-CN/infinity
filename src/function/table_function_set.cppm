@@ -16,6 +16,7 @@ module;
 
 import function_set;
 import stl;
+import parser;
 import table_function;
 import function;
 

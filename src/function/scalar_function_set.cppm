@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import base_expression;
 import scalar_function;
 import function;

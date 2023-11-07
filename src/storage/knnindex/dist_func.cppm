@@ -4,6 +4,7 @@ module;
 #include <concepts>
 
 import stl;
+import parser;
 
 export module dist_func;
 

@@ -3,6 +3,7 @@ module;
 export module bsi;
 
 import stl;
+import parser;
 
 namespace roaring {
 class Roaring;

@@ -17,6 +17,7 @@ module;
 #include <cstdlib>
 
 import stl;
+import parser;
 
 module random;
 

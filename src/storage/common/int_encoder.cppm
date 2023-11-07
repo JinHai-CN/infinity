@@ -2,9 +2,9 @@ module;
 
 import byte_slice_reader;
 import byte_slice_writer;
-import fastpfor;
 
 import stl;
+import parser;
 import infinity_exception;
 
 #include "new_pfordelta_compressor.h"

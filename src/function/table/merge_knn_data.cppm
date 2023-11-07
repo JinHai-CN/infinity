@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import table_function;
 import parser;
 import base_table_ref;

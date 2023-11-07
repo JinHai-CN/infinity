@@ -18,6 +18,7 @@ module;
 #include <boost/asio/write.hpp>
 
 import stl;
+import parser;
 import pg_message;
 import ring_buffer_iterator;
 
@@ -27,6 +28,8 @@ import default_values;
 module buffer_writer;
 
 namespace infinity {
+
+BufferWriter::BufferWriter(const SharedPtr<AsioSocket> &socket) : socket_(socket) {}
 
 SizeT BufferWriter::size() const {
     const auto current_size = RingBufferIterator::Distance(start_pos_, current_pos_);

@@ -18,6 +18,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import physical_source;
 import physical_sink;
 import data_table;

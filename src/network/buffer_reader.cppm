@@ -14,11 +14,12 @@
 
 module;
 
-import boost;
+//import boost;
 import pg_message;
 import ring_buffer_iterator;
 import default_values;
 import stl;
+import parser;
 
 export module buffer_reader;
 
@@ -26,7 +27,7 @@ namespace infinity {
 
 export class BufferReader {
 public:
-    explicit BufferReader(const SharedPtr<AsioSocket> &socket) : socket_(socket){};
+    BufferReader(const SharedPtr<AsioSocket> &socket);
 
     [[nodiscard]] SizeT size() const;
 
@@ -57,7 +58,7 @@ private:
     RingBufferIterator start_pos_{data_};
     RingBufferIterator current_pos_{data_};
 
-    SharedPtr<AsioSocket> socket_;
+    SharedPtr<AsioSocket> socket_{};
 };
 
 } // namespace infinity

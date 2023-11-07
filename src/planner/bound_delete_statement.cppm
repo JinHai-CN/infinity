@@ -21,6 +21,7 @@ import bind_context;
 import logical_node;
 import query_context;
 import stl;
+import parser;
 
 export module bound_delete_statement;
 

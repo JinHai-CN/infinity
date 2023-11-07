@@ -16,11 +16,13 @@ module;
 
 #include <string>
 import stl;
+import parser;
 import query_context;
 import parser;
 import operator_state;
 import physical_operator_type;
 import third_party;
+import parser;
 import fragment_data;
 import data_block;
 

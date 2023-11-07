@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import operator_state;
 
 export module fragment_task;

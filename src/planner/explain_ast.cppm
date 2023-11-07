@@ -16,6 +16,7 @@ module;
 
 import parser;
 import stl;
+import parser;
 
 export module explain_ast;
 

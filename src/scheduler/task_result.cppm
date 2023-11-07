@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import data_block;
 
 export module task_result;

@@ -15,8 +15,9 @@
 module;
 
 import stl;
+import parser;
 import file_system;
-import third_party;
+import parser;
 
 export module file_worker;
 

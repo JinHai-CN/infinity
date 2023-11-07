@@ -16,6 +16,7 @@ module;
 
 import boost;
 import stl;
+import parser;
 import session;
 import pg_protocol_handler;
 import query_context;

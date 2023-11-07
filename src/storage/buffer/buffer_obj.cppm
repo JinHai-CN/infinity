@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import file_worker;
 import buffer_handle;
 

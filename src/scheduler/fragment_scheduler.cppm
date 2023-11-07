@@ -16,6 +16,7 @@ module;
 
 import config;
 import stl;
+import parser;
 //import query_context;
 //import plan_fragment;
 import fragment_task;

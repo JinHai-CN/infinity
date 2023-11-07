@@ -16,6 +16,7 @@ module;
 
 #include <sstream>
 import stl;
+import parser;
 
 import infinity_exception;
 

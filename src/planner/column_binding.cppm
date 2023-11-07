@@ -17,6 +17,7 @@ module;
 #include <functional>
 
 import stl;
+import parser;
 
 export module column_binding;
 

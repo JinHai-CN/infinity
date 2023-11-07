@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import physical_operator;
 
 export module explain_physical_plan;

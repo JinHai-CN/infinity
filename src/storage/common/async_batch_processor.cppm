@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import async_task;
 import batch_block_queue;
 

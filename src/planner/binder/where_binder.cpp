@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import base_expression;
 import parser;
 import function;
@@ -22,6 +23,7 @@ import bind_context;
 
 import infinity_exception;
 import third_party;
+import parser;
 import bind_alias_proxy;
 
 module where_binder;

@@ -16,6 +16,7 @@ module;
 export module infinity_exception;
 
 import stl;
+import parser;
 
 namespace infinity {
 

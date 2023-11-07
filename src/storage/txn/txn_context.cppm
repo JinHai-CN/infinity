@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import txn_state;
 
 import infinity_exception;

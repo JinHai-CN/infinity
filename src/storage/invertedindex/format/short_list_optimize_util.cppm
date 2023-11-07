@@ -2,6 +2,7 @@ module;
 
 import index_defines;
 import stl;
+import parser;
 export module short_list_optimize_util;
 
 namespace infinity {

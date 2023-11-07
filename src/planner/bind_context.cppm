@@ -16,8 +16,10 @@ module;
 
 import stl;
 import parser;
+import parser;
 import column_binding;
 import third_party;
+import parser;
 
 import infinity_exception;
 import column_expression;

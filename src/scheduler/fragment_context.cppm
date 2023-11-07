@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import fragment_task;
 import query_context;
 import physical_operator;

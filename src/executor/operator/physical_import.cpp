@@ -26,6 +26,7 @@ module;
 #include <vector>
 
 import stl;
+import parser;
 import txn;
 import query_context;
 import table_def;
@@ -37,6 +38,7 @@ import expression_state;
 import data_block;
 import logger;
 import third_party;
+import parser;
 import local_file_system;
 import defer_op;
 import txn_store;

@@ -17,9 +17,11 @@ module;
 #include <memory>
 
 import stl;
+import parser;
 import index_def;
 import parser;
 import third_party;
+import parser;
 import serialize;
 
 import infinity_exception;

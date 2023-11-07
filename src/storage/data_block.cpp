@@ -17,6 +17,7 @@ module;
 #include <sstream>
 
 import stl;
+import parser;
 import selection;
 
 import infinity_exception;
@@ -24,6 +25,7 @@ import column_vector;
 import parser;
 import value;
 import third_party;
+import parser;
 import default_values;
 import serialize;
 

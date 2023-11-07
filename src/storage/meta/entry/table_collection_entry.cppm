@@ -16,9 +16,11 @@ module;
 
 import stl;
 import parser;
+import parser;
 // import txn;
 import buffer_manager;
 import third_party;
+import parser;
 import table_collection_type;
 import index_def;
 import base_entry;

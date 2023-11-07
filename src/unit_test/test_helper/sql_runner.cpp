@@ -15,12 +15,14 @@
 module;
 
 import stl;
+import parser;
 import data_table;
 import logger;
 import session;
 import query_context;
 import infinity_context;
 import third_party;
+import parser;
 import parser;
 import logical_planner;
 import optimizer;

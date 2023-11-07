@@ -20,6 +20,7 @@ export module wal_entry;
 
 import stl;
 import parser;
+import parser;
 import data_block;
 import table_def;
 

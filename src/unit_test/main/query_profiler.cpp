@@ -15,6 +15,7 @@
 #include "unit_test/base_test.h"
 
 import stl;
+import parser;
 import profiler;
 
 class QueryProfilerTest : public BaseTest {};

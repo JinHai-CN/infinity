@@ -21,6 +21,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import knn_distance;
 import dist_func;
 

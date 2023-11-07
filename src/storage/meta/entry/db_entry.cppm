@@ -16,10 +16,12 @@ module;
 
 import base_entry;
 import stl;
+import parser;
 import table_collection_type;
 import table_collection_entry;
 import parser;
 import third_party;
+import parser;
 import table_collection_detail;
 import table_collection_meta;
 import buffer_manager;

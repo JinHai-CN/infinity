@@ -14,6 +14,7 @@
 
 export module database_detail;
 import stl;
+import parser;
 
 namespace infinity {
 

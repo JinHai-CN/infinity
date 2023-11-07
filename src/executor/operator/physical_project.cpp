@@ -16,6 +16,7 @@ module;
 
 #include <string>
 import stl;
+import parser;
 import query_context;
 import table_def;
 import data_table;

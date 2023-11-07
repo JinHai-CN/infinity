@@ -17,6 +17,7 @@ module;
 #include <memory>
 
 import stl;
+import parser;
 import table_function;
 import data_block;
 import block_index;

@@ -14,6 +14,7 @@
 module;
 
 import stl;
+import parser;
 import base_entry;
 import parser;
 import table_collection_detail;

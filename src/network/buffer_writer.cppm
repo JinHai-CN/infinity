@@ -14,11 +14,12 @@
 
 module;
 
-import boost;
+//import boost;
 import pg_message;
 import ring_buffer_iterator;
 import default_values;
 import stl;
+import parser;
 
 export module buffer_writer;
 
@@ -26,7 +27,7 @@ namespace infinity {
 
 export class BufferWriter {
 public:
-    explicit BufferWriter(const SharedPtr<AsioSocket> &socket) : socket_(socket) {}
+    explicit BufferWriter(const SharedPtr<AsioSocket> &socket);
 
     [[nodiscard]] SizeT size() const;
 

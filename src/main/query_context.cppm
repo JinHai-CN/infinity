@@ -16,6 +16,7 @@ module;
 
 import logical_node_type;
 import stl;
+import parser;
 import config;
 import session;
 import resource_manager;

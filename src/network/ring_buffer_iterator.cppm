@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import default_values;
 
 export module ring_buffer_iterator;

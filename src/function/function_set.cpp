@@ -16,6 +16,7 @@ module;
 
 #include <sstream>
 import stl;
+import parser;
 import new_catalog;
 import parser;
 import base_expression;

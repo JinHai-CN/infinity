@@ -17,6 +17,7 @@ module;
 #include <fstream>
 
 import stl;
+import parser;
 import serialize;
 import table_def;
 import data_block;
@@ -24,6 +25,7 @@ import data_block;
 import infinity_exception;
 import parser;
 import third_party;
+import parser;
 import index_def;
 import crc;
 import wal_entry;

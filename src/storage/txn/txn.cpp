@@ -18,12 +18,14 @@ module;
 #include <vector>
 
 import stl;
+import parser;
 
 import infinity_exception;
 
 import txn_manager;
 import wal_entry;
 import third_party;
+import parser;
 import logger;
 import data_block;
 import txn_store;

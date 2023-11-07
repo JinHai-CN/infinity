@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import memory_pool;
 import byte_slice;
 import in_doc_pos_state;

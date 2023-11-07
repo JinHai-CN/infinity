@@ -19,6 +19,7 @@ module;
 
 import faiss;
 import stl;
+import parser;
 
 export module knn_heap;
 

@@ -15,14 +15,13 @@
 module;
 
 import stl;
+import parser;
 import logical_node_type;
 import column_binding;
 
 export module logical_node;
 
 namespace infinity {
-
-class DataType;
 
 export class LogicalNode {
 public:

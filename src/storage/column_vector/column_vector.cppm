@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import global_resource_usage;
 import vector_buffer;
 import bitmask;

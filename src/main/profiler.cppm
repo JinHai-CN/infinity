@@ -14,7 +14,9 @@
 module;
 
 import stl;
+import parser;
 import third_party;
+import parser;
 
 export module profiler;
 

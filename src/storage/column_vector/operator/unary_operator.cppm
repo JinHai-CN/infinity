@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import column_vector;
 
 import infinity_exception;

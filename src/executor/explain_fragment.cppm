@@ -16,6 +16,7 @@ module;
 
 import plan_fragment;
 import stl;
+import parser;
 
 export module explain_fragment;
 

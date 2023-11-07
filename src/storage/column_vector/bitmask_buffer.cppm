@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 
 export module bitmask_buffer;
 

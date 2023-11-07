@@ -17,6 +17,7 @@
 import infinity_exception;
 
 import stl;
+import parser;
 import global_resource_usage;
 import infinity_context;
 

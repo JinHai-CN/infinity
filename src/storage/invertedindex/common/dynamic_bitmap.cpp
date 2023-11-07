@@ -2,6 +2,7 @@ module;
 #include <cassert>
 
 import stl;
+import parser;
 import memory_pool;
 
 module dynamic_bitmap;

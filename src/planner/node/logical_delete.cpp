@@ -18,6 +18,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import logical_node;
 import logical_node_type;
 import column_binding;

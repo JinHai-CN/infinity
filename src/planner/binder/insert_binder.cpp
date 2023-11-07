@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import base_expression;
 import parser;
 import bind_context;
@@ -23,6 +24,7 @@ import function;
 
 import infinity_exception;
 import third_party;
+import parser;
 import function_set;
 import bind_alias_proxy;
 

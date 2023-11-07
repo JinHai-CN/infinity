@@ -15,8 +15,10 @@
 module;
 
 import stl;
+import parser;
 import fragment_data;
 import third_party;
+import parser;
 
 export module fragment_data_queue;
 

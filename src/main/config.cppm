@@ -16,7 +16,8 @@ module;
 export module config;
 
 import stl;
-import third_party;
+import parser;
+import parser;
 
 namespace infinity {
 

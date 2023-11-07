@@ -17,6 +17,7 @@ module;
 #include "faiss/impl/platform_macros.h"
 
 import stl;
+import parser;
 
 module distance;
 

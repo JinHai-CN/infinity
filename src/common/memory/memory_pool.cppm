@@ -3,6 +3,7 @@ module;
 import spinlock;
 import memory_chunk;
 import stl;
+import parser;
 
 export module memory_pool;
 

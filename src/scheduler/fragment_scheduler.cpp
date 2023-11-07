@@ -18,6 +18,7 @@ module;
 #include <vector>
 
 import stl;
+import parser;
 import config;
 
 import infinity_exception;
@@ -27,6 +28,7 @@ import threadutil;
 import fragment_task;
 import logger;
 import third_party;
+import parser;
 import query_context;
 import plan_fragment;
 import fragment_context;

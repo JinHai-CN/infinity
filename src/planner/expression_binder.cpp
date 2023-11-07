@@ -19,10 +19,12 @@ module;
 
 import stl;
 import parser;
+import parser;
 
 import infinity_exception;
 import bind_context;
 import third_party;
+import parser;
 import value;
 
 import base_expression;

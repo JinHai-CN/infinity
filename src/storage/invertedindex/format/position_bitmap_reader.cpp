@@ -2,6 +2,7 @@ module;
 #include <cassert>
 
 import stl;
+import parser;
 import byte_slice;
 import vbyte_compressor;
 import bitmap;

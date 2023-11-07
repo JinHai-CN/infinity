@@ -15,6 +15,7 @@
 #include "unit_test/base_test.h"
 
 import stl;
+import parser;
 import infinity;
 import query_result;
 import data_block;

@@ -15,9 +15,11 @@
 module;
 
 import stl;
+import parser;
 import index_def;
 import parser;
 import third_party;
+import parser;
 
 export module ivfflat_index_def;
 

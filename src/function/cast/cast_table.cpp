@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 
 module cast_table;
 

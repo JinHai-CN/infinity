@@ -17,6 +17,7 @@ module;
 export module default_values;
 
 import stl;
+import parser;
 
 namespace infinity {
 
@@ -27,8 +28,6 @@ export {
     constexpr i64 DEFAULT_VECTOR_SIZE = DEFAULT_BLOCK_CAPACITY;
     // constexpr i64 MAX_VARCHAR_SIZE = 65535;
     constexpr i64 MAX_BLOB_SIZE = 65536L * 65536L;
-    constexpr i64 MAX_BITMAP_SIZE = 65536;
-    constexpr i64 EMBEDDING_LIMIT = 65536;
     constexpr auto PG_MSG_BUFFER_SIZE = 4096u;
 
     constexpr SizeT DEFAULT_SEGMENT_CAPACITY = 16384;

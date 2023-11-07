@@ -16,6 +16,7 @@ module;
 
 import stl;
 import parser;
+import parser;
 import table_ref;
 import bound_statement;
 

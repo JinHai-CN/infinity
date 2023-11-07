@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import logical_node;
 import query_context;
 import parser;

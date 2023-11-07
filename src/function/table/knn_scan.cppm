@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import new_catalog;
 import table_function;
 import query_context;

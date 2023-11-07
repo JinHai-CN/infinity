@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import byte_slice;
 
 import infinity_exception;

@@ -15,10 +15,12 @@
 module;
 
 import stl;
+import parser;
 import base_entry;
 import txn_manager;
 import buffer_manager;
 import third_party;
+import parser;
 
 export module db_meta;
 

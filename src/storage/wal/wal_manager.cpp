@@ -20,8 +20,10 @@ module;
 #include <thread>
 
 import stl;
+import parser;
 import logger;
 import third_party;
+import parser;
 import txn_manager;
 import txn;
 import storage;

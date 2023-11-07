@@ -17,6 +17,7 @@ module;
 #include <algorithm>
 
 import stl;
+import parser;
 import logical_node;
 import logical_node_type;
 import base_expression;

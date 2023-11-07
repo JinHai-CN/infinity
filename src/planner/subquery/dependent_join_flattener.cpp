@@ -17,9 +17,11 @@ module;
 
 import stl;
 import parser;
+import parser;
 import logical_node;
 import logical_node_type;
 import third_party;
+import parser;
 
 import infinity_exception;
 import logical_aggregate;

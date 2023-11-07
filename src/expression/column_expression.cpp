@@ -18,8 +18,10 @@ module;
 
 import stl;
 import parser;
+import parser;
 import expression_type;
 import third_party;
+import parser;
 
 module column_expression;
 

@@ -16,7 +16,9 @@ module;
 
 import fragment_context;
 import stl;
+import parser;
 import third_party;
+import parser;
 import logger;
 import physical_source;
 import physical_sink;

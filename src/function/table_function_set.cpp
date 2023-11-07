@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import table_function;
 
 module table_function_set;

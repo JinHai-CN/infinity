@@ -19,6 +19,7 @@ module;
 module infinity;
 
 import stl;
+import parser;
 import logger;
 import config;
 import resource_manager;
@@ -26,6 +27,7 @@ import fragment_scheduler;
 import storage;
 import local_file_system;
 import third_party;
+import parser;
 import query_options;
 import query_result;
 import database;

@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import byte_slice_reader;
 import file_reader;
 import file_writer;

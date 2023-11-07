@@ -18,6 +18,7 @@ import base_expression;
 import bound_select_statement;
 import parser;
 import stl;
+import parser;
 import column_expression;
 
 export module subquery_expression;

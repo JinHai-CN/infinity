@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 
 export module serialize;
 
@@ -23,16 +24,16 @@ namespace infinity {
 //template <typename T>
 //concept POD = IsTrivial<T> && IsStandLayout<T>;
 
-export template <typename T>
-inline i32 GetSizeInBytes(const T &value) {
-    static_assert(IsStandLayout<T>, "T must be POD");
-    return sizeof(T);
-}
-
-export template <>
-inline i32 GetSizeInBytes(const String &value) {
-    return sizeof(i32) + value.length();
-}
+//export template <typename T>
+//inline i32 GetSizeInBytes(const T &value) {
+//    static_assert(IsStandLayout<T>, "T must be POD");
+//    return sizeof(T);
+//}
+//
+//export template <>
+//inline i32 GetSizeInBytes(const String &value) {
+//    return sizeof(i32) + value.length();
+//}
 
 export template <typename T>
 inline T ReadBuf(char *const buf) {

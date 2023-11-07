@@ -2,6 +2,7 @@ module;
 #include <cassert>
 
 import stl;
+import parser;
 import memory_pool;
 import pos_list_decoder;
 import buffered_byte_slice_reader;

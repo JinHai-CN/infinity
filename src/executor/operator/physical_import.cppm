@@ -16,11 +16,13 @@ module;
 
 import stl;
 import parser;
+import parser;
 import query_context;
 import operator_state;
 import physical_operator;
 import physical_operator_type;
 import third_party;
+import parser;
 import txn;
 import txn_store;
 import table_collection_entry;

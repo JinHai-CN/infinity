@@ -1,6 +1,6 @@
 module;
 
-import stl;
+import parser;
 import memory_pool;
 import posting_value;
 import flush_info;

@@ -17,6 +17,7 @@ module;
 export module infinity_context;
 
 import stl;
+import parser;
 import config;
 import resource_manager;
 import fragment_scheduler;

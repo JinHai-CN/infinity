@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import logical_node_visitor;
 import reference_expression;
 import base_expression;

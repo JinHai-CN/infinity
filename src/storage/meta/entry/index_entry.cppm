@@ -15,9 +15,11 @@
 module;
 
 import stl;
+import parser;
 import base_entry;
 import buffer_handle;
 import third_party;
+import parser;
 import buffer_obj;
 
 export module index_entry;

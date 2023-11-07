@@ -17,6 +17,7 @@ module;
 export module txn_manager;
 
 import stl;
+import parser;
 import txn;
 import buffer_manager;
 import txn_state;

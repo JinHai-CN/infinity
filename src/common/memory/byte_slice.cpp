@@ -2,6 +2,7 @@ module;
 
 import memory_pool;
 import stl;
+import parser;
 
 module byte_slice;
 

@@ -3,6 +3,7 @@ module;
 #include <cassert>
 
 import stl;
+import parser;
 import memory_pool;
 import posting_value;
 export module short_buffer;

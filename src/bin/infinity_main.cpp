@@ -17,7 +17,9 @@
 
 import compilation_config;
 import stl;
+import parser;
 import third_party;
+import parser;
 import db_server;
 
 namespace {

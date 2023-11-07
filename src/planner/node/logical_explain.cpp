@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import column_binding;
 import parser;
 import base_expression;

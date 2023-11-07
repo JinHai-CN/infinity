@@ -16,6 +16,7 @@ module;
 
 import logical_node;
 import stl;
+import parser;
 
 export module optimizer_rule;
 

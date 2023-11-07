@@ -32,6 +32,7 @@
 #include "hnswlib/hnswlib.h"
 
 // import stl;
+import parser;
 import compilation_config;
 
 class KnnBenchTest : public BaseTest {};

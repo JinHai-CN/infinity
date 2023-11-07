@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import base_expression;
 import parser;
 import bind_context;
@@ -22,6 +23,7 @@ import function;
 import function_set;
 import column_expression;
 import third_party;
+import parser;
 
 import infinity_exception;
 

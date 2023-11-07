@@ -17,6 +17,7 @@ module;
 #include <memory>
 
 import stl;
+import parser;
 import base_expression;
 import aggregate_expression;
 import between_expression;
@@ -29,6 +30,7 @@ import expression_type;
 
 import infinity_exception;
 import third_party;
+import parser;
 
 module expression_transformer;
 

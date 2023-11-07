@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import column_binding;
 
 export module subquery_unnest;

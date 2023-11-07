@@ -17,6 +17,7 @@ module;
 #include <string>
 
 import stl;
+import parser;
 import buffer_manager;
 import block_entry;
 import segment_entry;
@@ -28,6 +29,7 @@ import buffer_handle;
 import column_vector;
 import default_values;
 import third_party;
+import parser;
 import table_collection_entry;
 
 import infinity_exception;

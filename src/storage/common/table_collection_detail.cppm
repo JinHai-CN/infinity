@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import table_collection_type;
 
 export module table_collection_detail;

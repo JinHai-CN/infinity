@@ -18,10 +18,12 @@ import table_def;
 import base_table;
 import stl;
 import parser;
+import parser;
 import data_block;
 import infinity_exception;
 
 import third_party;
+import parser;
 
 export module data_table;
 

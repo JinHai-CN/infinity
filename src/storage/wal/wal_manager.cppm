@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import wal_entry;
 
 export module wal_manager;

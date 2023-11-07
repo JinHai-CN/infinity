@@ -3,6 +3,7 @@ module;
 #include "common/utility/builtin.h"
 
 import stl;
+import parser;
 import memory_pool;
 import byte_slice_reader;
 import posting_list_format;

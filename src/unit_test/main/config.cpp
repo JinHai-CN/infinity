@@ -15,9 +15,11 @@
 #include "unit_test/base_test.h"
 
 import stl;
+import parser;
 import config;
 import infinity_exception;
 import third_party;
+import parser;
 import compilation_config;
 
 class ConfigTest : public BaseTest {};

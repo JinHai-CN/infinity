@@ -16,12 +16,14 @@ module;
 
 #include <sstream>
 import stl;
+import parser;
 import expression_type;
 import parser;
 import scalar_function;
 
 import infinity_exception;
 import third_party;
+import parser;
 
 module knn_expression;
 

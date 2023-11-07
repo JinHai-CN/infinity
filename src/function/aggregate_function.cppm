@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import function;
 import function_data;
 import column_vector;

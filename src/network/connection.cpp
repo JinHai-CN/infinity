@@ -14,11 +14,12 @@
 
 module;
 
-#include <boost/asio/ip/tcp.hpp>
+//#include <boost/asio/ip/tcp.hpp>
 
 import pg_protocol_handler;
 import boost;
 import stl;
+import parser;
 import session;
 import infinity_exception;
 
@@ -40,7 +41,7 @@ Connection::Connection(AsioIOService &io_service)
 
 void Connection::Run() {
     // Disable Nagle's algorithm to reduce TCP latency, but will reduce the throughput.
-    socket_->set_option(boost::asio::ip::tcp::no_delay(true));
+//    socket_->set_option(boost::asio::ip::tcp::no_delay(true));
 
     HandleConnection();
 

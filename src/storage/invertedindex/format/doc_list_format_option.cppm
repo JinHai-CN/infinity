@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import posting_value;
 import index_defines;
 

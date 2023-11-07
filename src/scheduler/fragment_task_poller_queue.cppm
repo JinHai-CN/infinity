@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import fragment_task;
 
 export module fragment_task_poller_queue;

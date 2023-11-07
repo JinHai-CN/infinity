@@ -18,6 +18,7 @@ import column_binding;
 import base_expression;
 import parser;
 import stl;
+import parser;
 
 export module column_expression;
 

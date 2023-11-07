@@ -1,6 +1,7 @@
 module;
 
 import stl;
+import parser;
 import pos_list_format_option;
 import index_defines;
 import position_bitmap_reader;

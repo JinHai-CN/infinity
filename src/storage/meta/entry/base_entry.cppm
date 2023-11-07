@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import default_values;
 
 export module base_entry;

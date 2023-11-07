@@ -18,10 +18,12 @@ module;
 
 import stl;
 import parser;
+import parser;
 import base_entry;
 import table_collection_meta;
 import table_collection_type;
 import third_party;
+import parser;
 import txn;
 import buffer_manager;
 import segment_entry;

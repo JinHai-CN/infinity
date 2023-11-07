@@ -16,9 +16,11 @@ module;
 
 import stl;
 import parser;
+import parser;
 
 import infinity_exception;
 import third_party;
+import parser;
 import knn_flat_ip;
 import knn_flat_ip_blas;
 import knn_flat_ip_blas_reservoir;

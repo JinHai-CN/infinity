@@ -15,6 +15,7 @@
 module;
 
 import stl;
+import parser;
 import plan_fragment;
 import physical_operator;
 import physical_operator_type;
@@ -28,6 +29,7 @@ import explain_fragment;
 import fragment_context;
 import logger;
 import third_party;
+import parser;
 
 module fragment_builder;
 

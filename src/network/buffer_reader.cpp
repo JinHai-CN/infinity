@@ -18,6 +18,7 @@ module;
 #include <boost/asio/read.hpp>
 
 import stl;
+import parser;
 import pg_message;
 import ring_buffer_iterator;
 
@@ -27,6 +28,8 @@ import default_values;
 module buffer_reader;
 
 namespace infinity {
+
+BufferReader::BufferReader(const SharedPtr<AsioSocket> &socket) : socket_(socket){};
 
 SizeT BufferReader::size() const {
     const auto current_size = RingBufferIterator::Distance(start_pos_, current_pos_);

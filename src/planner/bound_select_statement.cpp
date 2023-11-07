@@ -18,6 +18,7 @@ module;
 
 import logical_node;
 import stl;
+import parser;
 import query_context;
 import bind_context;
 import table_ref;
