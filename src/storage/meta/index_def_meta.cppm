@@ -20,6 +20,7 @@ import parser;
 import txn_manager;
 import third_party;
 import index_def;
+import status;
 
 export module index_def_meta;
 
@@ -32,12 +33,13 @@ public:
     explicit IndexDefMeta(SharedPtr<String> index_name, TableCollectionEntry *table_collection_entry);
 
 public:
-    static EntryResult CreateNewEntry(IndexDefMeta *index_def_meta,
+    static Status CreateNewEntry(IndexDefMeta *index_def_meta,
                                       SharedPtr<IndexDef> index_def,
                                       ConflictType conflict_type,
                                       u64 txn_id,
                                       TxnTimeStamp begin_ts,
-                                      TxnManager *txn_mgr);
+                                      TxnManager *txn_mgr,
+                                      BaseEntry*& output_entry);
 
     static EntryResult DropNewEntry(IndexDefMeta *index_def_meta, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 

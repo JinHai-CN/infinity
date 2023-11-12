@@ -27,7 +27,7 @@ import txn_state;
 import index_def_entry;
 import logger;
 import third_party;
-
+import status;
 import infinity_exception;
 import table_collection_entry;
 
@@ -41,12 +41,13 @@ IndexDefMeta::IndexDefMeta(SharedPtr<String> index_name, TableCollectionEntry *t
     entry_list_.emplace_front(MakeUnique<BaseEntry>(EntryType::kDummy));
 }
 
-EntryResult IndexDefMeta::CreateNewEntry(IndexDefMeta *index_def_meta,
-                                         SharedPtr<IndexDef> index_def,
-                                         ConflictType conflict_type,
-                                         u64 txn_id,
-                                         TxnTimeStamp begin_ts,
-                                         TxnManager *txn_mgr) {
+Status IndexDefMeta::CreateNewEntry(IndexDefMeta *index_def_meta,
+                                    SharedPtr<IndexDef> index_def,
+                                    ConflictType conflict_type,
+                                    u64 txn_id,
+                                    TxnTimeStamp begin_ts,
+                                    TxnManager *txn_mgr,
+                                    BaseEntry *&output_entry) {
     // write lock guard
     UniqueLock<RWMutex> lock(index_def_meta->rw_locker_);
     Assert<StorageException>(!index_def_meta->entry_list_.empty(), "entry list should never be empty.");
@@ -61,6 +62,7 @@ EntryResult IndexDefMeta::CreateNewEntry(IndexDefMeta *index_def_meta,
                 status = 0; // No conflict. The dummy entry commit_ts is 0 and deleted so can always reach here.
             } else {
                 status = 2;
+                output_entry = header_base_entry;
             }
         } else {
             status = 1;
@@ -77,6 +79,7 @@ EntryResult IndexDefMeta::CreateNewEntry(IndexDefMeta *index_def_meta,
                         status = 0;
                     } else {
                         status = 2;
+                        output_entry = header_base_entry;
                     }
                 } else {
                     status = 1;
@@ -100,30 +103,37 @@ EntryResult IndexDefMeta::CreateNewEntry(IndexDefMeta *index_def_meta,
     }
     Assert<StorageException>(status != -1, "Invalid status.");
     if (status == 0) {
+        // Success branch
         auto index_def_entry = MakeUnique<IndexDefEntry>(index_def, index_def_meta, txn_id, begin_ts);
-        IndexDefEntry *res = index_def_entry.get();
+        output_entry = index_def_entry.get();
         index_def_meta->entry_list_.emplace_front(Move(index_def_entry));
-        return {.entry_ = res, .err_ = nullptr};
+        return Status::OK();
+
     } else if (status == 1) {
         // Write-Write conflict
-        LOG_TRACE("Write-Write conflict: There is a committed index: which is later than current transaction.");
-        return {.entry_ = nullptr,
-                .err_ = MakeUnique<String>("Write-Write conflict. There is a committed index which is later than current transaction.")};
+        String err_msg("Write-Write conflict: There is a committed index: which is later than current transaction.");
+        LOG_ERROR(err_msg);
+        return Status(ErrorCode::kWWConflict, err_msg.c_str());
+
     } else {
-        LOG_TRACE(Format("Duplicated index: {}.", *index_def->index_name_));
+
         switch (conflict_type) {
             case ConflictType::kIgnore: {
-                return {.entry_ = nullptr, .err_ = nullptr};
+                return Status::OK();
             }
             case ConflictType::kError: {
-                return {.entry_ = nullptr, .err_ = MakeUnique<String>("Duplicated index.")};
+                String err_msg = Format("Duplicated index: {}.", *index_def->index_name_);
+                LOG_ERROR(err_msg);
+                output_entry = nullptr;
+                return Status(ErrorCode::kDuplicate, err_msg.c_str());
             }
             default: {
                 Error<StorageException>("Invalid conflict type");
             }
         }
-        Error<StorageException>("Cannot reach here");
     }
+
+    return Status::OK();
 }
 
 EntryResult

@@ -51,6 +51,9 @@ static UniquePtr<IndexFileWorker> CreateFileWorker(SegmentEntry *segment_entry, 
                                                                              create_annivfflat_para->row_count_);
                     break;
                 }
+                default: {
+                    ExecutorException("Create IVF Flat index: unsupported element type.");
+                }
             }
             break;
         }
@@ -64,7 +67,7 @@ static UniquePtr<IndexFileWorker> CreateFileWorker(SegmentEntry *segment_entry, 
             break;
         }
         default: {
-            NotImplementException("Not implemented.");
+            NotImplementException("Not implemented index method.");
         }
     }
     return file_worker;

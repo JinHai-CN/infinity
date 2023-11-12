@@ -38,6 +38,8 @@ import segment_entry;
 import block_entry;
 import table_collection_entry;
 import data_access_state;
+import status;
+import base_entry;
 
 import infinity_exception;
 #include "statement/extra/extra_ddl_info.h"
@@ -637,8 +639,11 @@ void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_i
         Error<StorageException>("Wal Replay: Get table failed");
     }
     auto table_entry = dynamic_cast<TableCollectionEntry *>(table_entry_result.entry_);
-    auto index_def_entry_result = TableCollectionEntry::CreateIndex(table_entry, cmd.index_def_, ConflictType::kReplace, txn_id, commit_ts, nullptr);
-    if (!index_def_entry_result.Success()) {
+
+    BaseEntry *index_def_entry = nullptr;
+    Status status =
+        TableCollectionEntry::CreateIndex(table_entry, cmd.index_def_, ConflictType::kReplace, txn_id, commit_ts, nullptr, index_def_entry);
+    if (!status.ok()) {
         Error<StorageException>("Wal Replay: Create index failed");
     }
     auto fake_txn = MakeUnique<Txn>(storage_->txn_manager(), storage_->catalog(), txn_id);

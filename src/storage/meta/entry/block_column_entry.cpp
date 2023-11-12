@@ -34,6 +34,7 @@ import infinity_exception;
 import varchar_layout;
 import logger;
 import data_file_worker;
+import status;
 
 module block_column_entry;
 
@@ -78,11 +79,11 @@ ColumnBuffer BlockColumnEntry::GetColumnData(BlockColumnEntry *block_column_entr
                    : ColumnBuffer(block_column_entry->buffer_);
 }
 
-void BlockColumnEntry::Append(BlockColumnEntry *column_entry,
-                              u16 column_entry_offset,
-                              ColumnVector *input_column_vector,
-                              u16 input_column_vector_offset,
-                              SizeT append_rows) {
+Status BlockColumnEntry::Append(BlockColumnEntry *column_entry,
+                                u16 column_entry_offset,
+                                ColumnVector *input_column_vector,
+                                u16 input_column_vector_offset,
+                                SizeT append_rows) {
     if (column_entry->buffer_ == nullptr) {
         Error<StorageException>("Not initialize buffer handle");
     }
@@ -92,9 +93,10 @@ void BlockColumnEntry::Append(BlockColumnEntry *column_entry,
     SizeT data_size = append_rows * data_type_size;
     SizeT dst_offset = column_entry_offset * data_type_size;
     BlockColumnEntry::AppendRaw(column_entry, dst_offset, src_ptr, data_size);
+    return Status::OK();
 }
 
-void BlockColumnEntry::AppendRaw(BlockColumnEntry *block_column_entry, SizeT dst_offset, ptr_t src_p, SizeT data_size) {
+Status BlockColumnEntry::AppendRaw(BlockColumnEntry *block_column_entry, SizeT dst_offset, ptr_t src_p, SizeT data_size) {
     BufferHandle buffer_handle = block_column_entry->buffer_->Load();
     ptr_t dst_p = static_cast<ptr_t>(buffer_handle.GetDataMut()) + dst_offset;
     // ptr_t dst_ptr = column_data_entry->buffer_handle_->LoadData() + dst_offset;
@@ -157,9 +159,10 @@ void BlockColumnEntry::AppendRaw(BlockColumnEntry *block_column_entry, SizeT dst
             Error<NotImplementException>("AppendRaw: Not implement the type.");
         }
     }
+    return Status::OK();
 }
 
-void BlockColumnEntry::Flush(BlockColumnEntry *block_column_entry, SizeT row_count) {
+Status BlockColumnEntry::Flush(BlockColumnEntry *block_column_entry, SizeT row_count) {
     DataType *column_type = block_column_entry->column_type_.get();
     switch (column_type->type()) {
         case kBoolean:
@@ -185,7 +188,6 @@ void BlockColumnEntry::Flush(BlockColumnEntry *block_column_entry, SizeT row_cou
         case kUuid:
         case kEmbedding:
         case kRowID: {
-            SizeT buffer_size = row_count * column_type->Size();
             if (block_column_entry->buffer_->Save()) {
                 block_column_entry->buffer_->Sync();
                 block_column_entry->buffer_->CloseFile();
@@ -194,7 +196,6 @@ void BlockColumnEntry::Flush(BlockColumnEntry *block_column_entry, SizeT row_cou
             break;
         }
         case kVarchar: {
-            SizeT buffer_size = row_count * column_type->Size();
             if (block_column_entry->buffer_->Save()) {
                 block_column_entry->buffer_->Sync();
                 block_column_entry->buffer_->CloseFile();
@@ -224,6 +225,7 @@ void BlockColumnEntry::Flush(BlockColumnEntry *block_column_entry, SizeT row_cou
             Error<StorageException>("Invalid data type.");
         }
     }
+    return Status::OK();
 }
 
 Json BlockColumnEntry::Serialize(BlockColumnEntry *block_column_entry) {

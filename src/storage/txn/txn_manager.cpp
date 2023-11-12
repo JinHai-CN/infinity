@@ -38,25 +38,24 @@ Txn *TxnManager::CreateTxn() {
     if (is_running_.load() == false) {
         Error<TransactionException>("TxnManager is not running, cannot create txn");
     }
-    rw_locker_.lock();
+
+    UniqueLock<RWMutex> lock(rw_locker_);
     u64 new_txn_id = GetNewTxnID();
     UniquePtr<Txn> new_txn = MakeUnique<Txn>(this, catalog_, new_txn_id);
     Txn *res = new_txn.get();
     txn_map_[new_txn_id] = Move(new_txn);
-    rw_locker_.unlock();
+
     return res;
 }
 
 void TxnManager::DestroyTxn(u64 txn_id) {
-    rw_locker_.lock();
+    UniqueLock<RWMutex> w_locker(rw_locker_);
     txn_map_.erase(txn_id);
-    rw_locker_.unlock();
 }
 
 Txn *TxnManager::GetTxn(u64 txn_id) {
-    rw_locker_.lock_shared();
+    SharedLock<RWMutex> r_locker(rw_locker_);
     Txn *res = txn_map_[txn_id].get();
-    rw_locker_.unlock_shared();
     return res;
 }
 
@@ -73,7 +72,7 @@ u64 TxnManager::GetNewTxnID() {
 }
 
 TxnTimeStamp TxnManager::GetTimestamp(bool prepare_wal) {
-    LockGuard<Mutex> guard(mutex_);
+    LockGuard<Mutex> w_locker(mutex_);
     TxnTimeStamp ts = txn_ts_++;
     if (prepare_wal && put_wal_entry_ != nullptr) {
         priority_que_[ts] = nullptr;

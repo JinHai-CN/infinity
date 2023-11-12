@@ -23,6 +23,7 @@ import column_buffer;
 import outline_info;
 import buffer_manager;
 import column_vector;
+import status;
 
 export module block_column_entry;
 
@@ -51,12 +52,12 @@ public:
 
     static ColumnBuffer GetColumnData(BlockColumnEntry *column_data_entry, BufferManager *buffer_manager);
 
-    static void
+    static Status
     Append(BlockColumnEntry *column_entry, u16 column_entry_offset, ColumnVector *input_column_vector, u16 input_offset, SizeT append_rows);
 
-    static void AppendRaw(BlockColumnEntry *block_column_entry, SizeT dst_offset, ptr_t src_ptr, SizeT data_size);
+    static Status AppendRaw(BlockColumnEntry *block_column_entry, SizeT dst_offset, ptr_t src_ptr, SizeT data_size);
 
-    static void Flush(BlockColumnEntry *block_column_entry, SizeT row_count);
+    static Status Flush(BlockColumnEntry *block_column_entry, SizeT row_count);
 
     static Json Serialize(BlockColumnEntry *block_column_entry);
 
