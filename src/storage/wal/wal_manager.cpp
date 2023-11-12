@@ -644,7 +644,7 @@ void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_i
     Status status =
         TableCollectionEntry::CreateIndex(table_entry, cmd.index_def_, ConflictType::kReplace, txn_id, commit_ts, nullptr, index_def_entry);
     if (!status.ok()) {
-        Error<StorageException>("Wal Replay: Create index failed");
+        Error<StorageException>("Wal Replay: Create index failed, " + *status.msg_);
     }
     auto fake_txn = MakeUnique<Txn>(storage_->txn_manager(), storage_->catalog(), txn_id);
     auto table_store = MakeShared<TxnTableStore>(table_entry, fake_txn.get());
@@ -664,11 +664,19 @@ void WalManager::WalCmdDropIndexReplay(const WalCmdDropIndex &cmd, u64 txn_id, i
         Error<StorageException>("Wal Replay: Get table failed" + table_entry_result.ToString());
     }
     auto table_entry = dynamic_cast<TableCollectionEntry *>(table_entry_result.entry_);
-    auto result = TableCollectionEntry::DropIndex(table_entry, cmd.index_name_, ConflictType::kIgnore, txn_id, commit_ts, storage_->txn_manager());
-    if (!result.Success()) {
-        Error<StorageException>("Wal Replay: Drop index failed" + result.ToString());
+
+    BaseEntry *index_def_entry = nullptr;
+    Status status = TableCollectionEntry::DropIndex(table_entry,
+                                                    cmd.index_name_,
+                                                    ConflictType::kIgnore,
+                                                    txn_id,
+                                                    commit_ts,
+                                                    storage_->txn_manager(),
+                                                    index_def_entry);
+    if (!status.ok()) {
+        Error<StorageException>("Wal Replay: Drop index failed, " + *status.msg_);
     }
-    result.entry_->Commit(commit_ts);
+    index_def_entry->Commit(commit_ts);
 }
 
 void WalManager::WalCmdImportReplay(const WalCmdImport &cmd, u64 txn_id, i64 commit_ts) {

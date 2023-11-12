@@ -136,9 +136,12 @@ Status IndexDefMeta::CreateNewEntry(IndexDefMeta *index_def_meta,
     return Status::OK();
 }
 
-EntryResult
-IndexDefMeta::DropNewEntry(IndexDefMeta *index_def_meta, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
-    IndexDefEntry *res = nullptr;
+Status IndexDefMeta::DropNewEntry(IndexDefMeta *index_def_meta,
+                                  ConflictType conflict_type,
+                                  u64 txn_id,
+                                  TxnTimeStamp begin_ts,
+                                  TxnManager *txn_mgr,
+                                  BaseEntry *&output_entry) {
     UniqueLock<RWMutex> lock(index_def_meta->rw_locker_);
 
     Assert<StorageException>(!index_def_meta->entry_list_.empty(), "entry list should never be empty.");
@@ -152,6 +155,7 @@ IndexDefMeta::DropNewEntry(IndexDefMeta *index_def_meta, ConflictType conflict_t
             // No conflict
             if (header_base_entry->deleted_) {
                 status = 2;
+                output_entry = header_base_entry;
             } else {
                 status = 0;
             }
@@ -170,6 +174,7 @@ IndexDefMeta::DropNewEntry(IndexDefMeta *index_def_meta, ConflictType conflict_t
                         status = 0;
                     } else {
                         status = 2;
+                        output_entry = header_base_entry;
                     }
                 } else {
                     status = 1;
@@ -195,23 +200,26 @@ IndexDefMeta::DropNewEntry(IndexDefMeta *index_def_meta, ConflictType conflict_t
     Assert<StorageException>(status != -1, "Invalid status.");
     if (status == 0) {
         auto index_def_entry = MakeUnique<IndexDefEntry>(nullptr, index_def_meta, txn_id, begin_ts);
-        res = index_def_entry.get();
-        res->deleted_ = true;
+        output_entry = index_def_entry.get();
+        output_entry->deleted_ = true;
         index_def_meta->entry_list_.emplace_front(Move(index_def_entry));
-        return {.entry_ = res, .err_ = nullptr};
+        return Status::OK();
     } else if (status == 1) {
         // Write-Write conflict
-        LOG_TRACE("Write-Write conflict: There is a committed index: which is later than current transaction.");
-        return {.entry_ = nullptr,
-                .err_ = MakeUnique<String>("Write-Write conflict. There is a committed index which is later than current transaction.")};
+        String err_msg("Write-Write conflict: There is a committed index: which is later than current transaction.");
+        LOG_ERROR(err_msg);
+        return Status(ErrorCode::kWWConflict, err_msg.c_str());
     } else {
-        LOG_TRACE(Format("Attempt to drop not existed index: {}.", *index_def_meta->index_name_));
+
         switch (conflict_type) {
             case ConflictType::kIgnore: {
-                return {.entry_ = nullptr, .err_ = nullptr};
+                return Status::OK();
             }
             case ConflictType::kError: {
-                return {.entry_ = nullptr, .err_ = MakeUnique<String>("Duplicated index.")};
+                String err_msg = Format("Attempt to drop non-existent index: {}.", *index_def_meta->index_name_);
+                LOG_ERROR(err_msg);
+                output_entry = nullptr;
+                return Status(ErrorCode::kNotFound, "Duplicated index.");
             }
             default: {
                 Error<StorageException>("Invalid conflict type");

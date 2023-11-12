@@ -409,26 +409,26 @@ EntryResult Txn::DropTableCollectionByName(const String &db_name, const String &
     return res;
 }
 
-EntryResult Txn::DropIndexByName(const String &db_name, const String &table_name, const String &index_name, ConflictType conflict_type) {
+Status Txn::DropIndexByName(const String &db_name, const String &table_name, const String &index_name, ConflictType conflict_type) {
     TxnState txn_state = txn_context_.GetTxnState();
     if (txn_state != TxnState::kStarted) {
-        LOG_TRACE("Transaction isn't started.");
-        return {nullptr, MakeUnique<String>("Transaction isn't started.")};
+        Error<TransactionException>("CreateIndex::Transaction is not started.");
     }
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
     TableCollectionEntry *table_entry{nullptr};
     UniquePtr<String> err_msg = GetTableEntry(db_name, table_name, table_entry);
     if (err_msg.get() != nullptr) {
-        return {nullptr, Move(err_msg)};
+        return Status(ErrorCode::kNotFound, "Table not found.");
     }
 
-    EntryResult res = TableCollectionEntry::DropIndex(table_entry, index_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
-    if (res.entry_ == nullptr) {
-        return res;
+    BaseEntry *output_index_entry = nullptr;
+    Status status = TableCollectionEntry::DropIndex(table_entry, index_name, conflict_type, txn_id_, begin_ts, txn_mgr_, output_index_entry);
+    if (!status.ok()) {
+        return status;
     }
 
-    auto dropped_index_entry = static_cast<IndexDefEntry *>(res.entry_);
+    auto dropped_index_entry = static_cast<IndexDefEntry *>(output_index_entry);
     if (txn_indexes_.contains(dropped_index_entry)) {
         txn_indexes_.erase(dropped_index_entry);
     } else {
@@ -436,7 +436,7 @@ EntryResult Txn::DropIndexByName(const String &db_name, const String &table_name
     }
 
     wal_entry_->cmds.push_back(MakeShared<WalCmdDropIndex>(db_name, table_name, index_name));
-    return res;
+    return status;
 }
 
 EntryResult Txn::GetTableByName(const String &db_name, const String &table_name) {

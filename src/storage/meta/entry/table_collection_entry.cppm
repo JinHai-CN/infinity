@@ -58,12 +58,13 @@ public:
                               TxnManager *txn_mgr,
                               BaseEntry *&output_entry);
 
-    static EntryResult DropIndex(TableCollectionEntry *table_entry,
-                                 const String &index_name,
-                                 ConflictType conflict_type,
-                                 u64 txn_id,
-                                 TxnTimeStamp begin_ts,
-                                 TxnManager *txn_mgr);
+    static Status DropIndex(TableCollectionEntry *table_entry,
+                            const String &index_name,
+                            ConflictType conflict_type,
+                            u64 txn_id,
+                            TxnTimeStamp begin_ts,
+                            TxnManager *txn_mgr,
+                            BaseEntry *&output_entry);
 
     static EntryResult GetIndex(TableCollectionEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts);
 

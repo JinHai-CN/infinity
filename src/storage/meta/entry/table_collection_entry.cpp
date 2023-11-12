@@ -111,12 +111,13 @@ Status TableCollectionEntry::CreateIndex(TableCollectionEntry *table_entry,
     return IndexDefMeta::CreateNewEntry(index_def_meta, Move(index_def), conflict_type, txn_id, begin_ts, txn_mgr, output_entry);
 }
 
-EntryResult TableCollectionEntry::DropIndex(TableCollectionEntry *table_entry,
+Status TableCollectionEntry::DropIndex(TableCollectionEntry *table_entry,
                                             const String &index_name,
                                             ConflictType conflict_type,
                                             u64 txn_id,
                                             TxnTimeStamp begin_ts,
-                                            TxnManager *txn_mgr) {
+                                            TxnManager *txn_mgr,
+                                            BaseEntry *&output_entry) {
     table_entry->rw_locker_.lock_shared();
 
     IndexDefMeta *index_meta{nullptr};
@@ -128,10 +129,10 @@ EntryResult TableCollectionEntry::DropIndex(TableCollectionEntry *table_entry,
         switch (conflict_type) {
             LOG_TRACE(Format("Attempt to drop not existed index entry {}", index_name));
             case ConflictType::kIgnore: {
-                return {nullptr, nullptr};
+                return Status::OK();
             }
             case ConflictType::kError: {
-                return {nullptr, MakeUnique<String>("Attempt to drop not existed index entry")};
+                return Status(ErrorCode::kNotFound, "Attempt to drop not existed index entry");
             }
             default: {
                 Error<StorageException>("Invalid conflict type.");
@@ -140,7 +141,7 @@ EntryResult TableCollectionEntry::DropIndex(TableCollectionEntry *table_entry,
         Error<StorageException>("Should not reach here.");
     }
     LOG_TRACE(Format("Drop index entry {}", index_name));
-    auto res = IndexDefMeta::DropNewEntry(index_meta, conflict_type, txn_id, begin_ts, txn_mgr);
+    auto res = IndexDefMeta::DropNewEntry(index_meta, conflict_type, txn_id, begin_ts, txn_mgr, output_entry);
 
     return res;
 }

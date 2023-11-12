@@ -91,7 +91,7 @@ public:
 
     EntryResult DropTableCollectionByName(const String &db_name, const String &table_name, ConflictType conflict_type);
 
-    EntryResult DropIndexByName(const String &db_name, const String &table_name, const String &index_name, ConflictType conflict_type);
+    Status DropIndexByName(const String &db_name, const String &table_name, const String &index_name, ConflictType conflict_type);
 
     EntryResult GetCollectionByName(const String &db_name, const String &table_name);
 

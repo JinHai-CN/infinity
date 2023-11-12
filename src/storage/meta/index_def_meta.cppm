@@ -34,14 +34,19 @@ public:
 
 public:
     static Status CreateNewEntry(IndexDefMeta *index_def_meta,
-                                      SharedPtr<IndexDef> index_def,
-                                      ConflictType conflict_type,
-                                      u64 txn_id,
-                                      TxnTimeStamp begin_ts,
-                                      TxnManager *txn_mgr,
-                                      BaseEntry*& output_entry);
+                                 SharedPtr<IndexDef> index_def,
+                                 ConflictType conflict_type,
+                                 u64 txn_id,
+                                 TxnTimeStamp begin_ts,
+                                 TxnManager *txn_mgr,
+                                 BaseEntry *&output_entry);
 
-    static EntryResult DropNewEntry(IndexDefMeta *index_def_meta, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
+    static Status DropNewEntry(IndexDefMeta *index_def_meta,
+                               ConflictType conflict_type,
+                               u64 txn_id,
+                               TxnTimeStamp begin_ts,
+                               TxnManager *txn_mgr,
+                               BaseEntry *&output_entry);
 
     static void DeleteNewEntry(IndexDefMeta *index_def_meta, u64 txn_id, TxnManager *txn_mgr);
 
