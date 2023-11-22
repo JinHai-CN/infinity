@@ -35,6 +35,7 @@ import column_binding;
 import logger;
 import third_party;
 import infinity_exception;
+import new_catalog;
 
 module column_pruner;
 
@@ -54,7 +55,7 @@ void RemoveUnusedColumns::VisitNode(LogicalNode &op) {
                     // TODO: CountStar -> Count(*) is not supported yet
                 }
             }
-            RemoveUnusedColumns remove;
+            RemoveUnusedColumns remove(query_context_);
             remove.VisitNodeExpression(op);
             remove.VisitNodeChildren(op);
             return;
@@ -94,7 +95,7 @@ void RemoveUnusedColumns::VisitNode(LogicalNode &op) {
                     //                    proj.expressions_.push_back(MakeShared<ValueExpression>(value_expr));
                 }
             }
-            RemoveUnusedColumns remove;
+            RemoveUnusedColumns remove(query_context_);
             remove.VisitNodeExpression(op);
             remove.VisitNodeChildren(op);
             return;
@@ -105,13 +106,13 @@ void RemoveUnusedColumns::VisitNode(LogicalNode &op) {
                 //                PlannerAssert(sort.expressions_.empty(), "'Order by' clause object should not yet be set");
                 // TODO: Sort's projections is not supported yet
             }
-            RemoveUnusedColumns remove;
+            RemoveUnusedColumns remove(query_context_);
             remove.VisitNodeExpression(op);
             remove.VisitNodeChildren(op);
             return;
         }
         case LogicalNodeType::kDelete: {
-            RemoveUnusedColumns remove;
+            RemoveUnusedColumns remove(query_context_);
             remove.VisitNodeExpression(op);
             remove.VisitNodeChildren(op);
             return;
@@ -160,8 +161,10 @@ void RemoveUnusedColumns::VisitNode(LogicalNode &op) {
             // remove the original columns of scan with the filtered columns
             scan.base_table_ref_->RetainColumnByIndices(Move(project_indices));
 
+            const NewCatalog* catalog_ptr = query_context_->storage()->catalog();
             for(auto &extra_binding: extra_references_) {
                 // Search catalog special function to get correction index to modify base table ref
+//                catalog_ptr->
                 LOG_TRACE(Format("{} {}", extra_binding.table_idx, extra_binding.column_idx));
             }
 

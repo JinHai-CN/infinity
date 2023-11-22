@@ -221,14 +221,22 @@ void NewCatalog::AddSpecialFunction(NewCatalog *catalog, const SharedPtr<Special
         Error<CatalogException>(Format("Trying to add duplicated special function into catalog: {}", name));
     }
     catalog->special_functions_.emplace(name, special_function);
+    catalog->special_functions_by_idx_.emplace(special_function->extra_idx(), special_function.get());
 }
 
 SharedPtr<SpecialFunction> NewCatalog::GetSpecialFunctionByNameNoExcept(NewCatalog *catalog, String function_name) {
     StringToLower(function_name);
-    if (!catalog->table_functions_.contains(function_name)) {
+    if (!catalog->special_functions_.contains(function_name)) {
         return nullptr;
     }
     return catalog->special_functions_[function_name];
+}
+
+SpecialFunction* NewCatalog::GetSpecialFunctionByIdx(NewCatalog *catalog, SizeT idx) {
+    if (!catalog->special_functions_by_idx_.contains(idx)) {
+        return nullptr;
+    }
+    return catalog->special_functions_by_idx_[idx];
 }
 
 void NewCatalog::DeleteTableFunction(NewCatalog *catalog, String function_name) {

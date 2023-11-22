@@ -113,6 +113,8 @@ public:
 
     static SharedPtr<SpecialFunction> GetSpecialFunctionByNameNoExcept(NewCatalog *catalog, String function_name);
 
+    static SpecialFunction* GetSpecialFunctionByIdx(NewCatalog *catalog, SizeT idx);
+
     static void DeleteTableFunction(NewCatalog *catalog, String function_name);
 
     static Json Serialize(NewCatalog *catalog, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
@@ -146,6 +148,7 @@ public:
     HashMap<String, SharedPtr<FunctionSet>> function_sets_;
     HashMap<String, SharedPtr<TableFunction>> table_functions_;
     HashMap<String, SharedPtr<SpecialFunction>> special_functions_;
+    HashMap<SizeT, SpecialFunction*> special_functions_by_idx_;
 
     ProfileHistory history{128};
 };

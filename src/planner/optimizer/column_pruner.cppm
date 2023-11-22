@@ -32,9 +32,11 @@ namespace infinity {
 
 class RemoveUnusedColumns : public LogicalNodeVisitor {
 public:
-    explicit RemoveUnusedColumns(bool is_root = false)
-        : all_referenced_(is_root) {
-    }
+    explicit RemoveUnusedColumns(bool is_root = false) : all_referenced_(is_root) {}
+
+    RemoveUnusedColumns(QueryContext *query_context, bool is_root = false) : all_referenced_(is_root), query_context_(query_context) {}
+
+    void Init(QueryContext *query_context) { query_context_ = query_context; }
 
     void VisitNode(LogicalNode &op) final;
 
@@ -47,11 +49,14 @@ private:
     bool all_referenced_;
     HashSet<ColumnBinding> column_references_;
     HashSet<ColumnBinding> extra_references_;
+
+    QueryContext *query_context_{};
 };
 
 export class ColumnPruner : public OptimizerRule {
 public:
     inline void ApplyToPlan(QueryContext *query_context_ptr, const SharedPtr<LogicalNode> &logical_plan) final {
+        remove_visitor.Init(query_context_ptr);
         return remove_visitor.VisitNode(*logical_plan);
     }
 
@@ -61,4 +66,4 @@ private:
     RemoveUnusedColumns remove_visitor{true};
 };
 
-}
+} // namespace infinity
