@@ -152,15 +152,19 @@ void PhysicalShow::Init() {
             output_types_->reserve(9);
 
             output_names_->emplace_back("record_no");
-            output_names_->emplace_back("parser");
-            output_names_->emplace_back("logical planner");
-            output_names_->emplace_back("optimizer");
-            output_names_->emplace_back("physical planner");
-            output_names_->emplace_back("pipeline builder");
-            output_names_->emplace_back("task builder");
-            output_names_->emplace_back("executor");
+            output_names_->emplace_back("command parsing");
+            output_names_->emplace_back("logical plann building");
+            output_names_->emplace_back("plan optimizing");
+            output_names_->emplace_back("physical plann building");
+            output_names_->emplace_back("pipeline building");
+            output_names_->emplace_back("task building");
+            output_names_->emplace_back("execution");
+            output_names_->emplace_back("commit");
+            output_names_->emplace_back("rollback");
             output_names_->emplace_back("total_cost");
 
+            output_types_->emplace_back(varchar_type);
+            output_types_->emplace_back(varchar_type);
             output_types_->emplace_back(varchar_type);
             output_types_->emplace_back(varchar_type);
             output_types_->emplace_back(varchar_type);
@@ -527,7 +531,9 @@ void PhysicalShow::ExecuteShowProfiles(QueryContext *query_context, ShowOperator
         MakeShared<ColumnDef>(5, varchar_type, "pipeline_build", HashSet<ConstraintType>()),
         MakeShared<ColumnDef>(6, varchar_type, "task_build", HashSet<ConstraintType>()),
         MakeShared<ColumnDef>(7, varchar_type, "execution", HashSet<ConstraintType>()),
-        MakeShared<ColumnDef>(8, varchar_type, "total_cost", HashSet<ConstraintType>()),
+        MakeShared<ColumnDef>(8, varchar_type, "commit", HashSet<ConstraintType>()),
+        MakeShared<ColumnDef>(9, varchar_type, "rollback", HashSet<ConstraintType>()),
+        MakeShared<ColumnDef>(10, varchar_type, "total_cost", HashSet<ConstraintType>()),
     };
 
     auto catalog = txn->GetCatalog();
@@ -535,8 +541,17 @@ void PhysicalShow::ExecuteShowProfiles(QueryContext *query_context, ShowOperator
 
     // create data block for output state
     UniquePtr<DataBlock> output_block_ptr = DataBlock::MakeUniquePtr();
-    Vector<SharedPtr<DataType>>
-        column_types{varchar_type, varchar_type, varchar_type, varchar_type, varchar_type, varchar_type, varchar_type, varchar_type, varchar_type};
+    Vector<SharedPtr<DataType>> column_types{varchar_type,
+                                             varchar_type,
+                                             varchar_type,
+                                             varchar_type,
+                                             varchar_type,
+                                             varchar_type,
+                                             varchar_type,
+                                             varchar_type,
+                                             varchar_type,
+                                             varchar_type,
+                                             varchar_type};
     output_block_ptr->Init(column_types);
 
     auto records = catalog->GetProfilerRecords();
@@ -548,7 +563,8 @@ void PhysicalShow::ExecuteShowProfiles(QueryContext *query_context, ShowOperator
 
         // Output each query phase
         i64 total_cost{};
-        for (SizeT j = 0; j < 7; ++j) {
+        SizeT column_count = column_defs.size();
+        for (SizeT j = 0; j < column_count - 2; ++j) {
             i64 this_time = records[i]->ElapsedAt(j);
             total_cost += this_time;
 
@@ -560,10 +576,9 @@ void PhysicalShow::ExecuteShowProfiles(QueryContext *query_context, ShowOperator
         // Output total query duration
         NanoSeconds total_duration(total_cost);
         ValueExpression phase_cost_expr(Value::MakeVarchar(BaseProfiler::ElapsedToString(total_duration)));
-        phase_cost_expr.AppendToChunk(output_block_ptr->column_vectors[8]);
-
-        output_block_ptr->Finalize();
+        phase_cost_expr.AppendToChunk(output_block_ptr->column_vectors.back());
     }
+    output_block_ptr->Finalize();
     show_operator_state->output_.emplace_back(Move(output_block_ptr));
 }
 
@@ -670,7 +685,7 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
     };
 
     UniquePtr<DataBlock> output_block_ptr = DataBlock::MakeUniquePtr();
-    auto chuck_filling = [&](const StdFunction<u64(const String &)>& file_size_func, const String &path) {
+    auto chuck_filling = [&](const StdFunction<u64(const String &)> &file_size_func, const String &path) {
         SizeT column_id = 0;
         {
             Value value = Value::MakeVarchar(path);
@@ -700,7 +715,7 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
             auto version_path = block->VersionFilePath();
 
             chuck_filling(LocalFileSystem::GetFileSizeByPath, version_path);
-            for (auto &column: block->columns_) {
+            for (auto &column : block->columns_) {
                 auto col_file_path = column->FilePath();
 
                 chuck_filling(LocalFileSystem::GetFileSizeByPath, col_file_path);
@@ -1222,7 +1237,7 @@ void PhysicalShow::ExecuteShowConfigs(QueryContext *query_context, ShowOperatorS
     {
         {
             // option name
-            Value value = Value::MakeVarchar("enable profiling");
+            Value value = Value::MakeVarchar("enable_profile");
             ValueExpression value_expr(value);
             value_expr.AppendToChunk(output_block_ptr->column_vectors[0]);
         }
@@ -1272,7 +1287,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
     Status table_status = txn->GetTableByName(db_name_, object_name_, base_table_entry);
     if (!table_status.ok()) {
         show_operator_state->error_message_ = Move(table_status.msg_);
-//        Error<ExecutorException>(table_status.message());
+        //        Error<ExecutorException>(table_status.message());
         return;
     }
 
@@ -1338,8 +1353,9 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
                 switch (index_base->index_type_) {
                     case IndexType::kIVFFlat: {
                         const IndexIVFFlat *index_ivfflat = static_cast<const IndexIVFFlat *>(index_base.get());
-                        other_parameters =
-                            Format("metric = {}, centroids_count = {}", MetricTypeToString(index_ivfflat->metric_type_), index_ivfflat->centroids_count_);
+                        other_parameters = Format("metric = {}, centroids_count = {}",
+                                                  MetricTypeToString(index_ivfflat->metric_type_),
+                                                  index_ivfflat->centroids_count_);
                         break;
                     }
                     case IndexType::kInvalid: {
@@ -1527,7 +1543,7 @@ void PhysicalShow::ExecuteShowGlobalStatus(QueryContext *query_context, ShowOper
         }
         {
             // option value
-            BufferManager* buffer_manager = query_context->storage()->buffer_manager();
+            BufferManager *buffer_manager = query_context->storage()->buffer_manager();
             u64 memory_limit = buffer_manager->memory_limit();
             u64 memory_usage = buffer_manager->memory_usage();
             Value value = Value::MakeVarchar(Format("{}/{}", Utility::FormatByteSize(memory_usage), Utility::FormatByteSize(memory_limit)));
@@ -1545,7 +1561,7 @@ void PhysicalShow::ExecuteShowGlobalStatus(QueryContext *query_context, ShowOper
         }
         {
             // option value
-            SessionManager* session_manager = query_context->session_manager();
+            SessionManager *session_manager = query_context->session_manager();
             u64 session_count = session_manager->GetSessionCount();
             Value value = Value::MakeVarchar(ToStr(session_count));
             ValueExpression value_expr(value);
