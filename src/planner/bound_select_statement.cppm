@@ -31,8 +31,8 @@ namespace infinity {
 
 export struct BoundSelectStatement final: public BoundStatement {
 public:
-    static inline SharedPtr<BoundSelectStatement> Make(SharedPtr<BindContext> bind_context) {
-        return MakeShared<BoundSelectStatement>(Move(bind_context));
+    static inline UniquePtr<BoundSelectStatement> Make(SharedPtr<BindContext> bind_context) {
+        return MakeUnique<BoundSelectStatement>(Move(bind_context));
     }
 
 public:
