@@ -203,8 +203,6 @@ BoundSelectStatement::BuildInitialKnnScan(SharedPtr<TableRef> &table_ref, QueryC
             auto base_table_ref = static_pointer_cast<BaseTableRef>(table_ref);
 
             // Change function table to knn table scan function
-            base_table_ref->table_func_ = KnnScanFunction::Make(query_context->storage()->catalog(), "knn_scan");
-
             SharedPtr<LogicalKnnScan> knn_scan_node = MakeShared<LogicalKnnScan>(bind_context->GetNewLogicalNodeId(), base_table_ref);
 
             knn_scan_node->knn_expressions_ = bind_context->knn_exprs_;

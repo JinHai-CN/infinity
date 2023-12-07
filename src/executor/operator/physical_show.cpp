@@ -591,8 +591,7 @@ void PhysicalShow::ExecuteShowProfiles(QueryContext *query_context, ShowOperator
 void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorState *show_operator_state) {
     auto txn = query_context->GetTxn();
 
-    BaseEntry *base_table_entry{nullptr};
-    Status status = txn->GetTableByName(db_name_, object_name_, base_table_entry);
+    auto [base_table_entry, status] = txn->GetTableByName(db_name_, object_name_);
     if (!status.ok()) {
         show_operator_state->error_message_ = Move(status.msg_);
         Error<ExecutorException>(Format("{} isn't found", object_name_));
@@ -668,8 +667,7 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
 void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperatorState *show_operator_state) {
     auto txn = query_context->GetTxn();
 
-    BaseEntry *base_table_entry{nullptr};
-    Status status = txn->GetTableByName(db_name_, object_name_, base_table_entry);
+    auto [base_table_entry, status] = txn->GetTableByName(db_name_, object_name_);
     if (!status.ok()) {
         show_operator_state->error_message_ = Move(status.msg_);
         Error<ExecutorException>(Format("{} isn't found", object_name_));
@@ -1283,8 +1281,7 @@ void PhysicalShow::ExecuteShowConfigs(QueryContext *query_context, ShowOperatorS
 void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorState *show_operator_state) {
     auto txn = query_context->GetTxn();
 
-    BaseEntry *base_table_entry{nullptr};
-    Status table_status = txn->GetTableByName(db_name_, object_name_, base_table_entry);
+    auto [base_table_entry, table_status] = txn->GetTableByName(db_name_, object_name_);
     if (!table_status.ok()) {
         show_operator_state->error_message_ = Move(table_status.msg_);
         //        Error<ExecutorException>(table_status.message());
