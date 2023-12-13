@@ -456,19 +456,44 @@ PhysicalSink *FragmentContext::GetSinkOperator() const { return fragment_ptr_->G
 
 PhysicalSource *FragmentContext::GetSourceOperator() const { return fragment_ptr_->GetSourceNode(); }
 
-SizeT InitKnnScanFragmentContext(PhysicalKnnScan *knn_scan_operator, ParallelMaterializedFragmentCtx *fragment_context, QueryContext *query_context) {
+SizeT InitKnnScanFragmentContext(PhysicalKnnScan *knn_scan_operator, FragmentContext *fragment_context, QueryContext *query_context) {
+
     SizeT task_n = knn_scan_operator->TaskCount();
     KnnExpression *knn_expr = knn_scan_operator->knn_expression_.get();
-    fragment_context->shared_data_ = MakeUnique<KnnScanSharedData>(knn_scan_operator->base_table_ref_,
-                                                                   knn_scan_operator->filter_expression_,
-                                                                   Move(knn_scan_operator->block_column_entries_),
-                                                                   Move(knn_scan_operator->index_entries_),
-                                                                   knn_expr->topn_,
-                                                                   knn_expr->dimension_,
-                                                                   1,
-                                                                   knn_expr->query_embedding_.ptr,
-                                                                   knn_expr->embedding_data_type_,
-                                                                   knn_expr->distance_type_);
+    switch (fragment_context->ContextType()) {
+        case FragmentType::kSerialMaterialize: {
+            SerialMaterializedFragmentCtx *serial_materialize_fragment_ctx = static_cast<SerialMaterializedFragmentCtx *>(fragment_context);
+            serial_materialize_fragment_ctx->shared_data_ = MakeUnique<KnnScanSharedData>(knn_scan_operator->base_table_ref_,
+                                                                                          knn_scan_operator->filter_expression_,
+                                                                                          Move(knn_scan_operator->block_column_entries_),
+                                                                                          Move(knn_scan_operator->index_entries_),
+                                                                                          knn_expr->topn_,
+                                                                                          knn_expr->dimension_,
+                                                                                          1,
+                                                                                          knn_expr->query_embedding_.ptr,
+                                                                                          knn_expr->embedding_data_type_,
+                                                                                          knn_expr->distance_type_);
+            break;
+        }
+        case FragmentType::kParallelMaterialize: {
+            ParallelMaterializedFragmentCtx *parallel_materialize_fragment_ctx = static_cast<ParallelMaterializedFragmentCtx *>(fragment_context);
+            parallel_materialize_fragment_ctx->shared_data_ = MakeUnique<KnnScanSharedData>(knn_scan_operator->base_table_ref_,
+                                                                                            knn_scan_operator->filter_expression_,
+                                                                                            Move(knn_scan_operator->block_column_entries_),
+                                                                                            Move(knn_scan_operator->index_entries_),
+                                                                                            knn_expr->topn_,
+                                                                                            knn_expr->dimension_,
+                                                                                            1,
+                                                                                            knn_expr->query_embedding_.ptr,
+                                                                                            knn_expr->embedding_data_type_,
+                                                                                            knn_expr->distance_type_);
+            break;
+        }
+        default: {
+            Error<SchedulerException>("Invalid fragment type.");
+        }
+    }
+
     return task_n;
 }
 
@@ -487,10 +512,7 @@ void FragmentContext::CreateTasks(i64 cpu_count, i64 operator_count) {
         }
         case PhysicalOperatorType::kKnnScan: {
             auto *knn_scan_operator = static_cast<PhysicalKnnScan *>(first_operator);
-            auto fragment_context = static_cast<ParallelMaterializedFragmentCtx *>(this);
-
-            SizeT task_n = InitKnnScanFragmentContext(knn_scan_operator, fragment_context, query_context_);
-
+            SizeT task_n = InitKnnScanFragmentContext(knn_scan_operator, this, query_context_);
             parallel_count = Min(parallel_count, (i64)task_n);
             if (parallel_count == 0) {
                 parallel_count = 1;
@@ -614,9 +636,9 @@ void FragmentContext::CreateTasks(i64 cpu_count, i64 operator_count) {
             break;
         }
         case PhysicalOperatorType::kKnnScan: {
-            if (fragment_type_ != FragmentType::kParallelMaterialize && fragment_type_ != FragmentType::kParallelStream) {
+            if (fragment_type_ != FragmentType::kParallelMaterialize && fragment_type_ != FragmentType::kSerialMaterialize) {
                 Error<SchedulerException>(
-                    Format("{} should in parallel materialized/stream fragment", PhysicalOperatorToString(first_operator->operator_type())));
+                    Format("{} should in parallel/serial materialized fragment", PhysicalOperatorToString(first_operator->operator_type())));
             }
 
             if (tasks_.size() != parallel_count) {

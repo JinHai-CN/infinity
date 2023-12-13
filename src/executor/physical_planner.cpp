@@ -710,14 +710,18 @@ UniquePtr<PhysicalOperator> PhysicalPlanner::BuildKnn(const SharedPtr<LogicalNod
                                                                           logical_operator->load_metas());
 
     knn_scan_op->PlanWithIndex(query_context_ptr_);
-    return MakeUnique<PhysicalMergeKnn>(query_context_ptr_->GetNextNodeID(),
-                                        logical_knn_scan->base_table_ref_,
-                                        Move(knn_scan_op),
-                                        logical_knn_scan->GetOutputNames(),
-                                        logical_knn_scan->GetOutputTypes(),
-                                        logical_knn_scan->knn_expression_,
-                                        logical_knn_scan->knn_table_index_,
-                                        logical_operator->load_metas());
+    if(knn_scan_op->TaskCount() == 1) {
+        return knn_scan_op;
+    } else {
+        return MakeUnique<PhysicalMergeKnn>(query_context_ptr_->GetNextNodeID(),
+                                            logical_knn_scan->base_table_ref_,
+                                            Move(knn_scan_op),
+                                            logical_knn_scan->GetOutputNames(),
+                                            logical_knn_scan->GetOutputTypes(),
+                                            logical_knn_scan->knn_expression_,
+                                            logical_knn_scan->knn_table_index_,
+                                            logical_operator->load_metas());
+    }
 }
 
 UniquePtr<PhysicalOperator> PhysicalPlanner::BuildCommand(const SharedPtr<LogicalNode> &logical_operator) const {

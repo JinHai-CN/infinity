@@ -110,9 +110,11 @@ KnnDistance1<f32>::KnnDistance1(KnnDistanceType dist_type);
 
 //-------------------------------------------------------------------
 
-export class KnnScanFunctionData : public TableFunctionData {
+export class KnnScanFunctionData final : public TableFunctionData {
 public:
     KnnScanFunctionData(KnnScanSharedData* shared_data, u32 current_parallel_idx);
+
+    ~KnnScanFunctionData() final = default;
 
 private:
     template <typename DataType>

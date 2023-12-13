@@ -137,7 +137,7 @@ private:
     }
 
 public:
-    inline explicit EmbeddingType(char *&&from_ptr) : ptr(from_ptr), new_allocated_(false) { from_ptr = nullptr; }
+    inline explicit EmbeddingType(char *&&from_ptr) : ptr(from_ptr), new_allocated_(true) { from_ptr = nullptr; }
 
     inline EmbeddingType(EmbeddingDataType type, size_t dimension) : new_allocated_(true) {
         size_t mem_size = EmbeddingSize(type, dimension);

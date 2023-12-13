@@ -123,10 +123,12 @@ public:
     explicit inline SerialMaterializedFragmentCtx(PlanFragment *fragment_ptr, QueryContext *query_context)
         : FragmentContext(fragment_ptr, query_context) {}
 
+    ~SerialMaterializedFragmentCtx() final = default;
+
     SharedPtr<DataTable> GetResultInternal() final;
 
-protected:
-    Vector<SharedPtr<DataBlock>> task_result_{};
+public:
+    UniquePtr<KnnScanSharedData> shared_data_{};
 };
 
 export class ParallelMaterializedFragmentCtx final : public FragmentContext {
@@ -134,19 +136,23 @@ public:
     explicit inline ParallelMaterializedFragmentCtx(PlanFragment *fragment_ptr, QueryContext *query_context)
         : FragmentContext(fragment_ptr, query_context) {}
 
+    ~ParallelMaterializedFragmentCtx() final = default;
+
     SharedPtr<DataTable> GetResultInternal() final;
 
 public:
-    UniquePtr<KnnScanSharedData> shared_data_;
+    UniquePtr<KnnScanSharedData> shared_data_{};
 
 protected:
     HashMap<u64, Vector<SharedPtr<DataBlock>>> task_results_{};
 };
 
-export class ParallelStreamFragmentCtx : public FragmentContext {
+export class ParallelStreamFragmentCtx final : public FragmentContext {
 public:
     explicit inline ParallelStreamFragmentCtx(PlanFragment *fragment_ptr, QueryContext *query_context)
         : FragmentContext(fragment_ptr, query_context) {}
+
+    ~ParallelStreamFragmentCtx() final = default;
 
     SharedPtr<DataTable> GetResultInternal() final;
 
