@@ -699,7 +699,8 @@ UniquePtr<PhysicalOperator> PhysicalPlanner::BuildFusion(const SharedPtr<Logical
 
 UniquePtr<PhysicalOperator> PhysicalPlanner::BuildKnn(const SharedPtr<LogicalNode> &logical_operator) const {
     auto *logical_knn_scan = (LogicalKnnScan *)(logical_operator.get());
-    UniquePtr<PhysicalOperator> knn_scan_op = MakeUnique<PhysicalKnnScan>(logical_knn_scan->node_id(),
+//    logical_knn_scan->
+    UniquePtr<PhysicalKnnScan> knn_scan_op = MakeUnique<PhysicalKnnScan>(logical_knn_scan->node_id(),
                                                                           logical_knn_scan->base_table_ref_,
                                                                           logical_knn_scan->knn_expression_,
                                                                           logical_knn_scan->filter_expression_,
@@ -708,6 +709,7 @@ UniquePtr<PhysicalOperator> PhysicalPlanner::BuildKnn(const SharedPtr<LogicalNod
                                                                           logical_knn_scan->knn_table_index_,
                                                                           logical_operator->load_metas());
 
+    knn_scan_op->PlanWithIndex(query_context_ptr_);
     return MakeUnique<PhysicalMergeKnn>(query_context_ptr_->GetNextNodeID(),
                                         logical_knn_scan->base_table_ref_,
                                         Move(knn_scan_op),

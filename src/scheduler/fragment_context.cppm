@@ -23,6 +23,7 @@ import physical_source;
 import physical_sink;
 import data_table;
 import data_block;
+import knn_scan_data;
 
 export module fragment_context;
 
@@ -30,7 +31,7 @@ namespace infinity {
 
 class PlanFragment;
 
-class KnnScanSharedData;
+//class KnnScanSharedData;
 
 // enum class FragmentStatus {
 //     kNotStart,
@@ -136,7 +137,7 @@ public:
     SharedPtr<DataTable> GetResultInternal() final;
 
 public:
-    SharedPtr<KnnScanSharedData> shared_data_;
+    UniquePtr<KnnScanSharedData> shared_data_;
 
 protected:
     HashMap<u64, Vector<SharedPtr<DataBlock>>> task_results_{};
