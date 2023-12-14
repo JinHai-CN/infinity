@@ -118,6 +118,7 @@ struct ConsolidationTask : Task {
         store_ = other.store_;
         async_ = other.async_;
         consolidation_interval_ = other.consolidation_interval_;
+        optimize_ = other.optimize_;
     }
 
     void operator()(int id);
@@ -129,12 +130,13 @@ struct ConsolidationTask : Task {
 
 void ConsolidationTask::operator()(int id) {
     LOG_INFO(Format("ConsolidationTask id {}", id));
-    if (true == state_->cancel_.load(MemoryOrderRelease))
+    if ((true == state_->cancel_.load(MemoryOrderRelease)) && (false == optimize_))
         return;
     std::this_thread::sleep_for(std::chrono::milliseconds(consolidation_interval_));
     state_->pending_consolidations_.fetch_sub(1, MemoryOrderRelease);
 
     if (optimize_) {
+        LOG_INFO(Format("ConsolidationTask optimize {}", id));
         store_->GetWriter()->Consolidate(irs::index_utils::MakePolicy(irs::index_utils::ConsolidateCount()));
         store_->GetWriter()->Commit();
     } else {
@@ -275,6 +277,8 @@ void IRSDataStore::ScheduleConsolidation() {
 void IRSDataStore::ScheduleOptimize() {
     ConsolidationTask task;
     task.state_ = maintenance_state_;
+    task.async_ = async_.get();
+    task.store_ = this;
     task.optimize_ = true;
     maintenance_state_->pending_consolidations_.fetch_add(1, MemoryOrderRelease);
     async_->Queue<ConsolidationTask>(1, Move(task));
