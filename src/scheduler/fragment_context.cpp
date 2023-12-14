@@ -75,7 +75,7 @@ UniquePtr<OperatorState> MakeTableScanState(PhysicalTableScan *physical_table_sc
     return operator_state;
 }
 
-UniquePtr<OperatorState> MakeKnnScanState(PhysicalKnnScan *physical_knn_scan, FragmentTask *task, ParallelMaterializedFragmentCtx *fragment_ctx) {
+UniquePtr<OperatorState> MakeKnnScanState(PhysicalKnnScan *physical_knn_scan, FragmentTask *task, FragmentContext *fragment_ctx) {
     SourceState *source_state = task->source_state_.get();
     if (source_state->state_type_ != SourceStateType::kKnnScan) {
         Error<SchedulerException>("Expect knn scan source state");
@@ -83,7 +83,25 @@ UniquePtr<OperatorState> MakeKnnScanState(PhysicalKnnScan *physical_knn_scan, Fr
 
     UniquePtr<OperatorState> operator_state = MakeUnique<KnnScanOperatorState>();
     KnnScanOperatorState *knn_scan_op_state_ptr = (KnnScanOperatorState *)(operator_state.get());
-    knn_scan_op_state_ptr->knn_scan_function_data_ = MakeUnique<KnnScanFunctionData>(fragment_ctx->shared_data_.get(), task->TaskID());
+
+    switch (fragment_ctx->ContextType()) {
+        case FragmentType::kSerialMaterialize: {
+            SerialMaterializedFragmentCtx *serial_materialize_fragment_ctx = static_cast<SerialMaterializedFragmentCtx *>(fragment_ctx);
+            knn_scan_op_state_ptr->knn_scan_function_data_ =
+                MakeUnique<KnnScanFunctionData>(serial_materialize_fragment_ctx->shared_data_.get(), task->TaskID());
+            break;
+        }
+        case FragmentType::kParallelMaterialize: {
+            ParallelMaterializedFragmentCtx *parallel_materialize_fragment_ctx = static_cast<ParallelMaterializedFragmentCtx *>(fragment_ctx);
+            knn_scan_op_state_ptr->knn_scan_function_data_ =
+                MakeUnique<KnnScanFunctionData>(parallel_materialize_fragment_ctx->shared_data_.get(), task->TaskID());
+            break;
+        }
+        default: {
+            Error<SchedulerException>("Invalid fragment type.");
+        }
+    }
+
     return operator_state;
 }
 
@@ -121,8 +139,7 @@ MakeTaskState(SizeT operator_id, const Vector<PhysicalOperator *> &physical_ops,
         }
         case PhysicalOperatorType::kKnnScan: {
             auto physical_knn_scan = static_cast<PhysicalKnnScan *>(physical_ops[operator_id]);
-            auto knn_fragment_ctx = static_cast<ParallelMaterializedFragmentCtx *>(fragment_ctx);
-            return MakeKnnScanState(physical_knn_scan, task, knn_fragment_ctx);
+            return MakeKnnScanState(physical_knn_scan, task, fragment_ctx);
         }
         case PhysicalOperatorType::kAggregate: {
             return MakeTaskStateTemplate<AggregateOperatorState>(physical_ops[operator_id]);
@@ -760,9 +777,9 @@ void FragmentContext::CreateTasks(i64 cpu_count, i64 operator_count) {
             break;
         }
         case PhysicalOperatorType::kKnnScan: {
-            if (fragment_type_ == FragmentType::kSerialMaterialize) {
+            if (fragment_type_ != FragmentType::kParallelMaterialize && fragment_type_ != FragmentType::kSerialMaterialize) {
                 Error<SchedulerException>(
-                    Format("{} should in parallel materialized/stream fragment", PhysicalOperatorToString(last_operator->operator_type())));
+                    Format("{} should in parallel/serial materialized fragment", PhysicalOperatorToString(first_operator->operator_type())));
             }
 
             if (tasks_.size() != parallel_count) {
