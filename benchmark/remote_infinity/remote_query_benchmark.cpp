@@ -120,8 +120,8 @@ int main() {
 
     std::vector<std::string> results;
 
-    std::string sift_query_path = std::string(infinity::test_data_path()) + "/benchmark/sift_1m/sift_query.fvecs";
-    std::string sift_groundtruth_path = std::string(infinity::test_data_path()) + "/benchmark/sift_1m/sift_groundtruth.ivecs";
+    std::string sift_query_path = std::string(infinity::test_data_path()) + "/benchmark/gist_1m/gist_query.fvecs";
+    std::string sift_groundtruth_path = std::string(infinity::test_data_path()) + "/benchmark/gist_1m/gist_groundtruth.ivecs";
     if (!fs.Exists(sift_query_path)) {
         std::cerr << "File: " << sift_query_path << " doesn't exist" << std::endl;
         exit(-1);
@@ -132,7 +132,7 @@ int main() {
     }
     std::unique_ptr<float[]> queries_ptr;
     size_t query_count;
-    int64_t dimension = 128;
+    int64_t dimension = 960;
     {
         int dim = -1;
         queries_ptr = load_data<float>(sift_query_path, query_count, dim);
@@ -184,7 +184,7 @@ int main() {
                 req.__isset.session_id = true;
                 req.db_name = "default";
                 req.__isset.db_name = true;
-                req.table_name = "sift_benchmark";
+                req.table_name = "gist_benchmark";
                 req.__isset.table_name = true;
                 ParsedExpr expr;
                 {
