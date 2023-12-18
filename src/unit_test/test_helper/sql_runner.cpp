@@ -90,8 +90,9 @@ SharedPtr<DataTable> SQLRunner::Run(const String &sql_text, bool print) {
     SharedPtr<LogicalNode> logical_plan = query_context_ptr->logical_planner()->LogicalPlan();
 
     // Apply optimized rule to the logical plan
-    query_context_ptr->optimizer()->optimize(logical_plan);
-
+    UniquePtr<Optimizer> optimizer = MakeUnique<Optimizer>(query_context_ptr.get());
+    optimizer->optimize(logical_plan);
+ 
     // Build physical plan
     SharedPtr<PhysicalOperator> physical_plan = query_context_ptr->physical_planner()->BuildPhysicalOperator(logical_plan);
 

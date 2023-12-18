@@ -28,6 +28,7 @@ import parser;
 import optimizer;
 import status;
 import query_result;
+import logical_node;
 
 export module query_context;
 
@@ -90,8 +91,6 @@ public:
 
     void RollbackTxn();
 
-
-
     [[nodiscard]] Txn *GetTxn() const { return session_ptr_->GetTxn(); }
 
     [[nodiscard]] inline Storage *storage() const { return storage_; }
@@ -105,7 +104,6 @@ public:
     [[nodiscard]] inline SessionManager *session_manager() { return session_manager_; }
 
     [[nodiscard]] inline LogicalPlanner *logical_planner() const { return logical_planner_.get(); }
-    [[nodiscard]] inline Optimizer *optimizer() const { return optimizer_.get(); }
     [[nodiscard]] inline PhysicalPlanner *physical_planner() const { return physical_planner_.get(); }
     [[nodiscard]] inline FragmentBuilder *fragment_builder() const { return fragment_builder_.get(); }
 
@@ -116,6 +114,8 @@ public:
             query_profiler_->Flush(Move(profiler));
         }
     }
+
+    static bool NeedOptimize(const LogicalNode* logical_node);
 
 private:
     inline void CreateQueryProfiler() {
@@ -149,7 +149,7 @@ private:
 
 private:
     UniquePtr<LogicalPlanner> logical_planner_{};
-    UniquePtr<Optimizer> optimizer_{};
+
     UniquePtr<PhysicalPlanner> physical_planner_{};
     UniquePtr<FragmentBuilder> fragment_builder_{};
 

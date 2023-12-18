@@ -68,7 +68,6 @@ void QueryContext::Init(Config *global_config_ptr,
     memory_size_limit_ = resource_manager_ptr->GetMemoryResource();
 
     logical_planner_ = MakeUnique<LogicalPlanner>(this);
-    optimizer_ = MakeUnique<Optimizer>(this);
     physical_planner_ = MakeUnique<PhysicalPlanner>(this);
     fragment_builder_ = MakeUnique<FragmentBuilder>(this);
 }
@@ -126,7 +125,10 @@ QueryResult QueryContext::QueryStatement(const BaseStatement *statement) {
 
         // Apply optimized rule to the logical plan
         StartProfile(QueryPhase::kOptimizer);
-        optimizer_->optimize(logical_plan);
+        if(NeedOptimize(logical_plan.get())) {
+            UniquePtr<Optimizer> optimizer = MakeUnique<Optimizer>(this);
+            optimizer->optimize(logical_plan);
+        }
         StopProfile(QueryPhase::kOptimizer);
 
         // Build physical plan
@@ -186,6 +188,39 @@ void QueryContext::RollbackTxn() {
     Txn* txn = session_ptr_->GetTxn();
     storage_->txn_manager()->RollBackTxn(txn);
     session_ptr_->SetTxn(nullptr);
+}
+
+bool QueryContext::NeedOptimize(const LogicalNode* logical_node) {
+    if(logical_node->left_node().get() == nullptr && logical_node->right_node().get() == nullptr) {
+        switch(logical_node->operator_type()) {
+            case LogicalNodeType::kInsert:
+            case LogicalNodeType::kImport:
+            case LogicalNodeType::kExport:
+            case LogicalNodeType::kAlter:
+            case LogicalNodeType::kCreateTable:
+            case LogicalNodeType::kCreateIndex:
+            case LogicalNodeType::kCreateCollection:
+            case LogicalNodeType::kCreateSchema:
+            case LogicalNodeType::kCreateView:
+            case LogicalNodeType::kDropTable:
+            case LogicalNodeType::kDropIndex:
+            case LogicalNodeType::kDropCollection:
+            case LogicalNodeType::kDropSchema:
+            case LogicalNodeType::kDropView:
+            case LogicalNodeType::kShow:
+            case LogicalNodeType::kExplain:
+            case LogicalNodeType::kCommand:
+            case LogicalNodeType::kFlush:
+            case LogicalNodeType::kOptimize: {
+                return false;
+            }
+            default: {
+                return true;
+            }
+        }
+    }
+
+    return true;
 }
 
 } // namespace infinity
