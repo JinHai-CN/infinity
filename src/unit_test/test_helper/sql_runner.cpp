@@ -84,21 +84,24 @@ SharedPtr<DataTable> SQLRunner::Run(const String &sql_text, bool print) {
     BaseStatement *statement = (*parsed_result->statements_ptr_)[0];
 
     SharedPtr<BindContext> bind_context;
-    query_context_ptr->logical_planner()->Build(statement, bind_context);
+    UniquePtr<LogicalPlanner> logical_planner = MakeUnique<LogicalPlanner>(query_context_ptr.get());
+    logical_planner->Build(statement, bind_context);
     query_context_ptr->set_max_node_id(bind_context->GetNewLogicalNodeId());
 
-    SharedPtr<LogicalNode> logical_plan = query_context_ptr->logical_planner()->LogicalPlan();
+    SharedPtr<LogicalNode> logical_plan = logical_planner->LogicalPlan();
 
     // Apply optimized rule to the logical plan
     UniquePtr<Optimizer> optimizer = MakeUnique<Optimizer>(query_context_ptr.get());
     optimizer->optimize(logical_plan);
- 
+
     // Build physical plan
-    SharedPtr<PhysicalOperator> physical_plan = query_context_ptr->physical_planner()->BuildPhysicalOperator(logical_plan);
+    UniquePtr<PhysicalPlanner> physical_planner = MakeUnique<PhysicalPlanner>(query_context_ptr.get());
+    SharedPtr<PhysicalOperator> physical_plan = physical_planner->BuildPhysicalOperator(logical_plan);
 
     // Create execution pipeline
     // Fragment Builder, only for test now. plan fragment is same as pipeline.
-    auto plan_fragment = query_context_ptr->fragment_builder()->BuildFragment(physical_plan.get());
+    UniquePtr<FragmentBuilder> fragment_builder = MakeUnique<FragmentBuilder>(query_context_ptr.get());
+    auto plan_fragment = fragment_builder->BuildFragment(physical_plan.get());
 
     Vector<FragmentTask *> tasks;
     FragmentContext::BuildTask(query_context_ptr.get(), nullptr, plan_fragment.get(), tasks);

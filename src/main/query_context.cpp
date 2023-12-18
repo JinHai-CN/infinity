@@ -67,9 +67,7 @@ void QueryContext::Init(Config *global_config_ptr,
     cpu_number_limit_ = resource_manager_ptr->GetCpuResource();
     memory_size_limit_ = resource_manager_ptr->GetMemoryResource();
 
-    logical_planner_ = MakeUnique<LogicalPlanner>(this);
-    physical_planner_ = MakeUnique<PhysicalPlanner>(this);
-    fragment_builder_ = MakeUnique<FragmentBuilder>(this);
+
 }
 
 QueryResult QueryContext::Query(const String &query) {
@@ -113,14 +111,15 @@ QueryResult QueryContext::QueryStatement(const BaseStatement *statement) {
         // Build unoptimized logical plan for each SQL statement.
         StartProfile(QueryPhase::kLogicalPlan);
         SharedPtr<BindContext> bind_context;
-        auto state = logical_planner_->Build(statement, bind_context);
+        UniquePtr<LogicalPlanner> logical_planner = MakeUnique<LogicalPlanner>(this);
+        auto state = logical_planner->Build(statement, bind_context);
         // FIXME
         if (!state.ok()) {
             Error<PlannerException>(state.message());
         }
 
         current_max_node_id_ = bind_context->GetNewLogicalNodeId();
-        SharedPtr<LogicalNode> logical_plan = logical_planner_->LogicalPlan();
+        SharedPtr<LogicalNode> logical_plan = logical_planner->LogicalPlan();
         StopProfile(QueryPhase::kLogicalPlan);
 
         // Apply optimized rule to the logical plan
@@ -133,17 +132,19 @@ QueryResult QueryContext::QueryStatement(const BaseStatement *statement) {
 
         // Build physical plan
         StartProfile(QueryPhase::kPhysicalPlan);
-        UniquePtr<PhysicalOperator> physical_plan = physical_planner_->BuildPhysicalOperator(logical_plan);
+        UniquePtr<PhysicalPlanner> physical_planner = MakeUnique<PhysicalPlanner>(this);
+        UniquePtr<PhysicalOperator> physical_plan = physical_planner->BuildPhysicalOperator(logical_plan);
         StopProfile(QueryPhase::kPhysicalPlan);
 
         StartProfile(QueryPhase::kPipelineBuild);
         // Fragment Builder, only for test now.
-        // SharedPtr<PlanFragment> plan_fragment = fragment_builder.Build(physical_plan);
-        auto plan_fragment = fragment_builder_->BuildFragment(physical_plan.get());
+        UniquePtr<FragmentBuilder> fragment_builder = MakeUnique<FragmentBuilder>(this);
+        auto plan_fragment = fragment_builder->BuildFragment(physical_plan.get());
         StopProfile(QueryPhase::kPipelineBuild);
 
         StartProfile(QueryPhase::kTaskBuild);
         Vector<FragmentTask *> tasks;
+
         FragmentContext::BuildTask(this, nullptr, plan_fragment.get(), tasks);
         StopProfile(QueryPhase::kTaskBuild);
 

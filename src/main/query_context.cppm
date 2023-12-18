@@ -103,10 +103,6 @@ public:
 
     [[nodiscard]] inline SessionManager *session_manager() { return session_manager_; }
 
-    [[nodiscard]] inline LogicalPlanner *logical_planner() const { return logical_planner_.get(); }
-    [[nodiscard]] inline PhysicalPlanner *physical_planner() const { return physical_planner_.get(); }
-    [[nodiscard]] inline FragmentBuilder *fragment_builder() const { return fragment_builder_.get(); }
-
     [[nodiscard]] BaseSession* current_session() const { return session_ptr_; }
 
     void FlushProfiler(TaskProfiler &&profiler) {
@@ -148,11 +144,6 @@ private:
     }
 
 private:
-    UniquePtr<LogicalPlanner> logical_planner_{};
-
-    UniquePtr<PhysicalPlanner> physical_planner_{};
-    UniquePtr<FragmentBuilder> fragment_builder_{};
-
     SharedPtr<QueryProfiler> query_profiler_{};
 
     Config *global_config_{};
