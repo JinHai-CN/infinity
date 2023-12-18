@@ -34,9 +34,6 @@ export module query_context;
 
 namespace infinity {
 
-class LogicalPlanner;
-class PhysicalPlanner;
-class FragmentBuilder;
 class TaskScheduler;
 
 export class QueryContext {

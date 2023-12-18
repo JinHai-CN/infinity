@@ -111,35 +111,35 @@ QueryResult QueryContext::QueryStatement(const BaseStatement *statement) {
         // Build unoptimized logical plan for each SQL statement.
         StartProfile(QueryPhase::kLogicalPlan);
         SharedPtr<BindContext> bind_context;
-        UniquePtr<LogicalPlanner> logical_planner = MakeUnique<LogicalPlanner>(this);
-        auto state = logical_planner->Build(statement, bind_context);
+        LogicalPlanner logical_planner(this);
+        auto state = logical_planner.Build(statement, bind_context);
         // FIXME
         if (!state.ok()) {
             Error<PlannerException>(state.message());
         }
 
         current_max_node_id_ = bind_context->GetNewLogicalNodeId();
-        SharedPtr<LogicalNode> logical_plan = logical_planner->LogicalPlan();
+        SharedPtr<LogicalNode> logical_plan = logical_planner.LogicalPlan();
         StopProfile(QueryPhase::kLogicalPlan);
 
         // Apply optimized rule to the logical plan
         StartProfile(QueryPhase::kOptimizer);
         if(NeedOptimize(logical_plan.get())) {
-            UniquePtr<Optimizer> optimizer = MakeUnique<Optimizer>(this);
-            optimizer->optimize(logical_plan);
+            Optimizer optimizer(this);
+            optimizer.optimize(logical_plan);
         }
         StopProfile(QueryPhase::kOptimizer);
 
         // Build physical plan
         StartProfile(QueryPhase::kPhysicalPlan);
-        UniquePtr<PhysicalPlanner> physical_planner = MakeUnique<PhysicalPlanner>(this);
-        UniquePtr<PhysicalOperator> physical_plan = physical_planner->BuildPhysicalOperator(logical_plan);
+        PhysicalPlanner physical_planner(this);
+        UniquePtr<PhysicalOperator> physical_plan = physical_planner.BuildPhysicalOperator(logical_plan);
         StopProfile(QueryPhase::kPhysicalPlan);
 
         StartProfile(QueryPhase::kPipelineBuild);
         // Fragment Builder, only for test now.
-        UniquePtr<FragmentBuilder> fragment_builder = MakeUnique<FragmentBuilder>(this);
-        auto plan_fragment = fragment_builder->BuildFragment(physical_plan.get());
+        FragmentBuilder fragment_builder(this);
+        auto plan_fragment = fragment_builder.BuildFragment(physical_plan.get());
         StopProfile(QueryPhase::kPipelineBuild);
 
         StartProfile(QueryPhase::kTaskBuild);
