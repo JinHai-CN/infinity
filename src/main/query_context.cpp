@@ -67,7 +67,6 @@ void QueryContext::Init(Config *global_config_ptr,
     cpu_number_limit_ = resource_manager_ptr->GetCpuResource();
     memory_size_limit_ = resource_manager_ptr->GetMemoryResource();
 
-    parser_ = MakeUnique<SQLParser>();
     logical_planner_ = MakeUnique<LogicalPlanner>(this);
     optimizer_ = MakeUnique<Optimizer>(this);
     physical_planner_ = MakeUnique<PhysicalPlanner>(this);
@@ -79,7 +78,8 @@ QueryResult QueryContext::Query(const String &query) {
 
     StartProfile(QueryPhase::kParser);
     UniquePtr<ParserResult> parsed_result = MakeUnique<ParserResult>();
-    parser_->Parse(query, parsed_result.get());
+    UniquePtr<SQLParser> sql_parser = MakeUnique<SQLParser>();
+    sql_parser->Parse(query, parsed_result.get());
 
     if (parsed_result->IsError()) {
         StopProfile(QueryPhase::kParser);

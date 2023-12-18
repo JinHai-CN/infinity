@@ -104,7 +104,6 @@ public:
 
     [[nodiscard]] inline SessionManager *session_manager() { return session_manager_; }
 
-    [[nodiscard]] inline SQLParser *parser() const { return parser_.get(); }
     [[nodiscard]] inline LogicalPlanner *logical_planner() const { return logical_planner_.get(); }
     [[nodiscard]] inline Optimizer *optimizer() const { return optimizer_.get(); }
     [[nodiscard]] inline PhysicalPlanner *physical_planner() const { return physical_planner_.get(); }
@@ -149,8 +148,6 @@ private:
     }
 
 private:
-    // Parser
-    UniquePtr<SQLParser> parser_{};
     UniquePtr<LogicalPlanner> logical_planner_{};
     UniquePtr<Optimizer> optimizer_{};
     UniquePtr<PhysicalPlanner> physical_planner_{};
