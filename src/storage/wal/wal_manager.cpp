@@ -645,12 +645,11 @@ void WalManager::WalCmdCreateTableReplay(const WalCmdCreateTable &cmd, u64 txn_i
 }
 
 void WalManager::WalCmdDropDatabaseReplay(const WalCmdDropDatabase &cmd, u64 txn_id, i64 commit_ts) {
-    BaseEntry *base_entry{nullptr};
-    Status status = NewCatalog::DropDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts, nullptr, base_entry);
+    auto [db_entry, status] = NewCatalog::DropDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts, nullptr);
     if (!status.ok()) {
         Error<StorageException>("Wal Replay: Drop database failed");
     }
-    base_entry->Commit(commit_ts);
+    db_entry->Commit(commit_ts);
 }
 
 void WalManager::WalCmdDropTableReplay(const WalCmdDropTable &cmd, u64 txn_id, i64 commit_ts) {

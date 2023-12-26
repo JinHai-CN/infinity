@@ -86,9 +86,7 @@ TEST_F(DBTxnTest, test1) {
     EXPECT_TRUE(status2.ok());
 
     // Txn2: Drop db1, OK
-    BaseEntry* base_entry3 = nullptr;
-    status = new_txn->DropDatabase("db1", ConflictType::kError, base_entry3);
-    EXPECT_NE(base_entry3, nullptr);
+    status = new_txn->DropDatabase("db1", ConflictType::kError);
     EXPECT_EQ(status.ok(), true);
 
     // Txn2: Commit, OK
@@ -107,9 +105,8 @@ TEST_F(DBTxnTest, test1) {
     EXPECT_EQ(base_entry, nullptr);
 
     // Txn3: Drop db1, NOT OK
-    base_entry = nullptr;
-    status3 = new_txn->DropDatabase("db1", ConflictType::kError, base_entry);
-    EXPECT_EQ(base_entry, nullptr);
+    status3 = new_txn->DropDatabase("db1", ConflictType::kError);
+    EXPECT_TRUE(!status3.ok());
 
     // Txn3: Commit, OK
     txn_mgr->CommitTxn(new_txn);
@@ -145,9 +142,8 @@ TEST_F(DBTxnTest, test20) {
     EXPECT_NE(base_entry1, nullptr);
 
     // Txn2: Drop db1, OK
-    BaseEntry* base_entry2{nullptr};
-    status = new_txn->DropDatabase("db1", ConflictType::kError, base_entry2);
-    EXPECT_NE(base_entry2, nullptr);
+    status = new_txn->DropDatabase("db1", ConflictType::kError);
+    EXPECT_TRUE(status.ok());
 
     // Txn2: Create db1, OK
     status = new_txn->CreateDatabase("db1", ConflictType::kError);
@@ -203,8 +199,7 @@ TEST_F(DBTxnTest, test2) {
     EXPECT_TRUE(!status.ok());
 
     // Txn1: Drop db1, OK
-    BaseEntry* base_entry3{nullptr};
-    status = new_txn->DropDatabase("db1", ConflictType::kError, base_entry3);
+    status = new_txn->DropDatabase("db1", ConflictType::kError);
     EXPECT_TRUE(status.ok());
 
     // Txn1: Get db1, NOT OK
@@ -446,10 +441,8 @@ TEST_F(DBTxnTest, test7) {
     EXPECT_TRUE(!status.ok());
 
     // Txn1: Drop db1, OK
-    BaseEntry* base_entry{nullptr};
-    status = new_txn1->DropDatabase("db1", ConflictType::kError, base_entry);
+    status = new_txn1->DropDatabase("db1", ConflictType::kError);
     EXPECT_TRUE(status.ok());
-    EXPECT_NE(base_entry, nullptr);
 
     // Txn2: Create db1, OK
     status = new_txn2->CreateDatabase("db1", ConflictType::kError);
@@ -468,6 +461,7 @@ TEST_F(DBTxnTest, test7) {
     new_txn3->Begin();
 
     // Txn3: Get db1, OK
+    BaseEntry* base_entry{nullptr};
     Status status1 = new_txn3->GetDatabase("db1", base_entry);
     EXPECT_TRUE(status1.ok());
     EXPECT_NE(base_entry, nullptr);

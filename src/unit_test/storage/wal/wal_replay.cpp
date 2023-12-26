@@ -110,10 +110,8 @@ TEST_F(WalReplayTest, WalReplayDatabase) {
 
         auto *txn = txn_mgr->CreateTxn();
         txn->Begin();
-        BaseEntry* base_entry{nullptr};
-        Status status = txn->DropDatabase("db4", ConflictType::kInvalid, base_entry);
+        Status status = txn->DropDatabase("db4", ConflictType::kInvalid);
         EXPECT_EQ(status.ok(), true);
-        EXPECT_NE(base_entry, nullptr);
         txn_mgr->CommitTxn(txn);
 
         infinity::InfinityContext::instance().UnInit();

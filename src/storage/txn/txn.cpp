@@ -219,7 +219,7 @@ Status Txn::CreateDatabase(const String &db_name, ConflictType conflict_type) {
     return Status::OK();
 }
 
-Status Txn::DropDatabase(const String &db_name, ConflictType, BaseEntry *&base_entry) {
+Status Txn::DropDatabase(const String &db_name, ConflictType) {
 
     TxnState txn_state = txn_context_.GetTxnState();
 
@@ -229,12 +229,10 @@ Status Txn::DropDatabase(const String &db_name, ConflictType, BaseEntry *&base_e
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    Status status = NewCatalog::DropDatabase(catalog_, db_name, txn_id_, begin_ts, txn_mgr_, base_entry);
+    auto [dropped_db_entry, status] = NewCatalog::DropDatabase(catalog_, db_name, txn_id_, begin_ts, txn_mgr_);
     if (!status.ok()) {
         return status;
     }
-
-    DBEntry *dropped_db_entry = static_cast<DBEntry *>(base_entry);
 
     if (txn_dbs_.contains(dropped_db_entry)) {
         txn_dbs_.erase(dropped_db_entry);

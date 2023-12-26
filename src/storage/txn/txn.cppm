@@ -71,7 +71,7 @@ public:
     // Database OPs
     Status CreateDatabase(const String &db_name, ConflictType conflict_type);
 
-    Status DropDatabase(const String &db_name, ConflictType conflict_type, BaseEntry *&db_entry);
+    Status DropDatabase(const String &db_name, ConflictType conflict_type);
 
     Status GetDatabase(const String &db_name, BaseEntry *&new_db_entry);
 

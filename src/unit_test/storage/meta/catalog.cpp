@@ -92,8 +92,7 @@ TEST_F(CatalogTest, simple_test1) {
 
     // drop db should be success
     {
-        BaseEntry* base_entry{nullptr};
-        Status status = NewCatalog::DropDatabase(catalog, "db1", txn1->TxnID(), txn1->BeginTS(), txn_mgr, base_entry);
+        auto [base_entry, status] = NewCatalog::DropDatabase(catalog, "db1", txn1->TxnID(), txn1->BeginTS(), txn_mgr);
         EXPECT_TRUE(status.ok());
         EXPECT_EQ(base_entry, databases["db1"]);
         // remove this entry
@@ -160,12 +159,8 @@ TEST_F(CatalogTest, simple_test2) {
         EXPECT_TRUE(status1.ok());
         EXPECT_NE(base_db_entry, nullptr);
 
-        BaseEntry* base_entry{nullptr};
-        Status status = txn3->DropDatabase("db1", ConflictType::kError, base_entry);
+        Status status = txn3->DropDatabase("db1", ConflictType::kError);
         EXPECT_TRUE(status.ok());
-        // should be different db entry
-        EXPECT_NE(base_entry, nullptr);
-        // remove this entry
 
         // should not be visible to other txn
         base_db_entry = nullptr;
@@ -243,8 +238,7 @@ TEST_F(CatalogTest, concurrent_test) {
         auto drop_routine = [&](int start, Txn *txn) {
             for (int db_id = start; db_id < 1000; db_id += 2) {
                 String db_name = "db" + ToStr(db_id);
-                BaseEntry* base_entry{nullptr};
-                Status status = txn->DropDatabase(db_name, ConflictType::kError, base_entry);
+                Status status = txn->DropDatabase(db_name, ConflictType::kError);
                 EXPECT_TRUE(status.ok());
             }
         };

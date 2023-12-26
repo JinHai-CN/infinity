@@ -96,8 +96,7 @@ public:
                                                    TxnManager *txn_mgr,
                                                    ConflictType conflict_type = ConflictType::kError);
 
-    static Status
-    DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, BaseEntry *&db_entry);
+    static Tuple<DBEntry *, Status> DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
     static Status GetDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&new_db_entry);
 

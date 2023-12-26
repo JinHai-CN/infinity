@@ -107,8 +107,8 @@ Tuple<DBEntry *, Status> NewCatalog::CreateDatabase(NewCatalog *catalog,
 // it will not record database in transaction, so when you commit transaction
 // it will lose operation
 // use Txn::DropDatabase instead
-Status
-NewCatalog::DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, BaseEntry *&db_entry) {
+Tuple<DBEntry *, Status>
+NewCatalog::DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
 
     catalog->rw_locker_.lock_shared();
 
@@ -120,11 +120,11 @@ NewCatalog::DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id,
     if (db_meta == nullptr) {
         UniquePtr<String> err_msg = MakeUnique<String>(Format("Attempt to drop not existed database entry {}", db_name));
         LOG_ERROR(*err_msg);
-        return Status(ErrorCode::kNotFound, Move(err_msg));
+        return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
 
     LOG_TRACE(Format("Drop a database entry {}", db_name));
-    return DBMeta::DropNewEntry(db_meta, txn_id, begin_ts, txn_mgr, db_entry);
+    return DBMeta::DropNewEntry(db_meta, txn_id, begin_ts, txn_mgr);
 }
 
 Status NewCatalog::GetDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&new_db_entry) {
