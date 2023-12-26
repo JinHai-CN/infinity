@@ -198,7 +198,7 @@ TxnTableStore *Txn::GetTxnTableStore(TableCollectionEntry *table_entry) {
 
 BufferManager *Txn::GetBufferMgr() const { return this->txn_mgr_->GetBufferMgr(); }
 
-Status Txn::CreateDatabase(const String &db_name, ConflictType conflict_type, BaseEntry *&base_entry) {
+Status Txn::CreateDatabase(const String &db_name, ConflictType conflict_type) {
 
     TxnState txn_state = txn_context_.GetTxnState();
 
@@ -208,16 +208,11 @@ Status Txn::CreateDatabase(const String &db_name, ConflictType conflict_type, Ba
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    Status status = NewCatalog::CreateDatabase(catalog_, db_name, this->txn_id_, begin_ts, txn_mgr_, base_entry, conflict_type);
+    auto [db_entry, status] = NewCatalog::CreateDatabase(catalog_, db_name, this->txn_id_, begin_ts, txn_mgr_, conflict_type);
     if (!status.ok()) {
         return status;
     }
 
-    if (base_entry->entry_type_ != EntryType::kDatabase) {
-        Error<TransactionException>("Entry type should be table entry.");
-    }
-
-    auto *db_entry = static_cast<DBEntry *>(base_entry);
     txn_dbs_.insert(db_entry);
     db_names_.insert(db_name);
     wal_entry_->cmds.push_back(MakeShared<WalCmdCreateDatabase>(db_name));

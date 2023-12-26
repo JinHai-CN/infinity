@@ -89,13 +89,12 @@ public:
     explicit NewCatalog(SharedPtr<String> dir, bool create_default_db = false);
 
 public:
-    static Status CreateDatabase(NewCatalog *catalog,
-                                 const String &db_name,
-                                 u64 txn_id,
-                                 TxnTimeStamp begin_ts,
-                                 TxnManager *txn_mgr,
-                                 BaseEntry *&db_entry,
-                                 ConflictType conflict_type = ConflictType::kError);
+    static Tuple<DBEntry *, Status> CreateDatabase(NewCatalog *catalog,
+                                                   const String &db_name,
+                                                   u64 txn_id,
+                                                   TxnTimeStamp begin_ts,
+                                                   TxnManager *txn_mgr,
+                                                   ConflictType conflict_type = ConflictType::kError);
 
     static Status
     DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, BaseEntry *&db_entry);

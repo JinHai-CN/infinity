@@ -110,10 +110,8 @@ TEST_F(TableCollectionEntryTest, test2) {
     new_txn->Begin();
 
     // Txn1: Create db1, OK
-    BaseEntry* base_entry{nullptr};
-    Status status = new_txn->CreateDatabase("db1", ConflictType::kError, base_entry);
-    EXPECT_NE(base_entry, nullptr);
-    EXPECT_EQ(base_entry->Committed(), false);
+    Status status = new_txn->CreateDatabase("db1", ConflictType::kError);
+    EXPECT_TRUE(status.ok());
 
     // Txn1: Create tbl1, OK
     // Define columns

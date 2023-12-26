@@ -66,26 +66,22 @@ TEST_F(WalReplayTest, WalReplayDatabase) {
 
         auto *txn = txn_mgr->CreateTxn();
         txn->Begin();
-        BaseEntry* base_entry{nullptr};
-        txn->CreateDatabase("db1", ConflictType::kIgnore, base_entry);
+        txn->CreateDatabase("db1", ConflictType::kIgnore);
         txn_mgr->CommitTxn(txn);
 
         auto *txn2 = txn_mgr->CreateTxn();
         txn2->Begin();
-        base_entry = nullptr;
-        txn2->CreateDatabase("db2", ConflictType::kIgnore, base_entry);
+        txn2->CreateDatabase("db2", ConflictType::kIgnore);
         txn_mgr->CommitTxn(txn2);
 
         auto *txn3 = txn_mgr->CreateTxn();
         txn3->Begin();
-        base_entry = nullptr;
-        txn3->CreateDatabase("db3", ConflictType::kIgnore, base_entry);
+        txn3->CreateDatabase("db3", ConflictType::kIgnore);
         TxnTimeStamp txn3_ts = txn_mgr->CommitTxn(txn3);
 
         auto *txn4 = txn_mgr->CreateTxn();
         txn4->Begin();
-        base_entry = nullptr;
-        txn4->CreateDatabase("db4", ConflictType::kIgnore, base_entry);
+        txn4->CreateDatabase("db4", ConflictType::kIgnore);
         txn_mgr->CommitTxn(txn4);
 
         auto *txn5 = txn_mgr->CreateTxn();
@@ -95,8 +91,7 @@ TEST_F(WalReplayTest, WalReplayDatabase) {
 
         auto *txn6 = txn_mgr->CreateTxn();
         txn6->Begin();
-        base_entry = nullptr;
-        txn6->CreateDatabase("db5", ConflictType::kIgnore, base_entry);
+        txn6->CreateDatabase("db5", ConflictType::kIgnore);
         txn_mgr->CommitTxn(txn6);
 
         infinity::InfinityContext::instance().UnInit();

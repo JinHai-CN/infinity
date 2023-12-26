@@ -127,10 +127,9 @@ SharedPtr<DirEntry> Storage::GetLatestCatalog(const String &dir) {
 }
 
 void Storage::InitCatalog(NewCatalog *, TxnManager *txn_mgr) {
-    BaseEntry* base_entry{nullptr};
     Txn *new_txn = txn_mgr->CreateTxn();
     new_txn->Begin();
-    Status status = new_txn->CreateDatabase("default", ConflictType::kError, base_entry);
+    Status status = new_txn->CreateDatabase("default", ConflictType::kError);
     if(status.ok()) {
         txn_mgr->CommitTxn(new_txn);
     } else {

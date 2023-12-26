@@ -62,14 +62,12 @@ NewCatalog::NewCatalog(SharedPtr<String> dir, bool create_default_db) : current_
 // it will not record database in transaction, so when you commit transaction
 // it will lose operation
 // use Txn::CreateDatabase instead
-Status NewCatalog::CreateDatabase(NewCatalog *catalog,
-                                  const String &db_name,
-                                  u64 txn_id,
-                                  TxnTimeStamp begin_ts,
-                                  TxnManager *txn_mgr,
-                                  BaseEntry *&db_entry,
-                                  ConflictType conflict_type
-                                  ) {
+Tuple<DBEntry *, Status> NewCatalog::CreateDatabase(NewCatalog *catalog,
+                                                    const String &db_name,
+                                                    u64 txn_id,
+                                                    TxnTimeStamp begin_ts,
+                                                    TxnManager *txn_mgr,
+                                                    ConflictType conflict_type) {
 
     // Check if there is db_meta with the db_name
     DBMeta *db_meta{nullptr};
@@ -93,7 +91,7 @@ Status NewCatalog::CreateDatabase(NewCatalog *catalog,
 
         catalog->rw_locker_.lock();
         auto db_iter2 = catalog->databases_.find(db_name);
-        if(db_iter2 == catalog->databases_.end()) {
+        if (db_iter2 == catalog->databases_.end()) {
             catalog->databases_[db_name] = Move(new_db_meta);
         } else {
             db_meta = db_iter2->second.get();
@@ -102,7 +100,7 @@ Status NewCatalog::CreateDatabase(NewCatalog *catalog,
     }
 
     LOG_TRACE(Format("Add new database entry: {}", db_name));
-    return DBMeta::CreateNewEntry(db_meta, txn_id, begin_ts, txn_mgr, db_entry, conflict_type);
+    return DBMeta::CreateNewEntry(db_meta, txn_id, begin_ts, txn_mgr, conflict_type);
 }
 
 // do not only use this method to drop database

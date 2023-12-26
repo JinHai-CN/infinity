@@ -21,6 +21,7 @@ import txn_manager;
 import buffer_manager;
 import third_party;
 import status;
+import db_entry;
 
 export module db_meta;
 
@@ -32,7 +33,7 @@ public:
 
 public:
     // Reserved
-    static Status CreateNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, BaseEntry *&db_entry, ConflictType conflict_type = ConflictType::kError);
+    static Tuple<DBEntry*, Status> CreateNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, ConflictType conflict_type = ConflictType::kError);
 
     static Status DropNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, BaseEntry *&db_entry);
 

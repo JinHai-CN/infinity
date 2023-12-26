@@ -69,7 +69,7 @@ public:
     void Rollback();
 
     // Database OPs
-    Status CreateDatabase(const String &db_name, ConflictType conflict_type, BaseEntry *&db_entry);
+    Status CreateDatabase(const String &db_name, ConflictType conflict_type);
 
     Status DropDatabase(const String &db_name, ConflictType conflict_type, BaseEntry *&db_entry);
 
