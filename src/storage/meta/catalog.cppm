@@ -89,20 +89,22 @@ public:
     explicit NewCatalog(SharedPtr<String> dir, bool create_default_db = false);
 
 public:
-    static Tuple<DBEntry *, Status> CreateDatabase(NewCatalog *catalog,
-                                                   const String &db_name,
+
+    // Database command interface
+    Tuple<DBEntry *, Status> CreateDatabase(const String &db_name,
                                                    u64 txn_id,
                                                    TxnTimeStamp begin_ts,
                                                    TxnManager *txn_mgr,
                                                    ConflictType conflict_type = ConflictType::kError);
 
-    static Tuple<DBEntry *, Status> DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
+    Tuple<DBEntry *, Status> DropDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
-    static Tuple<DBEntry *, Status> GetDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts);
+    Tuple<DBEntry *, Status> GetDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts);
 
-    static void RemoveDBEntry(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnManager *txn_mgr);
+    void RemoveDBEntry(const String &db_name, u64 txn_id, TxnManager *txn_mgr);
 
-    static Vector<DBEntry *> Databases(NewCatalog *catalog, u64 txn_id, TxnTimeStamp begin_ts);
+    // List databases
+    Vector<DBEntry *> Databases(u64 txn_id, TxnTimeStamp begin_ts);
 
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

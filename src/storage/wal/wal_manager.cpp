@@ -614,14 +614,14 @@ void WalManager::ReplayWalEntry(const WalEntry &entry) {
     }
 }
 void WalManager::WalCmdCreateDatabaseReplay(const WalCmdCreateDatabase &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, status] = NewCatalog::CreateDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts, storage_->txn_manager());
+    auto [db_entry, status] = storage_->catalog()->CreateDatabase(cmd.db_name, txn_id, commit_ts, storage_->txn_manager());
     if (!status.ok()) {
         Error<StorageException>("Wal Replay: Create database failed");
     }
     db_entry->Commit(commit_ts);
 }
 void WalManager::WalCmdCreateTableReplay(const WalCmdCreateTable &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, status] = NewCatalog::GetDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts);
+    auto [db_entry, status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
     if (!status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }
@@ -643,7 +643,7 @@ void WalManager::WalCmdCreateTableReplay(const WalCmdCreateTable &cmd, u64 txn_i
 }
 
 void WalManager::WalCmdDropDatabaseReplay(const WalCmdDropDatabase &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, status] = NewCatalog::DropDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts, nullptr);
+    auto [db_entry, status] = storage_->catalog()->DropDatabase(cmd.db_name, txn_id, commit_ts, nullptr);
     if (!status.ok()) {
         Error<StorageException>("Wal Replay: Drop database failed");
     }
@@ -651,7 +651,7 @@ void WalManager::WalCmdDropDatabaseReplay(const WalCmdDropDatabase &cmd, u64 txn
 }
 
 void WalManager::WalCmdDropTableReplay(const WalCmdDropTable &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, status] = NewCatalog::GetDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts);
+    auto [db_entry, status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
     if (!status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }
@@ -665,7 +665,7 @@ void WalManager::WalCmdDropTableReplay(const WalCmdDropTable &cmd, u64 txn_id, i
 }
 
 void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, db_status] = NewCatalog::GetDatabase(storage_->catalog(), cmd.db_name_, txn_id, commit_ts);
+    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name_, txn_id, commit_ts);
     if (!db_status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }
@@ -691,7 +691,7 @@ void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_i
 }
 
 void WalManager::WalCmdDropIndexReplay(const WalCmdDropIndex &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, db_status] = NewCatalog::GetDatabase(storage_->catalog(), cmd.db_name_, txn_id, commit_ts);
+    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name_, txn_id, commit_ts);
     if (!db_status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }
@@ -712,7 +712,7 @@ void WalManager::WalCmdDropIndexReplay(const WalCmdDropIndex &cmd, u64 txn_id, i
 
 void WalManager::WalCmdImportReplay(const WalCmdImport &cmd, u64 txn_id, i64 commit_ts) {
     // Segment entry
-    auto [db_entry, db_status] = NewCatalog::GetDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts);
+    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
     if (!db_status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }
@@ -744,7 +744,7 @@ void WalManager::WalCmdImportReplay(const WalCmdImport &cmd, u64 txn_id, i64 com
     table_entry->next_segment_id_++;
 }
 void WalManager::WalCmdDeleteReplay(const WalCmdDelete &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, db_status] = NewCatalog::GetDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts);
+    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
     if (!db_status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }
@@ -763,7 +763,7 @@ void WalManager::WalCmdDeleteReplay(const WalCmdDelete &cmd, u64 txn_id, i64 com
 }
 
 void WalManager::WalCmdAppendReplay(const WalCmdAppend &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, db_status] = NewCatalog::GetDatabase(storage_->catalog(), cmd.db_name, txn_id, commit_ts);
+    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
     if (!db_status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }

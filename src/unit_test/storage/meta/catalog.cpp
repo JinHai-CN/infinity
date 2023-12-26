@@ -70,38 +70,38 @@ TEST_F(CatalogTest, simple_test1) {
 
     // create db in empty catalog should be success
     {
-        auto [base_entry, status] = NewCatalog::CreateDatabase(catalog, "db1", txn1->TxnID(), txn1->BeginTS(), txn_mgr);
+        auto [base_entry, status] = catalog->CreateDatabase("db1", txn1->TxnID(), txn1->BeginTS(), txn_mgr);
         EXPECT_TRUE(status.ok());
         // store this entry
         databases["db1"] = base_entry;
     }
 
     {
-        auto [db_entry1, status1] = NewCatalog::GetDatabase(catalog, "db1", txn1->TxnID(), txn1->BeginTS());
+        auto [db_entry1, status1] = catalog->GetDatabase("db1", txn1->TxnID(), txn1->BeginTS());
         // should be visible to same txn
         EXPECT_TRUE(status1.ok());
         EXPECT_EQ(db_entry1, databases["db1"]);
 
         // should not be visible to other txn
-        auto [db_entry2, status2] = NewCatalog::GetDatabase(catalog, "db1", txn2->TxnID(), txn2->BeginTS());
+        auto [db_entry2, status2] = catalog->GetDatabase("db1", txn2->TxnID(), txn2->BeginTS());
         EXPECT_TRUE(!status2.ok());
         EXPECT_EQ(db_entry2, nullptr);
     }
 
     // drop db should be success
     {
-        auto [base_entry, status] = NewCatalog::DropDatabase(catalog, "db1", txn1->TxnID(), txn1->BeginTS(), txn_mgr);
+        auto [base_entry, status] = catalog->DropDatabase("db1", txn1->TxnID(), txn1->BeginTS(), txn_mgr);
         EXPECT_TRUE(status.ok());
         EXPECT_EQ(base_entry, databases["db1"]);
         // remove this entry
         databases.erase("db1");
 
-        auto [db_entry1, status1] = NewCatalog::GetDatabase(catalog, "db1", txn1->TxnID(), txn1->BeginTS());
+        auto [db_entry1, status1] = catalog->GetDatabase("db1", txn1->TxnID(), txn1->BeginTS());
         // should not be visible to same txn
         EXPECT_TRUE(!status1.ok());
 
         // should not be visible to other txn
-        auto [db_entry2, status2] = NewCatalog::GetDatabase(catalog, "db1", txn2->TxnID(), txn2->BeginTS());
+        auto [db_entry2, status2] = catalog->GetDatabase("db1", txn2->TxnID(), txn2->BeginTS());
         EXPECT_TRUE(!status2.ok());
     }
 
@@ -138,7 +138,7 @@ TEST_F(CatalogTest, simple_test2) {
 
     // should not be visible to txn2
     {
-        auto [db_entry, status1] = NewCatalog::GetDatabase(catalog, "db1", txn1_id, txn1_begin_ts);
+        auto [db_entry, status1] = catalog->GetDatabase("db1", txn1_id, txn1_begin_ts);
         // should not be visible to same txn
         EXPECT_TRUE(!status1.ok());
     }
@@ -150,7 +150,7 @@ TEST_F(CatalogTest, simple_test2) {
 
     // should be visible to txn3
     {
-        auto [db_entry1, status1] = NewCatalog::GetDatabase(catalog, "db1", txn3->TxnID(), txn3->BeginTS());
+        auto [db_entry1, status1] = catalog->GetDatabase("db1", txn3->TxnID(), txn3->BeginTS());
         EXPECT_TRUE(status1.ok());
         EXPECT_NE(db_entry1, nullptr);
 
@@ -158,7 +158,7 @@ TEST_F(CatalogTest, simple_test2) {
         EXPECT_TRUE(status.ok());
 
         // should not be visible to other txn
-        auto [db_entry2, status2] = NewCatalog::GetDatabase(catalog, "db1", txn3->TxnID(), txn3->BeginTS());
+        auto [db_entry2, status2] = catalog->NewCatalog::GetDatabase("db1", txn3->TxnID(), txn3->BeginTS());
         EXPECT_TRUE(!status2.ok());
     }
 
@@ -207,7 +207,7 @@ TEST_F(CatalogTest, concurrent_test) {
         auto read_routine = [&](Txn *txn) {
             for (int db_id = 0; db_id < 1000; ++db_id) {
                 String db_name = "db" + ToStr(db_id);
-                auto [db_entry, status] = NewCatalog::GetDatabase(catalog, db_name, txn->TxnID(), txn->BeginTS());
+                auto [db_entry, status] = catalog->NewCatalog::GetDatabase(db_name, txn->TxnID(), txn->BeginTS());
                 EXPECT_TRUE(status.ok());
                 // only read, don't need lock
                 EXPECT_NE(db_entry, nullptr);
@@ -251,7 +251,7 @@ TEST_F(CatalogTest, concurrent_test) {
         // check all has been dropped
         for (int db_id = 0; db_id < 1000; ++db_id) {
             String db_name = "db" + ToStr(db_id);
-            auto [db_entry, status] = NewCatalog::GetDatabase(catalog, db_name, txn7->TxnID(), txn7->BeginTS());
+            auto [db_entry, status] = catalog->NewCatalog::GetDatabase(db_name, txn7->TxnID(), txn7->BeginTS());
             EXPECT_TRUE(!status.ok());
         }
     }

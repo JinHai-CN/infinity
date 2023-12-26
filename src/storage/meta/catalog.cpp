@@ -62,8 +62,7 @@ NewCatalog::NewCatalog(SharedPtr<String> dir, bool create_default_db) : current_
 // it will not record database in transaction, so when you commit transaction
 // it will lose operation
 // use Txn::CreateDatabase instead
-Tuple<DBEntry *, Status> NewCatalog::CreateDatabase(NewCatalog *catalog,
-                                                    const String &db_name,
+Tuple<DBEntry *, Status> NewCatalog::CreateDatabase(const String &db_name,
                                                     u64 txn_id,
                                                     TxnTimeStamp begin_ts,
                                                     TxnManager *txn_mgr,
@@ -72,31 +71,31 @@ Tuple<DBEntry *, Status> NewCatalog::CreateDatabase(NewCatalog *catalog,
     // Check if there is db_meta with the db_name
     DBMeta *db_meta{nullptr};
 
-    catalog->rw_locker_.lock_shared();
-    auto db_iter = catalog->databases_.find(db_name);
-    if (db_iter != catalog->databases_.end()) {
+    this->rw_locker_.lock_shared();
+    auto db_iter = this->databases_.find(db_name);
+    if (db_iter != this->databases_.end()) {
         // Find the db
         db_meta = db_iter->second.get();
-        catalog->rw_locker_.unlock_shared();
+        this->rw_locker_.unlock_shared();
     } else {
-        catalog->rw_locker_.unlock_shared();
+        this->rw_locker_.unlock_shared();
 
         LOG_TRACE(Format("Create new database: {}", db_name));
         // Not find the db and create new db meta
-        Path catalog_path(*catalog->current_dir_);
+        Path catalog_path(*this->current_dir_);
         Path parent_path = catalog_path.parent_path();
         auto db_dir = MakeShared<String>(parent_path.string());
         UniquePtr<DBMeta> new_db_meta = MakeUnique<DBMeta>(db_dir, MakeShared<String>(db_name));
         db_meta = new_db_meta.get();
 
-        catalog->rw_locker_.lock();
-        auto db_iter2 = catalog->databases_.find(db_name);
-        if (db_iter2 == catalog->databases_.end()) {
-            catalog->databases_[db_name] = Move(new_db_meta);
+        this->rw_locker_.lock();
+        auto db_iter2 = this->databases_.find(db_name);
+        if (db_iter2 == this->databases_.end()) {
+            this->databases_[db_name] = Move(new_db_meta);
         } else {
             db_meta = db_iter2->second.get();
         }
-        catalog->rw_locker_.unlock();
+        this->rw_locker_.unlock();
     }
 
     LOG_TRACE(Format("Add new database entry: {}", db_name));
@@ -108,15 +107,15 @@ Tuple<DBEntry *, Status> NewCatalog::CreateDatabase(NewCatalog *catalog,
 // it will lose operation
 // use Txn::DropDatabase instead
 Tuple<DBEntry *, Status>
-NewCatalog::DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
+NewCatalog::DropDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
 
-    catalog->rw_locker_.lock_shared();
+    this->rw_locker_.lock_shared();
 
     DBMeta *db_meta{nullptr};
-    if (catalog->databases_.find(db_name) != catalog->databases_.end()) {
-        db_meta = catalog->databases_[db_name].get();
+    if (this->databases_.find(db_name) != this->databases_.end()) {
+        db_meta = this->databases_[db_name].get();
     }
-    catalog->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
     if (db_meta == nullptr) {
         UniquePtr<String> err_msg = MakeUnique<String>(Format("Attempt to drop not existed database entry {}", db_name));
         LOG_ERROR(*err_msg);
@@ -127,15 +126,15 @@ NewCatalog::DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id,
     return DBMeta::DropNewEntry(db_meta, txn_id, begin_ts, txn_mgr);
 }
 
-Tuple<DBEntry *, Status> NewCatalog::GetDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts) {
+Tuple<DBEntry *, Status> NewCatalog::GetDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts) {
 
     DBMeta *db_meta{nullptr};
-    catalog->rw_locker_.lock_shared();
-    auto iter = catalog->databases_.find(db_name);
-    if (iter != catalog->databases_.end()) {
+    this->rw_locker_.lock_shared();
+    auto iter = this->databases_.find(db_name);
+    if (iter != this->databases_.end()) {
         db_meta = iter->second.get();
     }
-    catalog->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
     if (db_meta == nullptr) {
         UniquePtr<String> err_msg = MakeUnique<String>(Format("Attempt to get not existed database {}", db_name));
         LOG_ERROR(*err_msg);
@@ -144,31 +143,31 @@ Tuple<DBEntry *, Status> NewCatalog::GetDatabase(NewCatalog *catalog, const Stri
     return DBMeta::GetEntry(db_meta, txn_id, begin_ts);
 }
 
-void NewCatalog::RemoveDBEntry(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnManager *txn_mgr) {
-    catalog->rw_locker_.lock_shared();
+void NewCatalog::RemoveDBEntry(const String &db_name, u64 txn_id, TxnManager *txn_mgr) {
+    this->rw_locker_.lock_shared();
 
     DBMeta *db_meta{nullptr};
-    if (catalog->databases_.find(db_name) != catalog->databases_.end()) {
-        db_meta = catalog->databases_[db_name].get();
+    if (this->databases_.find(db_name) != this->databases_.end()) {
+        db_meta = this->databases_[db_name].get();
     }
-    catalog->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
 
     LOG_TRACE(Format("Remove a database entry {}", db_name));
     DBMeta::DeleteNewEntry(db_meta, txn_id, txn_mgr);
 }
 
-Vector<DBEntry *> NewCatalog::Databases(NewCatalog *catalog, u64 txn_id, TxnTimeStamp begin_ts) {
-    catalog->rw_locker_.lock_shared();
+Vector<DBEntry *> NewCatalog::Databases(u64 txn_id, TxnTimeStamp begin_ts) {
+    this->rw_locker_.lock_shared();
 
     Vector<DBEntry *> res;
-    res.reserve(catalog->databases_.size());
-    for (const auto &db_meta : catalog->databases_) {
+    res.reserve(this->databases_.size());
+    for (const auto &db_meta : this->databases_) {
         auto [db_entry, status] = DBMeta::GetEntry(db_meta.second.get(), txn_id, begin_ts);
         if (status.ok()) {
             res.emplace_back(db_entry);
         }
     }
-    catalog->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
     return res;
 }
 

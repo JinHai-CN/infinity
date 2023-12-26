@@ -208,7 +208,7 @@ Status Txn::CreateDatabase(const String &db_name, ConflictType conflict_type) {
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [db_entry, status] = NewCatalog::CreateDatabase(catalog_, db_name, this->txn_id_, begin_ts, txn_mgr_, conflict_type);
+    auto [db_entry, status] = catalog_->CreateDatabase(db_name, this->txn_id_, begin_ts, txn_mgr_, conflict_type);
     if (!status.ok()) {
         return status;
     }
@@ -229,7 +229,7 @@ Status Txn::DropDatabase(const String &db_name, ConflictType) {
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [dropped_db_entry, status] = NewCatalog::DropDatabase(catalog_, db_name, txn_id_, begin_ts, txn_mgr_);
+    auto [dropped_db_entry, status] = catalog_->DropDatabase(db_name, txn_id_, begin_ts, txn_mgr_);
     if (!status.ok()) {
         return status;
     }
@@ -258,13 +258,13 @@ Tuple<DBEntry *, Status> Txn::GetDatabase(const String &db_name) {
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    return NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts);
+    return catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
 }
 
 Vector<DatabaseDetail> Txn::ListDatabases() {
     Vector<DatabaseDetail> res;
 
-    Vector<DBEntry *> db_entries = NewCatalog::Databases(catalog_, txn_id_, txn_context_.GetBeginTS());
+    Vector<DBEntry *> db_entries = catalog_->Databases(txn_id_, txn_context_.GetBeginTS());
     SizeT db_count = db_entries.size();
     for (SizeT idx = 0; idx < db_count; ++idx) {
         DBEntry *db_entry = db_entries[idx];
@@ -292,7 +292,7 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [db_entry, status] = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts);
+    auto [db_entry, status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
     if (!status.ok()) {
         // Error
         return status;
@@ -336,7 +336,7 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [db_entry, status] = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts);
+    auto [db_entry, status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
     if (!status.ok()) {
         // Error
         return status;
@@ -448,7 +448,7 @@ Tuple<BaseEntry *, Status> Txn::GetTableByName(const String &db_name, const Stri
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
     // Check the db entries
-    auto [db_entry, status] = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts);
+    auto [db_entry, status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
     if (!status.ok()) {
         // Error
         return {nullptr, status};
@@ -589,7 +589,7 @@ void Txn::Rollback() {
     }
 
     for (const auto &db_name : db_names_) {
-        NewCatalog::RemoveDBEntry(catalog_, db_name, this->txn_id_, txn_mgr_);
+        catalog_->RemoveDBEntry(db_name, this->txn_id_, txn_mgr_);
     }
 
     // Rollback the prepared data
