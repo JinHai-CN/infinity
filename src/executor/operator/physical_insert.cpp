@@ -72,7 +72,7 @@ bool PhysicalInsert::Execute(QueryContext *query_context, OperatorState *operato
     output_block->Finalize();
 
     auto *txn = query_context->GetTxn();
-    const String &db_name = *TableCollectionEntry::GetDBEntry(table_collection_entry_)->db_name_;
+    const String &db_name = *TableEntry::GetDBEntry(table_collection_entry_)->db_name_;
     const String &table_name = *table_collection_entry_->table_collection_name_;
     txn->Append(db_name, table_name, output_block);
 

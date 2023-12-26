@@ -64,7 +64,7 @@ void PhysicalOptimize::OptimizeIndex(QueryContext *query_context, OperatorState 
         return;
     }
 
-    auto table_collection_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_collection_entry = dynamic_cast<TableEntry *>(base_table_entry);
     SharedPtr<IrsIndexEntry> irs_index_entry;
     for (auto &[index_name, table_index_meta] : table_collection_entry->index_meta_map_) {
         BaseEntry *base_entry{nullptr};

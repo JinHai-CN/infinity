@@ -41,7 +41,7 @@ import table_collection_type;
 import meta_state;
 import status;
 
-class TableCollectionEntryTest : public BaseTest {
+class TableEntryTest : public BaseTest {
     void SetUp() override {
         BaseTest::SetUp();
         system("rm -rf /tmp/infinity/log /tmp/infinity/data /tmp/infinity/wal");
@@ -59,7 +59,7 @@ class TableCollectionEntryTest : public BaseTest {
     }
 };
 
-TEST_F(TableCollectionEntryTest, test1) {
+TEST_F(TableEntryTest, test1) {
     using namespace infinity;
 
     SharedPtr<String> table_dir = MakeShared<String>("/tmp/infinity/table");
@@ -93,11 +93,11 @@ TEST_F(TableCollectionEntryTest, test1) {
         EXPECT_EQ(table_def->GetColIdByName("big_int_col"), 1);
     }
 
-    SharedPtr<TableCollectionEntry> table_entry =
-        MakeShared<TableCollectionEntry>(table_dir, table_def->table_name(), table_def->columns(), TableCollectionType::kTableEntry, nullptr, 0, 0);
+    SharedPtr<TableEntry> table_entry =
+        MakeShared<TableEntry>(table_dir, table_def->table_name(), table_def->columns(), TableEntryType::kTableEntry, nullptr, 0, 0);
 }
 
-TEST_F(TableCollectionEntryTest, test2) {
+TEST_F(TableEntryTest, test2) {
     using namespace infinity;
 
     TxnManager *txn_mgr = infinity::InfinityContext::instance().storage()->txn_manager();

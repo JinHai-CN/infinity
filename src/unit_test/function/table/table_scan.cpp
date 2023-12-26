@@ -148,7 +148,7 @@ TEST_F(TableScanTest, block_read_test) {
     auto table_name = MakeShared<String>("table1");
     // total_row smaller than block size
     {
-        TableCollectionEntry entry(db_entry_dir, table_name, {}, TableCollectionType::kTableEntry,
+        TableEntry entry(db_entry_dir, table_name, {}, TableEntryType::kTableEntry,
                                    nullptr, 0, 0);
         entry.segments_[segment_entry1->segment_id_] = segment_entry1;
 
@@ -180,7 +180,7 @@ TEST_F(TableScanTest, block_read_test) {
 
     // total row larger than block size
     {
-        TableCollectionEntry entry(db_entry_dir, table_name, {}, TableCollectionType::kTableEntry,
+        TableEntry entry(db_entry_dir, table_name, {}, TableEntryType::kTableEntry,
                                    nullptr, 0, 0);
         entry.segments_[segment_entry1->segment_id_] = segment_entry1;
         entry.segments_[segment_entry2->segment_id_] = segment_entry2;
@@ -212,7 +212,7 @@ TEST_F(TableScanTest, block_read_test) {
 
     // total row is multipy of block size
     {
-        TableCollectionEntry entry(db_entry_dir, table_name, {}, TableCollectionType::kTableEntry,
+        TableEntry entry(db_entry_dir, table_name, {}, TableEntryType::kTableEntry,
                                    nullptr, 0, 0);
         entry.segments_[segment_entry1->segment_id_] = segment_entry1;
         entry.segments_[segment_entry2->segment_id_] = segment_entry2;

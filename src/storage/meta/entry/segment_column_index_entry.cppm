@@ -26,7 +26,7 @@ export module segment_column_index_entry;
 
 namespace infinity {
 
-class TableCollectionEntry;
+class TableEntry;
 class ColumnIndexEntry;
 class FaissIndexPtr;
 class BufferManager;
@@ -64,7 +64,7 @@ public:
     static UniquePtr<SegmentColumnIndexEntry> Deserialize(const Json &index_entry_json,
                                                           ColumnIndexEntry *column_index_entry,
                                                           BufferManager *buffer_mgr,
-                                                          TableCollectionEntry *table_collection_entry);
+                                                          TableEntry *table_collection_entry);
 
     void MergeFrom(BaseEntry &other);
 

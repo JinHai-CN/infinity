@@ -74,7 +74,7 @@ void PhysicalOperator::InputLoad(QueryContext *query_context, OperatorState *ope
             u16 block_id = segment_offset / DEFAULT_BLOCK_CAPACITY;
             u16 block_offset = segment_offset % DEFAULT_BLOCK_CAPACITY;
 
-            SegmentEntry *segment_entry = TableCollectionEntry::GetSegmentByID(table_ref->table_entry_ptr_, segment_id);
+            SegmentEntry *segment_entry = TableEntry::GetSegmentByID(table_ref->table_entry_ptr_, segment_id);
             if (segment_entry == nullptr) {
                 throw ExecutorException(Format("Cannot find segment, segment id: {}", segment_id));
             }

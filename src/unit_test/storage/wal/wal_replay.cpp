@@ -520,10 +520,10 @@ TEST_F(WalReplayTest, WalReplayImport) {
             auto txn4 = txn_mgr->CreateTxn();
             txn4->Begin();
 
-            TableCollectionEntry *table_collection_entry = nullptr;
+            TableEntry *table_collection_entry = nullptr;
             auto table_collection_entry_result = txn4->GetTableEntry("default", "tbl1", table_collection_entry);
             EXPECT_NE(table_collection_entry, nullptr);
-            u64 segment_id = TableCollectionEntry::GetNextSegmentID(table_collection_entry);
+            u64 segment_id = TableEntry::GetNextSegmentID(table_collection_entry);
             EXPECT_EQ(segment_id, 0);
             auto segment_entry = SegmentEntry::MakeNewSegmentEntry(table_collection_entry, segment_id, buffer_manager);
             EXPECT_EQ(segment_entry->segment_id_, 0);
@@ -611,7 +611,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
             auto txn = txn_mgr->CreateTxn();
             txn->Begin();
             Vector<ColumnID> column_ids{0, 1, 2};
-            TableCollectionEntry *table_collection_entry = nullptr;
+            TableEntry *table_collection_entry = nullptr;
             txn->GetTableEntry("default", "tbl1", table_collection_entry);
             EXPECT_NE(table_collection_entry, nullptr);
             auto segment_entry = table_collection_entry->segment_map_[0].get();

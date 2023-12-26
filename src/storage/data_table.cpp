@@ -127,7 +127,7 @@ SharedPtr<DataTable> DataTable::MakeSummaryResultTable(u64 count, u64 sum) {
 }
 
 DataTable::DataTable(SharedPtr<TableDef> table_def_ptr, TableType type)
-    : BaseTable(TableCollectionType::kTableEntry, table_def_ptr->schema_name(), table_def_ptr->table_name()), definition_ptr_(Move(table_def_ptr)),
+    : BaseTable(TableEntryType::kTableEntry, table_def_ptr->schema_name(), table_def_ptr->table_name()), definition_ptr_(Move(table_def_ptr)),
       row_count_(0), type_(type) {}
 
 SizeT DataTable::ColumnCount() const { return definition_ptr_->column_count(); }

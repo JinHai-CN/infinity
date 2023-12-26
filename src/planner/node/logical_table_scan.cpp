@@ -63,7 +63,7 @@ SharedPtr<Vector<SharedPtr<DataType>>> LogicalTableScan::GetOutputTypes() const 
     return MakeShared<Vector<SharedPtr<DataType>>>(result_types);
 }
 
-TableCollectionEntry *LogicalTableScan::table_collection_ptr() const { return base_table_ref_->table_entry_ptr_; }
+TableEntry *LogicalTableScan::table_collection_ptr() const { return base_table_ref_->table_entry_ptr_; }
 
 String LogicalTableScan::TableAlias() const { return base_table_ref_->alias_; }
 

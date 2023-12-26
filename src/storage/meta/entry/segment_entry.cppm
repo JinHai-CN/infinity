@@ -34,17 +34,17 @@ export module segment_entry;
 
 namespace infinity {
 
-class TableCollectionEntry;
+class TableEntry;
 
 export struct SegmentEntry;
 
 struct SegmentEntry : public BaseEntry {
 public:
-    explicit SegmentEntry(const TableCollectionEntry *table_entry);
+    explicit SegmentEntry(const TableEntry *table_entry);
 
     RWMutex rw_locker_{};
 
-    const TableCollectionEntry *table_entry_{};
+    const TableEntry *table_entry_{};
 
     SharedPtr<String> segment_dir_{};
     u32 segment_id_{};
@@ -59,10 +59,10 @@ public:
     Vector<SharedPtr<BlockEntry>> block_entries_{};
 
 public:
-    static SharedPtr<SegmentEntry> MakeNewSegmentEntry(const TableCollectionEntry *table_entry, u32 segment_id, BufferManager *buffer_mgr);
+    static SharedPtr<SegmentEntry> MakeNewSegmentEntry(const TableEntry *table_entry, u32 segment_id, BufferManager *buffer_mgr);
 
     static SharedPtr<SegmentEntry>
-    MakeReplaySegmentEntry(const TableCollectionEntry *table_entry, u32 segment_id, SharedPtr<String> segment_dir, TxnTimeStamp commit_ts);
+    MakeReplaySegmentEntry(const TableEntry *table_entry, u32 segment_id, SharedPtr<String> segment_dir, TxnTimeStamp commit_ts);
 
     static u64 AppendData(SegmentEntry *segment_entry, Txn *txn_ptr, AppendState *append_state_ptr, BufferManager *buffer_mgr);
 
@@ -85,7 +85,7 @@ public:
 
     static Json Serialize(SegmentEntry *segment_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
 
-    static SharedPtr<SegmentEntry> Deserialize(const Json &table_entry_json, TableCollectionEntry *table_entry, BufferManager *buffer_mgr);
+    static SharedPtr<SegmentEntry> Deserialize(const Json &table_entry_json, TableEntry *table_entry, BufferManager *buffer_mgr);
 
     static int Room(SegmentEntry *segment_entry);
 

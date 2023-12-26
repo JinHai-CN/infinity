@@ -628,7 +628,7 @@ void WalManager::WalCmdCreateTableReplay(const WalCmdCreateTable &cmd, u64 txn_i
 
     BaseEntry *base_table_entry{nullptr};
     status = DBEntry::CreateTableCollection(db_entry,
-                                            TableCollectionType::kTableEntry,
+                                            TableEntryType::kTableEntry,
                                             cmd.table_def->table_name(),
                                             cmd.table_def->columns(),
                                             txn_id,
@@ -638,7 +638,7 @@ void WalManager::WalCmdCreateTableReplay(const WalCmdCreateTable &cmd, u64 txn_i
     if (!status.ok()) {
         Error<StorageException>("Wal Replay: Create table failed" + *status.msg_);
     }
-    auto table_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     table_entry->Commit(commit_ts);
 }
 
@@ -674,10 +674,10 @@ void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_i
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Get table failed");
     }
-    auto table_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     BaseEntry *base_entry{nullptr};
     auto index_def_entry_status =
-        TableCollectionEntry::CreateIndex(table_entry, cmd.index_def_, ConflictType::kError, txn_id, commit_ts, nullptr, base_entry);
+        TableEntry::CreateIndex(table_entry, cmd.index_def_, ConflictType::kError, txn_id, commit_ts, nullptr, base_entry);
     if (!index_def_entry_status.ok()) {
         Error<StorageException>("Wal Replay: Create index failed");
     }
@@ -685,8 +685,8 @@ void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_i
     auto fake_txn = MakeUnique<Txn>(storage_->txn_manager(), storage_->catalog(), txn_id);
     auto table_store = MakeShared<TxnTableStore>(table_entry, fake_txn.get());
 
-    TableCollectionEntry::CreateIndexFile(table_entry, table_store.get(), table_index_entry, commit_ts, storage_->buffer_manager());
-    TableCollectionEntry::CommitCreateIndex(table_entry, table_store->txn_indexes_store_);
+    TableEntry::CreateIndexFile(table_entry, table_store.get(), table_index_entry, commit_ts, storage_->buffer_manager());
+    TableEntry::CommitCreateIndex(table_entry, table_store->txn_indexes_store_);
     table_index_entry->Commit(commit_ts);
 }
 
@@ -700,10 +700,10 @@ void WalManager::WalCmdDropIndexReplay(const WalCmdDropIndex &cmd, u64 txn_id, i
     if (!table_status.ok()) {
         Error<StorageException>(Format("Wal Replay: Get table failed {}", table_status.message()));
     }
-    auto table_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     BaseEntry *base_entry;
     auto result_status =
-        TableCollectionEntry::DropIndex(table_entry, cmd.index_name_, ConflictType::kIgnore, txn_id, commit_ts, storage_->txn_manager(), base_entry);
+        TableEntry::DropIndex(table_entry, cmd.index_name_, ConflictType::kIgnore, txn_id, commit_ts, storage_->txn_manager(), base_entry);
     if (!result_status.ok()) {
         Error<StorageException>("Wal Replay: Drop index failed" + *result_status.msg_);
     }
@@ -721,7 +721,7 @@ void WalManager::WalCmdImportReplay(const WalCmdImport &cmd, u64 txn_id, i64 com
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Get table failed");
     }
-    auto table_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     auto segment_dir_ptr = MakeShared<String>(cmd.segment_dir);
     auto segment_entry = SegmentEntry::MakeReplaySegmentEntry(table_entry, cmd.segment_id, segment_dir_ptr, commit_ts);
 
@@ -753,13 +753,13 @@ void WalManager::WalCmdDeleteReplay(const WalCmdDelete &cmd, u64 txn_id, i64 com
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Get table failed");
     }
-    auto table_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     auto fake_txn = MakeUnique<Txn>(storage_->txn_manager(), storage_->catalog(), txn_id);
     auto table_store = MakeShared<TxnTableStore>(table_entry, fake_txn.get());
     table_store->Delete(cmd.row_ids);
     fake_txn->FakeCommit(commit_ts);
-    TableCollectionEntry::Delete(table_store->table_entry_, table_store->txn_, table_store->delete_state_);
-    TableCollectionEntry::CommitDelete(table_store->table_entry_, table_store->txn_, table_store->delete_state_);
+    TableEntry::Delete(table_store->table_entry_, table_store->txn_, table_store->delete_state_);
+    TableEntry::CommitDelete(table_store->table_entry_, table_store->txn_, table_store->delete_state_);
 }
 
 void WalManager::WalCmdAppendReplay(const WalCmdAppend &cmd, u64 txn_id, i64 commit_ts) {
@@ -772,7 +772,7 @@ void WalManager::WalCmdAppendReplay(const WalCmdAppend &cmd, u64 txn_id, i64 com
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Get table failed");
     }
-    auto table_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
 
     auto fake_txn = MakeUnique<Txn>(storage_->txn_manager(), storage_->catalog(), txn_id);
 
@@ -783,8 +783,8 @@ void WalManager::WalCmdAppendReplay(const WalCmdAppend &cmd, u64 txn_id, i64 com
     table_store->append_state_ = Move(append_state);
 
     fake_txn->FakeCommit(commit_ts);
-    TableCollectionEntry::Append(table_store->table_entry_, table_store->txn_, table_store.get(), storage_->buffer_manager());
-    TableCollectionEntry::CommitAppend(table_store->table_entry_, table_store->txn_, table_store->append_state_.get());
+    TableEntry::Append(table_store->table_entry_, table_store->txn_, table_store.get(), storage_->buffer_manager());
+    TableEntry::CommitAppend(table_store->table_entry_, table_store->txn_, table_store->append_state_.get());
 }
 
 } // namespace infinity

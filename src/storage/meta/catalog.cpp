@@ -275,7 +275,7 @@ void NewCatalog::CheckCatalog() {
                     if (base_entry->entry_type_ == EntryType::kDummy) {
                         continue;
                     }
-                    auto table_entry = static_cast<TableCollectionEntry *>(base_entry.get());
+                    auto table_entry = static_cast<TableEntry *>(base_entry.get());
                     if (table_entry->table_collection_meta_->db_entry_ != db_entry) {
                         //                        int a = 1;
                     }

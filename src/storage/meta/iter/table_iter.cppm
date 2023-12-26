@@ -27,11 +27,11 @@ export class TableIter {
 private:
     using SegmentIdx = Map<u32, SharedPtr<SegmentEntry>>::const_iterator;
 
-    TableIter(const TableCollectionEntry *entry, SegmentIdx idx, Optional<SegmentIter> iter, SharedPtr<Vector<SizeT>> column_ids)
+    TableIter(const TableEntry *entry, SegmentIdx idx, Optional<SegmentIter> iter, SharedPtr<Vector<SizeT>> column_ids)
         : entry_(entry), segment_idx_(Move(idx)), segment_iter_(Move(iter)), column_ids_(column_ids) {}
 
 public:
-    static TableIter Make(const TableCollectionEntry *entry, SharedPtr<Vector<SizeT>> column_ids) {
+    static TableIter Make(const TableEntry *entry, SharedPtr<Vector<SizeT>> column_ids) {
         if (entry->segment_map_.empty()) {
             return TableIter(entry, entry->segment_map_.end(), None, column_ids);
         } else {
@@ -60,7 +60,7 @@ public:
     }
 
 private:
-    const TableCollectionEntry *entry_;
+    const TableEntry *entry_;
     SegmentIdx segment_idx_;
     Optional<SegmentIter> segment_iter_;
 

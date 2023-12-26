@@ -26,7 +26,7 @@ export module txn_store;
 namespace infinity {
 
 class Txn;
-class TableCollectionEntry;
+class TableEntry;
 class SegmentEntry;
 class DataBlock;
 class SegmentColumnIndexEntry;
@@ -51,7 +51,7 @@ public:
 
 export class TxnTableStore {
 public:
-    explicit inline TxnTableStore(TableCollectionEntry *table_entry, Txn *txn) : table_entry_(table_entry), txn_(txn) {}
+    explicit inline TxnTableStore(TableEntry *table_entry, Txn *txn) : table_entry_(table_entry), txn_(txn) {}
 
     UniquePtr<String> Append(const SharedPtr<DataBlock> &input_block);
 
@@ -78,7 +78,7 @@ public:
 
     SizeT current_block_id_{0};
 
-    TableCollectionEntry *table_entry_{};
+    TableEntry *table_entry_{};
     Txn *txn_{};
 };
 

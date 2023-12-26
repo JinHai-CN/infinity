@@ -50,7 +50,7 @@ struct ScanParam {
 
 class TxnManager;
 class NewCatalog;
-class TableCollectionEntry;
+class TableEntry;
 class DBEntry;
 
 export class Txn {
@@ -90,7 +90,7 @@ public:
 
     Status GetCollectionByName(const String &db_name, const String &table_name, BaseEntry *&collection_entry);
 
-    Status GetTableEntry(const String &db_name, const String &table_name, TableCollectionEntry *&table_entry);
+    Status GetTableEntry(const String &db_name, const String &table_name, TableEntry *&table_entry);
 
     // Index OPs
     Status CreateIndex(const String &db_name, const String &table_name, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type);
@@ -115,7 +115,7 @@ public:
     // TODO: Why need them
     void GetMetaTableState(MetaTableState *meta_table_state, const String &db_name, const String &table_name, const Vector<ColumnID> &columns);
 
-    void GetMetaTableState(MetaTableState *meta_table_state, const TableCollectionEntry *table_collection_entry, const Vector<ColumnID> &columns);
+    void GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_collection_entry, const Vector<ColumnID> &columns);
 
     // Getter
     BufferManager *GetBufferMgr() const;
@@ -136,7 +136,7 @@ public:
     // Dangerous! only used during replaying wal.
     void FakeCommit(TxnTimeStamp commit_ts);
 
-    TxnTableStore *GetTxnTableStore(TableCollectionEntry *table_entry);
+    TxnTableStore *GetTxnTableStore(TableEntry *table_entry);
 
     void AddWalCmd(const SharedPtr<WalCmd> &cmd);
 
@@ -155,7 +155,7 @@ private:
 
     // Txn store
     Set<DBEntry *> txn_dbs_{};
-    Set<TableCollectionEntry *> txn_tables_{};
+    Set<TableEntry *> txn_tables_{};
     HashMap<String, TableIndexEntry *> txn_indexes_{};
 
     // Only one db can be handled in one transaction.

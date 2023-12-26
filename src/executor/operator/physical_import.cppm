@@ -34,7 +34,7 @@ export module physical_import;
 
 namespace infinity {
 
-// class TableCollectionEntry;
+// class TableEntry;
 // class Txn;
 // class SegmentEntry;
 // class ImportInputState;
@@ -45,13 +45,13 @@ public:
     ZsvParser parser_;
     SizeT row_count_{};
     SharedPtr<String> err_msg_{};
-    TableCollectionEntry *const table_collection_entry_{};
+    TableEntry *const table_collection_entry_{};
     Txn *const txn_{};
     SharedPtr<SegmentEntry> segment_entry_{};
     const char delimiter_{};
 
 public:
-    ZxvParserCtx(TableCollectionEntry *table_collection_entry, Txn *txn, SharedPtr<SegmentEntry> &segment_entry, char delimiter)
+    ZxvParserCtx(TableEntry *table_collection_entry, Txn *txn, SharedPtr<SegmentEntry> &segment_entry, char delimiter)
         : row_count_(0), err_msg_(nullptr), table_collection_entry_(table_collection_entry), txn_(txn), segment_entry_(segment_entry),
           delimiter_(delimiter) {}
 };
@@ -59,7 +59,7 @@ public:
 export class PhysicalImport : public PhysicalOperator {
 public:
     explicit PhysicalImport(u64 id,
-                            TableCollectionEntry *table_collection_entry,
+                            TableEntry *table_collection_entry,
                             String file_path,
                             bool header,
                             char delimiter,
@@ -88,7 +88,7 @@ public:
 
     void ImportJSONL(QueryContext *query_context, ImportOperatorState *import_op_state);
 
-    inline const TableCollectionEntry *table_collection_entry() const { return table_collection_entry_; }
+    inline const TableEntry *table_collection_entry() const { return table_collection_entry_; }
 
     inline CopyFileType FileType() const { return file_type_; }
 
@@ -111,7 +111,7 @@ private:
     SharedPtr<Vector<String>> output_names_{};
     SharedPtr<Vector<SharedPtr<DataType>>> output_types_{};
 
-    TableCollectionEntry *table_collection_entry_{};
+    TableEntry *table_collection_entry_{};
     CopyFileType file_type_{CopyFileType::kCSV};
     String file_path_{};
     bool header_{false};

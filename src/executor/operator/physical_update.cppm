@@ -32,7 +32,7 @@ export class PhysicalUpdate : public PhysicalOperator {
 public:
     explicit PhysicalUpdate(u64 id,
                             UniquePtr<PhysicalOperator> left,
-                            TableCollectionEntry *table_entry_ptr,
+                            TableEntry *table_entry_ptr,
                             const Vector<Pair<SizeT, SharedPtr<BaseExpression>>> &update_columns,
                             SharedPtr<Vector<LoadMeta>> load_metas)
         : PhysicalOperator(PhysicalOperatorType::kUpdate, Move(left), nullptr, id, load_metas), table_entry_ptr_(table_entry_ptr),
@@ -48,7 +48,7 @@ public:
 
     inline SharedPtr<Vector<SharedPtr<DataType>>> GetOutputTypes() const final { return output_types_; }
 
-    TableCollectionEntry *table_entry_ptr_;
+    TableEntry *table_entry_ptr_;
     const Vector<Pair<SizeT, SharedPtr<BaseExpression>>> &update_columns_;
 
 private:

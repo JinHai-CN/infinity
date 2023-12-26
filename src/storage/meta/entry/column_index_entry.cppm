@@ -27,7 +27,7 @@ export module column_index_entry;
 namespace infinity {
 
 class BufferManager;
-class TableCollectionEntry;
+class TableEntry;
 class TableIndexEntry;
 
 export struct ColumnIndexEntry : public BaseEntry {
@@ -53,7 +53,7 @@ public:
     static UniquePtr<ColumnIndexEntry> Deserialize(const Json &column_index_entry_json,
                                                    TableIndexEntry *table_index_entry,
                                                    BufferManager *buffer_mgr,
-                                                   TableCollectionEntry *table_collection_entry);
+                                                   TableEntry *table_collection_entry);
 
 private:
     static SharedPtr<String> DetermineIndexDir(const String &parent_dir, const String &index_name);

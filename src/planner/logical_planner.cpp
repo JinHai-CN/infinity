@@ -164,9 +164,9 @@ Status LogicalPlanner::BuildInsertValue(const InsertStatement *statement, Shared
         Error<PlannerException>(status.message());
     }
 
-    TableCollectionEntry *table_entry = static_cast<TableCollectionEntry *>(base_table_entry);
+    TableEntry *table_entry = static_cast<TableEntry *>(base_table_entry);
 
-    if (table_entry->table_collection_type_ == TableCollectionType::kCollectionEntry) {
+    if (table_entry->table_collection_type_ == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
     }
 
@@ -671,7 +671,7 @@ Status LogicalPlanner::BuildImport(const CopyStatement *statement, SharedPtr<Bin
     if (!status.ok()) {
         Error<PlannerException>(status.message());
     }
-    auto table_collection_entry = dynamic_cast<TableCollectionEntry *>(base_entry);
+    auto table_collection_entry = dynamic_cast<TableEntry *>(base_entry);
 
     // Check the file existence
     LocalFileSystem fs;

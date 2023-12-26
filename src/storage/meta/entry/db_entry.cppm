@@ -41,7 +41,7 @@ public:
 
 public:
     static Status CreateTableCollection(DBEntry *db_entry,
-                                        TableCollectionType table_collection_type,
+                                        TableEntryType table_collection_type,
                                         const SharedPtr<String> &table_collection_name,
                                         const Vector<SharedPtr<ColumnDef>> &columns,
                                         u64 txn_id,
@@ -60,9 +60,9 @@ public:
     static Tuple<BaseEntry*, Status>
     GetTableCollection(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts);
 
-    static void RemoveTableCollectionEntry(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr);
+    static void RemoveTableEntry(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr);
 
-    static Vector<TableCollectionEntry *> TableCollections(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts);
+    static Vector<TableEntry *> TableCollections(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts);
 
     static Status GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableCollectionDetail> &output_table_array);
 

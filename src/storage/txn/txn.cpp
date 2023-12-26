@@ -55,7 +55,7 @@ namespace infinity {
 Txn::Txn(TxnManager *txn_mgr, NewCatalog *catalog, u32 txn_id)
     : txn_mgr_(txn_mgr), catalog_(catalog), txn_id_(txn_id), wal_entry_(MakeShared<WalEntry>()) {}
 
-Status Txn::GetTableEntry(const String &db_name, const String &table_name, TableCollectionEntry *&table_entry) {
+Status Txn::GetTableEntry(const String &db_name, const String &table_name, TableEntry *&table_entry) {
     if (db_name_.empty()) {
         db_name_ = db_name;
     } else {
@@ -74,17 +74,17 @@ Status Txn::GetTableEntry(const String &db_name, const String &table_name, Table
             return status;
         }
 
-        table_entry = (TableCollectionEntry *)base_table_entry;
+        table_entry = (TableEntry *)base_table_entry;
         txn_table_entries_[table_name] = reinterpret_cast<BaseEntry *>(table_entry);
     } else {
-        table_entry = (TableCollectionEntry *)table_iter->second;
+        table_entry = (TableEntry *)table_iter->second;
     }
 
     return Status::OK();
 }
 
 Status Txn::Append(const String &db_name, const String &table_name, const SharedPtr<DataBlock> &input_block) {
-    TableCollectionEntry *table_entry{nullptr};
+    TableEntry *table_entry{nullptr};
     Status status = GetTableEntry(db_name, table_name, table_entry);
     if (!status.ok()) {
         return status;
@@ -105,7 +105,7 @@ Status Txn::Append(const String &db_name, const String &table_name, const Shared
 }
 
 Status Txn::Delete(const String &db_name, const String &table_name, const Vector<RowID> &row_ids) {
-    TableCollectionEntry *table_entry{nullptr};
+    TableEntry *table_entry{nullptr};
     Status status = GetTableEntry(db_name, table_name, table_entry);
     if (!status.ok()) {
         return status;
@@ -146,7 +146,7 @@ void Txn::GetMetaTableState(MetaTableState *meta_table_state, const String &db_n
         }
     }
 
-    TableCollectionEntry *table_entry{nullptr};
+    TableEntry *table_entry{nullptr};
     Status status = GetTableEntry(db_name, table_name, table_entry);
     if (!status.ok()) {
         Error<TransactionException>(status.message());
@@ -155,10 +155,10 @@ void Txn::GetMetaTableState(MetaTableState *meta_table_state, const String &db_n
     return GetMetaTableState(meta_table_state, table_entry, columns);
 }
 
-void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableCollectionEntry *table_collection_entry, const Vector<ColumnID> &columns) {
-    u64 max_segment_id = TableCollectionEntry::GetMaxSegmentID(table_collection_entry);
+void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_collection_entry, const Vector<ColumnID> &columns) {
+    u64 max_segment_id = TableEntry::GetMaxSegmentID(table_collection_entry);
     for (u64 segment_id = 0; segment_id < max_segment_id; ++segment_id) {
-        SegmentEntry *segment_entry_ptr = TableCollectionEntry::GetSegmentByID(table_collection_entry, segment_id);
+        SegmentEntry *segment_entry_ptr = TableEntry::GetSegmentByID(table_collection_entry, segment_id);
 
         MetaSegmentState segment_state;
         segment_state.segment_entry_ = segment_entry_ptr;
@@ -185,7 +185,7 @@ void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableCollect
     }
 }
 
-TxnTableStore *Txn::GetTxnTableStore(TableCollectionEntry *table_entry) {
+TxnTableStore *Txn::GetTxnTableStore(TableEntry *table_entry) {
     UniqueLock<Mutex> lk(lock_);
     auto txn_table_iter = txn_tables_store_.find(*table_entry->table_collection_name_);
     if (txn_table_iter != txn_tables_store_.end()) {
@@ -299,7 +299,7 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
     }
 
     status = DBEntry::CreateTableCollection(db_entry,
-                                            TableCollectionType::kTableEntry,
+                                            TableEntryType::kTableEntry,
                                             table_def->table_name(),
                                             table_def->columns(),
                                             txn_id_,
@@ -321,7 +321,7 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
         Error<TransactionException>("Entry type should be table entry.");
     }
 
-    auto *table_entry = static_cast<TableCollectionEntry *>(new_table_entry);
+    auto *table_entry = static_cast<TableEntry *>(new_table_entry);
     txn_tables_.insert(table_entry);
     wal_entry_->cmds.push_back(MakeShared<WalCmdCreateTable>(db_name, table_def));
     return Status::OK();
@@ -348,7 +348,7 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
         return status;
     }
 
-    TableCollectionEntry *dropped_table_entry = static_cast<TableCollectionEntry *>(drop_table_entry);
+    TableEntry *dropped_table_entry = static_cast<TableEntry *>(drop_table_entry);
 
     if (txn_tables_.contains(dropped_table_entry)) {
         txn_tables_.erase(dropped_table_entry);
@@ -368,7 +368,7 @@ Status Txn::CreateIndex(const String &db_name, const String &table_name, const S
     }
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    TableCollectionEntry *table_entry{nullptr};
+    TableEntry *table_entry{nullptr};
     Status table_status = GetTableEntry(db_name, table_name, table_entry);
     if (!table_status.ok()) {
         return table_status;
@@ -376,7 +376,7 @@ Status Txn::CreateIndex(const String &db_name, const String &table_name, const S
 
     // Create table index entry
     BaseEntry *base_entry{nullptr};
-    Status index_status = TableCollectionEntry::CreateIndex(table_entry, index_def, conflict_type, txn_id_, begin_ts, txn_mgr_, base_entry);
+    Status index_status = TableEntry::CreateIndex(table_entry, index_def, conflict_type, txn_id_, begin_ts, txn_mgr_, base_entry);
 
     if (!index_status.ok()) {
         return index_status;
@@ -399,7 +399,7 @@ Status Txn::CreateIndex(const String &db_name, const String &table_name, const S
     table_store = txn_tables_store_[table_name].get();
 
     // Create Index Synchronously
-    TableCollectionEntry::CreateIndexFile(table_entry, table_store, table_index_entry, begin_ts, GetBufferMgr());
+    TableEntry::CreateIndexFile(table_entry, table_store, table_index_entry, begin_ts, GetBufferMgr());
 
     wal_entry_->cmds.push_back(MakeShared<WalCmdCreateIndex>(db_name, table_name, index_def));
     return index_status;
@@ -412,14 +412,14 @@ Status Txn::DropIndexByName(const String &db_name, const String &table_name, con
     }
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
-    TableCollectionEntry *table_entry{nullptr};
+    TableEntry *table_entry{nullptr};
     Status table_status = GetTableEntry(db_name, table_name, table_entry);
     if (!table_status.ok()) {
         return table_status;
     }
 
     BaseEntry *base_entry{nullptr};
-    Status index_status = TableCollectionEntry::DropIndex(table_entry, index_name, conflict_type, txn_id_, begin_ts, txn_mgr_, base_entry);
+    Status index_status = TableEntry::DropIndex(table_entry, index_name, conflict_type, txn_id_, begin_ts, txn_mgr_, base_entry);
     if (!index_status.ok()) {
         return index_status;
     }
@@ -576,16 +576,16 @@ void Txn::Rollback() {
     txn_context_.SetTxnRollbacking(abort_ts);
 
     for (const auto &base_entry : txn_tables_) {
-        auto *table_entry = (TableCollectionEntry *)(base_entry);
-        TableCollectionMeta *table_meta = TableCollectionEntry::GetTableMeta(table_entry);
-        DBEntry *db_entry = TableCollectionEntry::GetDBEntry(table_entry);
-        DBEntry::RemoveTableCollectionEntry(db_entry, *table_meta->table_collection_name_, txn_id_, txn_mgr_);
+        auto *table_entry = (TableEntry *)(base_entry);
+        TableCollectionMeta *table_meta = TableEntry::GetTableMeta(table_entry);
+        DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
+        DBEntry::RemoveTableEntry(db_entry, *table_meta->table_collection_name_, txn_id_, txn_mgr_);
     }
 
     for (const auto &[index_name, table_index_entry] : txn_indexes_) {
         TableIndexMeta *table_index_meta = table_index_entry->table_index_meta_;
-        TableCollectionEntry *table_entry = TableIndexMeta::GetTableCollectionEntry(table_index_meta);
-        TableCollectionEntry::RemoveIndexEntry(table_entry, index_name, txn_id_, txn_mgr_);
+        TableEntry *table_entry = TableIndexMeta::GetTableEntry(table_index_meta);
+        TableEntry::RemoveIndexEntry(table_entry, index_name, txn_id_, txn_mgr_);
     }
 
     for (const auto &db_name : db_names_) {

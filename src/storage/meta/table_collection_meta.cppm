@@ -36,7 +36,7 @@ public:
 
 public:
     static Status CreateNewEntry(TableCollectionMeta *table_meta,
-                                 TableCollectionType table_collection_type,
+                                 TableEntryType table_collection_type,
                                  const SharedPtr<String> &table_collection_name,
                                  const Vector<SharedPtr<ColumnDef>> &columns,
                                  u64 txn_id,

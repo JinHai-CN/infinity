@@ -72,7 +72,7 @@ SharedPtr<IrsIndexEntry> IrsIndexEntry::NewIrsIndexEntry(TableIndexEntry *table_
                                                          TxnTimeStamp begin_ts) {
     auto irs_index_entry = MakeShared<IrsIndexEntry>(table_index_entry, index_dir, txn_id, begin_ts);
     irs_index_entry->irs_index_ =
-        MakeShared<IRSDataStore>(*(TableIndexMeta::GetTableCollectionEntry(table_index_entry->table_index_meta_)->table_collection_name_),
+        MakeShared<IRSDataStore>(*(TableIndexMeta::GetTableEntry(table_index_entry->table_index_meta_)->table_collection_name_),
                                  *(index_dir));
     return irs_index_entry;
 }

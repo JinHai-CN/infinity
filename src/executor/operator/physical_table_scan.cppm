@@ -33,7 +33,7 @@ namespace infinity {
 
 // class TableScanFunction;
 // class BaseTableRef;
-// class TableCollectionEntry;
+// class TableEntry;
 // class BlockIndex;
 
 export class PhysicalTableScan : public PhysicalOperator {
@@ -58,7 +58,7 @@ public:
 
     u64 TableIndex() const;
 
-    TableCollectionEntry *TableEntry() const;
+    TableEntry *TableEntry() const;
 
     SizeT BlockEntryCount() const;
 

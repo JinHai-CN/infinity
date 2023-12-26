@@ -49,7 +49,7 @@ namespace infinity {
  * @return Status
  */
 Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
-                                           TableCollectionType table_collection_type,
+                                           TableEntryType table_collection_type,
                                            const SharedPtr<String> &table_collection_name_ptr,
                                            const Vector<SharedPtr<ColumnDef>> &columns,
                                            u64 txn_id,
@@ -66,7 +66,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
         table_meta->entry_list_.emplace_back(Move(dummy_entry));
 
         // Insert the new table entry
-        UniquePtr<TableCollectionEntry> table_entry = MakeUnique<TableCollectionEntry>(table_meta->db_entry_dir_,
+        UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                        table_collection_name_ptr,
                                                                                        columns,
                                                                                        table_collection_type,
@@ -83,7 +83,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
         BaseEntry *header_base_entry = table_meta->entry_list_.front().get();
         if (header_base_entry->entry_type_ == EntryType::kDummy) {
             // Dummy entry in the header
-            UniquePtr<TableCollectionEntry> table_entry = MakeUnique<TableCollectionEntry>(table_meta->db_entry_dir_,
+            UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                            table_collection_name_ptr,
                                                                                            columns,
                                                                                            table_collection_type,
@@ -95,13 +95,13 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
             return Status::OK();
         }
 
-        TableCollectionEntry *header_table_entry = (TableCollectionEntry *)header_base_entry;
+        TableEntry *header_table_entry = (TableEntry *)header_base_entry;
         if (header_table_entry->commit_ts_ < UNCOMMIT_TS) {
             // Committed
             if (begin_ts > header_table_entry->commit_ts_) {
                 if (header_table_entry->deleted_) {
                     // No conflict
-                    UniquePtr<TableCollectionEntry> table_entry = MakeUnique<TableCollectionEntry>(table_meta->db_entry_dir_,
+                    UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                                    table_collection_name_ptr,
                                                                                                    columns,
                                                                                                    table_collection_type,
@@ -134,7 +134,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                     if (header_table_entry->txn_id_ == txn_id) {
                         // Same txn
                         if (header_table_entry->deleted_) {
-                            UniquePtr<TableCollectionEntry> table_entry = MakeUnique<TableCollectionEntry>(table_meta->db_entry_dir_,
+                            UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                                            table_collection_name_ptr,
                                                                                                            columns,
                                                                                                            table_collection_type,
@@ -169,7 +169,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                     table_meta->entry_list_.erase(table_meta->entry_list_.begin());
 
                     // Append new one
-                    UniquePtr<TableCollectionEntry> table_entry = MakeUnique<TableCollectionEntry>(table_meta->db_entry_dir_,
+                    UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                                    table_collection_name_ptr,
                                                                                                    columns,
                                                                                                    table_collection_type,
@@ -211,7 +211,7 @@ Status TableCollectionMeta::DropNewEntry(TableCollectionMeta *table_meta,
         return Status(ErrorCode::kNotFound, Move(err_msg));
     }
 
-    auto *header_table_entry = (TableCollectionEntry *)header_base_entry;
+    auto *header_table_entry = (TableEntry *)header_base_entry;
     if (header_table_entry->commit_ts_ < UNCOMMIT_TS) {
         // Committed
         if (begin_ts > header_table_entry->commit_ts_) {
@@ -227,10 +227,10 @@ Status TableCollectionMeta::DropNewEntry(TableCollectionMeta *table_meta,
             }
 
             Vector<SharedPtr<ColumnDef>> dummy_columns;
-            UniquePtr<TableCollectionEntry> table_entry = MakeUnique<TableCollectionEntry>(table_meta->db_entry_dir_,
+            UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                            table_meta->table_collection_name_,
                                                                                            dummy_columns,
-                                                                                           TableCollectionType::kTableEntry,
+                                                                                           TableEntryType::kTableEntry,
                                                                                            table_meta,
                                                                                            txn_id,
                                                                                            begin_ts);
@@ -340,7 +340,7 @@ SharedPtr<String> TableCollectionMeta::ToString(TableCollectionMeta *table_meta)
 
 Json TableCollectionMeta::Serialize(TableCollectionMeta *table_meta, TxnTimeStamp max_commit_ts, bool is_full_checkpoint) {
     Json json_res;
-    Vector<TableCollectionEntry *> table_candidates;
+    Vector<TableEntry *> table_candidates;
     {
         SharedLock<RWMutex> lck(table_meta->rw_locker_);
         json_res["db_entry_dir"] = *table_meta->db_entry_dir_;
@@ -350,12 +350,12 @@ Json TableCollectionMeta::Serialize(TableCollectionMeta *table_meta, TxnTimeStam
         for (auto &table_entry : table_meta->entry_list_) {
             if (table_entry->entry_type_ == EntryType::kTable && table_entry->commit_ts_ <= max_commit_ts) {
                 // Put it to candidate list
-                table_candidates.push_back((TableCollectionEntry *)table_entry.get());
+                table_candidates.push_back((TableEntry *)table_entry.get());
             }
         }
     }
-    for (TableCollectionEntry *table_entry : table_candidates) {
-        json_res["table_entries"].emplace_back(TableCollectionEntry::Serialize(table_entry, max_commit_ts, is_full_checkpoint));
+    for (TableEntry *table_entry : table_candidates) {
+        json_res["table_entries"].emplace_back(TableEntry::Serialize(table_entry, max_commit_ts, is_full_checkpoint));
     }
     return json_res;
 }
@@ -379,7 +379,7 @@ UniquePtr<TableCollectionMeta> TableCollectionMeta::Deserialize(const Json &tabl
     UniquePtr<TableCollectionMeta> res = MakeUnique<TableCollectionMeta>(db_entry_dir, table_name, db_entry);
     if (table_meta_json.contains("table_entries")) {
         for (const auto &table_entry_json : table_meta_json["table_entries"]) {
-            UniquePtr<TableCollectionEntry> table_entry = TableCollectionEntry::Deserialize(table_entry_json, res.get(), buffer_mgr);
+            UniquePtr<TableEntry> table_entry = TableEntry::Deserialize(table_entry_json, res.get(), buffer_mgr);
             res->entry_list_.emplace_back(Move(table_entry));
         }
     }

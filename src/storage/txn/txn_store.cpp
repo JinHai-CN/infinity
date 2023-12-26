@@ -134,8 +134,8 @@ void TxnTableStore::Scan(SharedPtr<DataBlock> &) {}
 void TxnTableStore::Rollback() {
     if (append_state_.get() != nullptr) {
         // Rollback the data already been appended.
-        TableCollectionEntry::RollbackAppend(table_entry_, txn_, this);
-        TableCollectionMeta *table_meta = (TableCollectionMeta *)TableCollectionEntry::GetTableMeta(table_entry_);
+        TableEntry::RollbackAppend(table_entry_, txn_, this);
+        TableCollectionMeta *table_meta = (TableCollectionMeta *)TableEntry::GetTableMeta(table_entry_);
         LOG_TRACE(Format("Rollback prepare appended data in table: {}", *table_meta->table_collection_name_));
     }
 
@@ -149,18 +149,18 @@ void TxnTableStore::PrepareCommit() {
     // Start to append
     LOG_TRACE(Format("Transaction local storage table: {}, Start to prepare commit", *table_entry_->table_collection_name_));
     Txn *txn_ptr = (Txn *)txn_;
-    TableCollectionEntry::Append(table_entry_, txn_, this, txn_ptr->GetBufferMgr());
+    TableEntry::Append(table_entry_, txn_, this, txn_ptr->GetBufferMgr());
 
     SizeT segment_count = uncommitted_segments_.size();
     for (SizeT seg_idx = 0; seg_idx < segment_count; ++seg_idx) {
         const auto &uncommitted = uncommitted_segments_[seg_idx];
         // Segments in `uncommitted_segments_` are already persisted. Import them to memory catalog.
-        TableCollectionEntry::ImportSegment(table_entry_, txn_, uncommitted);
+        TableEntry::ImportSegment(table_entry_, txn_, uncommitted);
     }
 
-    TableCollectionEntry::Delete(table_entry_, txn_, delete_state_);
+    TableEntry::Delete(table_entry_, txn_, delete_state_);
 
-    TableCollectionEntry::CommitCreateIndex(table_entry_, txn_indexes_store_);
+    TableEntry::CommitCreateIndex(table_entry_, txn_indexes_store_);
 
     LOG_TRACE(Format("Transaction local storage table: {}, Complete commit preparing", *table_entry_->table_collection_name_));
 }
@@ -169,8 +169,8 @@ void TxnTableStore::PrepareCommit() {
  * @brief Call for really commit the data to disk.
  */
 void TxnTableStore::Commit() const {
-    TableCollectionEntry::CommitAppend(table_entry_, txn_, append_state_.get());
-    TableCollectionEntry::CommitDelete(table_entry_, txn_, delete_state_);
+    TableEntry::CommitAppend(table_entry_, txn_, append_state_.get());
+    TableEntry::CommitDelete(table_entry_, txn_, delete_state_);
 }
 
 } // namespace infinity

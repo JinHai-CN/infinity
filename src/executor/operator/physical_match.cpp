@@ -83,7 +83,7 @@ bool PhysicalMatch::Execute(QueryContext *query_context, OperatorState *operator
     TxnTimeStamp begin_ts = query_context->GetTxn()->BeginTS();
     SharedPtr<IrsIndexEntry> irs_index_entry;
     Map<String, String> column2analyzer;
-    TableCollectionEntry::GetFullTextAnalyzers(base_table_ref_->table_entry_ptr_, txn_id, begin_ts, irs_index_entry, column2analyzer);
+    TableEntry::GetFullTextAnalyzers(base_table_ref_->table_entry_ptr_, txn_id, begin_ts, irs_index_entry, column2analyzer);
     // 1.2 parse options into map, populate default_field
     SearchOptions search_ops(match_expr_->options_text_);
     String default_field = search_ops.options_["default_field"];
@@ -123,7 +123,7 @@ bool PhysicalMatch::Execute(QueryContext *query_context, OperatorState *operator
         u32 segment_offset = row_id.segment_offset_;
         u16 block_id = segment_offset / DEFAULT_BLOCK_CAPACITY;
         u16 block_offset = segment_offset % DEFAULT_BLOCK_CAPACITY;
-        SegmentEntry *segment_entry = TableCollectionEntry::GetSegmentByID(base_table_ref_->table_entry_ptr_, segment_id);
+        SegmentEntry *segment_entry = TableEntry::GetSegmentByID(base_table_ref_->table_entry_ptr_, segment_id);
         if (segment_entry == nullptr) {
             throw ExecutorException(Format("Cannot find segment, segment id: {}", segment_id));
         }

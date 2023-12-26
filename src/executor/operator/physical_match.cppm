@@ -56,7 +56,7 @@ public:
 
     [[nodiscard]] inline String TableAlias() const { return base_table_ref_->alias_; }
 
-    [[nodiscard]] inline TableCollectionEntry *table_collection_ptr() const { return base_table_ref_->table_entry_ptr_; }
+    [[nodiscard]] inline TableEntry *table_collection_ptr() const { return base_table_ref_->table_entry_ptr_; }
 
     [[nodiscard]] inline u64 table_index() const { return table_index_; }
 

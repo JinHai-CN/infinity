@@ -517,7 +517,7 @@ Optional<SharedPtr<BaseExpression>> ExpressionBinder::TryBuildSpecialFuncExpr(co
         String &table_name = bind_context_ptr->table_names_[0];
         String column_name = special_function->name();
 
-        TableCollectionEntry *table_entry = bind_context_ptr->binding_by_name_[table_name]->table_collection_entry_ptr_;
+        TableEntry *table_entry = bind_context_ptr->binding_by_name_[table_name]->table_collection_entry_ptr_;
         SharedPtr<ColumnExpression> bound_column_expr = ColumnExpression::Make(special_function->data_type(),
                                                                                table_name,
                                                                                bind_context_ptr->table_name2table_index_[table_name],

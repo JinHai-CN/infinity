@@ -24,12 +24,12 @@ export module logical_import;
 
 namespace infinity {
 
-class TableCollectionEntry;
+class TableEntry;
 
 export class LogicalImport : public LogicalNode {
 public:
     explicit inline LogicalImport(u64 node_id,
-                                  TableCollectionEntry *table_collection_entry,
+                                  TableEntry *table_collection_entry,
                                   String file_path,
                                   bool header,
                                   char delimiter,
@@ -47,9 +47,9 @@ public:
 
     inline String name() final { return "LogicalImport"; }
 
-    inline const TableCollectionEntry *table_collection_entry() const { return table_collection_entry_; }
+    inline const TableEntry *table_collection_entry() const { return table_collection_entry_; }
 
-    inline TableCollectionEntry *table_collection_entry() { return table_collection_entry_; }
+    inline TableEntry *table_collection_entry() { return table_collection_entry_; }
 
     [[nodiscard]] inline CopyFileType FileType() const { return file_type_; }
 
@@ -60,7 +60,7 @@ public:
     [[nodiscard]] char delimiter() const { return delimiter_; }
 
 private:
-    TableCollectionEntry *table_collection_entry_{};
+    TableEntry *table_collection_entry_{};
     CopyFileType file_type_{CopyFileType::kCSV};
     String file_path_{};
     bool header_{false};

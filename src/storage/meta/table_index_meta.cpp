@@ -40,7 +40,7 @@ namespace infinity {
 
 struct SegmentEntry;
 
-TableIndexMeta::TableIndexMeta(TableCollectionEntry *table_collection_entry, SharedPtr<String> index_name)
+TableIndexMeta::TableIndexMeta(TableEntry *table_collection_entry, SharedPtr<String> index_name)
     : index_name_(Move(index_name)), table_collection_entry_(table_collection_entry) {}
 
 Status TableIndexMeta::CreateTableIndexEntry(TableIndexMeta *table_index_meta,
@@ -265,7 +265,7 @@ Json TableIndexMeta::Serialize(TableIndexMeta *table_index_meta, TxnTimeStamp ma
 }
 
 UniquePtr<TableIndexMeta>
-TableIndexMeta::Deserialize(const Json &table_index_meta_json, TableCollectionEntry *table_entry, BufferManager *buffer_mgr) {
+TableIndexMeta::Deserialize(const Json &table_index_meta_json, TableEntry *table_entry, BufferManager *buffer_mgr) {
     LOG_TRACE(Format("load index"));
 
     SharedPtr<String> index_name = MakeShared<String>(table_index_meta_json["index_name"]);

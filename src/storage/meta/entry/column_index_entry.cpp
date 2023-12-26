@@ -53,7 +53,7 @@ SharedPtr<ColumnIndexEntry> ColumnIndexEntry::NewColumnIndexEntry(SharedPtr<Inde
                                                                   SharedPtr<String> index_dir,
                                                                   TxnTimeStamp begin_ts) {
     //    SharedPtr<String> index_dir =
-    //        DetermineIndexDir(*TableIndexMeta::GetTableCollectionEntry(table_index_meta)->table_entry_dir_, index_base->file_name_);
+    //        DetermineIndexDir(*TableIndexMeta::GetTableEntry(table_index_meta)->table_entry_dir_, index_base->file_name_);
     return MakeShared<ColumnIndexEntry>(index_base, table_index_entry, column_id, index_dir, txn_id, begin_ts);
 }
 
@@ -96,7 +96,7 @@ Json ColumnIndexEntry::Serialize(ColumnIndexEntry *column_index_entry, TxnTimeSt
 UniquePtr<ColumnIndexEntry> ColumnIndexEntry::Deserialize(const Json &column_index_entry_json,
                                                           TableIndexEntry *table_index_entry,
                                                           BufferManager *buffer_mgr,
-                                                          TableCollectionEntry *table_collection_entry) {
+                                                          TableEntry *table_collection_entry) {
     bool deleted = column_index_entry_json["deleted"];
     if (deleted) {
         Error<StorageException>("Column index entry can't be deleted.");

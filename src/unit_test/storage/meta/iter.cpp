@@ -76,9 +76,9 @@ public:
         MockSegmentEntry(std::vector<std::shared_ptr<BlockEntry>> blocks) : SegmentEntry(nullptr) { block_entries_ = std::move(blocks); }
     };
 
-    class MockTableEntry : public TableCollectionEntry {
+    class MockTableEntry : public TableEntry {
     public:
-        MockTableEntry(std::map<uint32_t, std::shared_ptr<SegmentEntry>> segments, SegmentEntry *unsealed) : TableCollectionEntry() {
+        MockTableEntry(std::map<uint32_t, std::shared_ptr<SegmentEntry>> segments, SegmentEntry *unsealed) : TableEntry() {
             segment_map_ = std::move(segments);
             unsealed_segment_ = unsealed;
         }

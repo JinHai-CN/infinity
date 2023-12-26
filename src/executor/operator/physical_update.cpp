@@ -45,7 +45,7 @@ bool PhysicalUpdate::Execute(QueryContext *query_context, OperatorState *operato
         DataBlock *input_data_block_ptr = prev_op_state->data_block_array_[block_idx].get();
 
         auto txn = query_context->GetTxn();
-        auto db_name = TableCollectionEntry::GetDBEntry(table_entry_ptr_)->db_name_;
+        auto db_name = TableEntry::GetDBEntry(table_entry_ptr_)->db_name_;
         auto table_name = table_entry_ptr_->table_collection_name_;
         Vector<RowID> row_ids;
         Vector<SharedPtr<ColumnVector>> column_vectors;

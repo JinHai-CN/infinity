@@ -740,7 +740,7 @@ void ExplainLogicalPlan::Explain(const LogicalTableScan *table_scan_node, Shared
     table_name += table_scan_node->TableAlias();
     table_name += "(";
 
-    DBEntry *db_entry = TableCollectionEntry::GetDBEntry(table_scan_node->table_collection_ptr());
+    DBEntry *db_entry = TableEntry::GetDBEntry(table_scan_node->table_collection_ptr());
 
     table_name += *db_entry->db_name_;
     table_name += ".";
@@ -788,7 +788,7 @@ void ExplainLogicalPlan::Explain(const LogicalKnnScan *knn_scan_node, SharedPtr<
     table_name += knn_scan_node->TableAlias();
     table_name += "(";
 
-    DBEntry *db_entry = TableCollectionEntry::GetDBEntry(knn_scan_node->table_collection_ptr());
+    DBEntry *db_entry = TableEntry::GetDBEntry(knn_scan_node->table_collection_ptr());
 
     table_name += *db_entry->db_name_;
     table_name += ".";

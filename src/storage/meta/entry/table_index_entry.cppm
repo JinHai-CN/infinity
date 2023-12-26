@@ -28,7 +28,7 @@ namespace infinity {
 
 class TableIndexMeta;
 class BufferManager;
-class TableCollectionEntry;
+class TableEntry;
 
 export class TableIndexEntry : public BaseEntry {
 
@@ -53,7 +53,7 @@ public:
     static Json Serialize(TableIndexEntry *table_index_entry, TxnTimeStamp max_commit_ts);
 
     static UniquePtr<TableIndexEntry>
-    Deserialize(const Json &index_def_entry_json, TableIndexMeta *table_index_meta, BufferManager *buffer_mgr, TableCollectionEntry *table_entry);
+    Deserialize(const Json &index_def_entry_json, TableIndexMeta *table_index_meta, BufferManager *buffer_mgr, TableEntry *table_entry);
 
 private:
     static SharedPtr<String> DetermineIndexDir(const String &parent_dir, const String &index_name);

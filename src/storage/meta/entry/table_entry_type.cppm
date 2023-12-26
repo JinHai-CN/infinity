@@ -22,17 +22,17 @@ export module table_collection_type;
 
 namespace infinity {
 
-export enum TableCollectionType : i8 {
+export enum TableEntryType : i8 {
     kTableEntry,
     kCollectionEntry,
 };
 
-export inline String ToString(TableCollectionType type) {
+export inline String ToString(TableEntryType type) {
     switch (type) {
-        case TableCollectionType::kTableEntry: {
+        case TableEntryType::kTableEntry: {
             return "Table";
         }
-        case TableCollectionType::kCollectionEntry: {
+        case TableEntryType::kCollectionEntry: {
             return "Collection";
         }
         default: {

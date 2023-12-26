@@ -27,12 +27,12 @@ export module physical_insert;
 
 namespace infinity {
 
-class TableCollectionEntry;
+class TableEntry;
 
 export class PhysicalInsert : public PhysicalOperator {
 public:
     explicit PhysicalInsert(u64 id,
-                            TableCollectionEntry *table_collection_entry,
+                            TableEntry *table_collection_entry,
                             u64 table_index,
                             Vector<Vector<SharedPtr<BaseExpression>>> value_list,
                             SharedPtr<Vector<LoadMeta>> load_metas)
@@ -45,7 +45,7 @@ public:
 
     bool Execute(QueryContext *query_context, OperatorState *operator_state) final;
 
-    inline const TableCollectionEntry *table_collection_entry() const { return table_collection_entry_; }
+    inline const TableEntry *table_collection_entry() const { return table_collection_entry_; }
 
     inline const Vector<Vector<SharedPtr<BaseExpression>>> &value_list() const { return value_list_; }
 
@@ -54,7 +54,7 @@ public:
     inline SharedPtr<Vector<SharedPtr<DataType>>> GetOutputTypes() const final { return output_types_; }
 
 private:
-    TableCollectionEntry *table_collection_entry_{};
+    TableEntry *table_collection_entry_{};
     u64 table_index_{};
     Vector<Vector<SharedPtr<BaseExpression>>> value_list_{};
 

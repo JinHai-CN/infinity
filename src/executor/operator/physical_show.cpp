@@ -359,7 +359,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
         }
 
         ++column_id;
-        TableCollectionType table_type = table_collection_detail.table_collection_type_;
+        TableEntryType table_type = table_collection_detail.table_collection_type_;
         {
             // Append base table type to the 2 column
             const String &base_table_type_str = ToString(table_type);
@@ -372,13 +372,13 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
         {
             // Append column count the 3 column
             switch (table_type) {
-                case TableCollectionType::kTableEntry: {
+                case TableEntryType::kTableEntry: {
                     Value value = Value::MakeBigInt(static_cast<i64>(table_collection_detail.column_count_));
                     ValueExpression value_expr(value);
                     value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
                     break;
                 }
-                case TableCollectionType::kCollectionEntry: {
+                case TableEntryType::kCollectionEntry: {
                     // TODO: column count need to be given for table.
                     Value value = Value::MakeBigInt(static_cast<i64>(0));
                     ValueExpression value_expr(value);
@@ -392,13 +392,13 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
         {
             // Append row count the 4 column
             switch (table_type) {
-                case TableCollectionType::kTableEntry: {
+                case TableEntryType::kTableEntry: {
                     Value value = Value::MakeBigInt(static_cast<i64>(table_collection_detail.row_count_));
                     ValueExpression value_expr(value);
                     value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
                     break;
                 }
-                case TableCollectionType::kCollectionEntry: {
+                case TableEntryType::kCollectionEntry: {
                     // TODO: row count need to be given for collection.
                     Value value = Value::MakeBigInt(static_cast<i64>(0));
                     ValueExpression value_expr(value);
@@ -415,13 +415,13 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
         {
             // Append segment count the 5 column
             switch (table_type) {
-                case TableCollectionType::kTableEntry: {
+                case TableEntryType::kTableEntry: {
                     Value value = Value::MakeBigInt(static_cast<i64>(table_collection_detail.segment_count_));
                     ValueExpression value_expr(value);
                     value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
                     break;
                 }
-                case TableCollectionType::kCollectionEntry: {
+                case TableEntryType::kCollectionEntry: {
                     // TODO: segment count need to be given for collection.
                     Value value = Value::MakeBigInt(static_cast<i64>(0));
                     ValueExpression value_expr(value);
@@ -438,13 +438,13 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
         {
             // Append segment count the 5 column
             switch (table_type) {
-                case TableCollectionType::kTableEntry: {
+                case TableEntryType::kTableEntry: {
                     Value value = Value::MakeBigInt(static_cast<i64>(table_collection_detail.block_count_));
                     ValueExpression value_expr(value);
                     value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
                     break;
                 }
-                case TableCollectionType::kCollectionEntry: {
+                case TableEntryType::kCollectionEntry: {
                     // TODO: segment count need to be given for collection.
                     Value value = Value::MakeBigInt(static_cast<i64>(0));
                     ValueExpression value_expr(value);
@@ -605,7 +605,7 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
         return;
     }
 
-    auto table_collection_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_collection_entry = dynamic_cast<TableEntry *>(base_table_entry);
 
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
 
@@ -681,7 +681,7 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
         return;
     }
 
-    auto table_collection_entry = dynamic_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_collection_entry = dynamic_cast<TableEntry *>(base_table_entry);
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
 
     Vector<SharedPtr<ColumnDef>> column_defs = {
@@ -1295,7 +1295,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
         return;
     }
 
-    auto table_collection_entry = static_cast<TableCollectionEntry *>(base_table_entry);
+    auto table_collection_entry = static_cast<TableEntry *>(base_table_entry);
 
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
     auto bigint_type = MakeShared<DataType>(LogicalType::kBigInt);

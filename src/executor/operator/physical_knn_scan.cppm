@@ -59,7 +59,7 @@ public:
 
     inline SharedPtr<Vector<SharedPtr<DataType>>> GetOutputTypes() const final { return output_types_; }
 
-    [[nodiscard]] TableCollectionEntry *table_collection_ptr() const;
+    [[nodiscard]] TableEntry *table_collection_ptr() const;
 
     [[nodiscard]] String TableAlias() const;
 

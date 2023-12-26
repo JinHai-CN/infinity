@@ -386,8 +386,8 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
     if (!status.ok()) {
         Error<PlannerException>(status.message());
     }
-    TableCollectionEntry *table_collection_entry = static_cast<TableCollectionEntry *>(base_table_entry);
-    if (table_collection_entry->table_collection_type_ == TableCollectionType::kCollectionEntry) {
+    TableEntry *table_collection_entry = static_cast<TableEntry *>(base_table_entry);
+    if (table_collection_entry->table_collection_type_ == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
     }
 
@@ -410,7 +410,7 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
     u64 txn_id = query_context->GetTxn()->TxnID();
     TxnTimeStamp begin_ts = query_context->GetTxn()->BeginTS();
 
-    SharedPtr<BlockIndex> block_index = TableCollectionEntry::GetBlockIndex(table_collection_entry, txn_id, begin_ts);
+    SharedPtr<BlockIndex> block_index = TableEntry::GetBlockIndex(table_collection_entry, txn_id, begin_ts);
 
     u64 table_index = bind_context_ptr_->GenerateTableIndex();
     auto table_ref = MakeShared<BaseTableRef>(table_collection_entry, columns, Move(block_index), alias, table_index, names_ptr, types_ptr);

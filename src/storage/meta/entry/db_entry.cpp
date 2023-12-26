@@ -37,7 +37,7 @@ module db_entry;
 namespace infinity {
 
 Status DBEntry::CreateTableCollection(DBEntry *db_entry,
-                                      TableCollectionType table_collection_type,
+                                      TableEntryType table_collection_type,
                                       const SharedPtr<String> &table_collection_name,
                                       const Vector<SharedPtr<ColumnDef>> &columns,
                                       u64 txn_id,
@@ -133,7 +133,7 @@ DBEntry::GetTableCollection(DBEntry *db_entry, const String &table_collection_na
     return TableCollectionMeta::GetEntry(table_meta, txn_id, begin_ts);
 }
 
-void DBEntry::RemoveTableCollectionEntry(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr) {
+void DBEntry::RemoveTableEntry(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr) {
     db_entry->rw_locker_.lock_shared();
 
     TableCollectionMeta *table_meta{nullptr};
@@ -146,8 +146,8 @@ void DBEntry::RemoveTableCollectionEntry(DBEntry *db_entry, const String &table_
     TableCollectionMeta::DeleteNewEntry(table_meta, txn_id, txn_mgr);
 }
 
-Vector<TableCollectionEntry *> DBEntry::TableCollections(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts) {
-    Vector<TableCollectionEntry *> results;
+Vector<TableEntry *> DBEntry::TableCollections(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts) {
+    Vector<TableEntry *> results;
 
     db_entry->rw_locker_.lock_shared();
 
@@ -158,7 +158,7 @@ Vector<TableCollectionEntry *> DBEntry::TableCollections(DBEntry *db_entry, u64 
         if (!status.ok()) {
             LOG_TRACE(Format("error when get table/collection entry: {}", status.message()));
         } else {
-            results.emplace_back((TableCollectionEntry *)table_collection_entry);
+            results.emplace_back((TableEntry *)table_collection_entry);
         }
     }
     db_entry->rw_locker_.unlock_shared();
@@ -167,9 +167,9 @@ Vector<TableCollectionEntry *> DBEntry::TableCollections(DBEntry *db_entry, u64 
 }
 
 Status DBEntry::GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableCollectionDetail> &output_table_array) {
-    Vector<TableCollectionEntry *> table_collection_entries = DBEntry::TableCollections(db_entry, txn_id, begin_ts);
+    Vector<TableEntry *> table_collection_entries = DBEntry::TableCollections(db_entry, txn_id, begin_ts);
     output_table_array.reserve(table_collection_entries.size());
-    for (TableCollectionEntry *table_collection_entry : table_collection_entries) {
+    for (TableEntry *table_collection_entry : table_collection_entries) {
         TableCollectionDetail table_collection_detail;
         table_collection_detail.db_name_ = db_entry->db_name_;
         table_collection_detail.table_collection_name_ = table_collection_entry->table_collection_name_;
@@ -178,7 +178,7 @@ Status DBEntry::GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTime
         table_collection_detail.row_count_ = table_collection_entry->row_count_;
         table_collection_detail.segment_capacity_ = DEFAULT_SEGMENT_CAPACITY;
 
-        SharedPtr<BlockIndex> segment_index = TableCollectionEntry::GetBlockIndex(table_collection_entry, txn_id, begin_ts);
+        SharedPtr<BlockIndex> segment_index = TableEntry::GetBlockIndex(table_collection_entry, txn_id, begin_ts);
 
         table_collection_detail.segment_count_ = segment_index->SegmentCount();
         table_collection_detail.block_count_ = segment_index->BlockCount();

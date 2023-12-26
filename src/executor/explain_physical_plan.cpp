@@ -698,7 +698,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalTableScan *table_scan_node, Shar
     result->emplace_back(MakeShared<String>(table_scan_header));
 
     // Table alias and name
-    DBEntry *db_entry = TableCollectionEntry::GetDBEntry(table_scan_node->TableEntry());
+    DBEntry *db_entry = TableEntry::GetDBEntry(table_scan_node->TableEntry());
 
     String table_name = String(intent_size, ' ') + " - table name: " + table_scan_node->table_alias() + "(";
     table_name += *db_entry->db_name_ + ".";
@@ -737,7 +737,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalKnnScan *knn_scan_node, SharedPt
     // Table alias and name
     String table_name = String(intent_size, ' ') + " - table name: " + knn_scan_node->TableAlias() + "(";
 
-    DBEntry *db_entry = TableCollectionEntry::GetDBEntry(knn_scan_node->table_collection_ptr());
+    DBEntry *db_entry = TableEntry::GetDBEntry(knn_scan_node->table_collection_ptr());
 
     table_name += *db_entry->db_name_ + ".";
     table_name += *knn_scan_node->table_collection_ptr()->table_collection_name_ + ")";
@@ -1222,8 +1222,8 @@ void ExplainPhysicalPlan::Explain(const PhysicalDelete *delete_node, SharedPtr<V
         header = "DELETE FROM ";
     }
 
-    TableCollectionEntry *table_entry = delete_node->table_entry_ptr_;
-    DBEntry *db_entry = TableCollectionEntry::GetDBEntry(table_entry);
+    TableEntry *table_entry = delete_node->table_entry_ptr_;
+    DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
     header += *db_entry->db_name_ + "." + *table_entry->table_collection_name_;
     result->emplace_back(MakeShared<String>(header));
 }
@@ -1236,8 +1236,8 @@ void ExplainPhysicalPlan::Explain(const PhysicalUpdate *update_node, SharedPtr<V
         header = "UPDATE ";
     }
 
-    TableCollectionEntry *table_entry = update_node->table_entry_ptr_;
-    DBEntry *db_entry = TableCollectionEntry::GetDBEntry(table_entry);
+    TableEntry *table_entry = update_node->table_entry_ptr_;
+    DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
     header += *db_entry->db_name_ + "." + *table_entry->table_collection_name_;
     result->emplace_back(MakeShared<String>(header));
 }
@@ -1674,7 +1674,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalMatch *match_node, SharedPtr<Vec
     // Table alias and name
     String table_name = String(intent_size, ' ') + " - table name: " + match_node->TableAlias() + "(";
 
-    DBEntry *db_entry = TableCollectionEntry::GetDBEntry(match_node->table_collection_ptr());
+    DBEntry *db_entry = TableEntry::GetDBEntry(match_node->table_collection_ptr());
 
     table_name += *db_entry->db_name_ + ".";
     table_name += *match_node->table_collection_ptr()->table_collection_name_ + ")";

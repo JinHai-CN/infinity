@@ -19,6 +19,8 @@ import parser;
 import base_entry;
 import db_entry;
 import db_meta;
+import table_collection_entry;
+import table_def;
 import txn_manager;
 import function;
 import function_set;
@@ -89,13 +91,9 @@ public:
     explicit NewCatalog(SharedPtr<String> dir, bool create_default_db = false);
 
 public:
-
-    // Database command interface
-    Tuple<DBEntry *, Status> CreateDatabase(const String &db_name,
-                                                   u64 txn_id,
-                                                   TxnTimeStamp begin_ts,
-                                                   TxnManager *txn_mgr,
-                                                   ConflictType conflict_type = ConflictType::kError);
+    // Database related functions
+    Tuple<DBEntry *, Status>
+    CreateDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, ConflictType conflict_type = ConflictType::kError);
 
     Tuple<DBEntry *, Status> DropDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
@@ -105,6 +103,11 @@ public:
 
     // List databases
     Vector<DBEntry *> Databases(u64 txn_id, TxnTimeStamp begin_ts);
+
+    // Table related functions
+    Tuple<TableEntry *, Status> CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType conflict_type);
+
+    Status DropTableByName(const String &db_name, const String &table_name, ConflictType conflict_type, BaseEntry *&drop_table_entry);
 
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

@@ -73,7 +73,7 @@ String PhysicalTableScan::table_alias() const { return base_table_ref_->alias_; 
 
 u64 PhysicalTableScan::TableIndex() const { return base_table_ref_->table_index_; }
 
-TableCollectionEntry *PhysicalTableScan::TableEntry() const { return base_table_ref_->table_entry_ptr_; }
+TableEntry *PhysicalTableScan::TableEntry() const { return base_table_ref_->table_entry_ptr_; }
 
 SizeT PhysicalTableScan::BlockEntryCount() const { return base_table_ref_->block_index_->BlockCount(); }
 

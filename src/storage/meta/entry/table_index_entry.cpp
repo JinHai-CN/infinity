@@ -61,7 +61,7 @@ TableIndexEntry::TableIndexEntry(const SharedPtr<IndexDef> &index_def,
         if (index_base->column_names_.size() != 1) {
             Error<StorageException>("Currently, composite index doesn't supported.");
         }
-        u64 column_id = TableIndexMeta::GetTableCollectionEntry(table_index_meta)->GetColumnIdByName(index_base->column_names_[0]);
+        u64 column_id = TableIndexMeta::GetTableEntry(table_index_meta)->GetColumnIdByName(index_base->column_names_[0]);
         if (index_base->index_type_ == IndexType::kIRSFullText) {
             index_info_map.emplace(column_id, std::static_pointer_cast<IndexFullText>(index_base));
         } else {
@@ -85,7 +85,7 @@ TableIndexEntry::TableIndexEntry(TableIndexMeta *table_index_meta, u64 txn_id, T
 UniquePtr<TableIndexEntry>
 TableIndexEntry::NewTableIndexEntry(const SharedPtr<IndexDef> &index_def, TableIndexMeta *table_index_meta, u64 txn_id, TxnTimeStamp begin_ts) {
     SharedPtr<String> index_dir =
-        DetermineIndexDir(*TableIndexMeta::GetTableCollectionEntry(table_index_meta)->table_entry_dir_, *index_def->index_name_);
+        DetermineIndexDir(*TableIndexMeta::GetTableEntry(table_index_meta)->table_entry_dir_, *index_def->index_name_);
     return MakeUnique<TableIndexEntry>(index_def, table_index_meta, index_dir, txn_id, begin_ts);
 }
 
@@ -145,7 +145,7 @@ Json TableIndexEntry::Serialize(TableIndexEntry *table_index_entry, TxnTimeStamp
 UniquePtr<TableIndexEntry> TableIndexEntry::Deserialize(const Json &index_def_entry_json,
                                                         TableIndexMeta *table_index_meta,
                                                         BufferManager *buffer_mgr,
-                                                        TableCollectionEntry *table_entry) {
+                                                        TableEntry *table_entry) {
     u64 txn_id = index_def_entry_json["txn_id"];
     TxnTimeStamp begin_ts = index_def_entry_json["begin_ts"];
     TxnTimeStamp commit_ts = index_def_entry_json["commit_ts"];

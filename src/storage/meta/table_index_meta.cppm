@@ -28,12 +28,12 @@ export module table_index_meta;
 namespace infinity {
 
 class BufferManager;
-class TableCollectionEntry;
+class TableEntry;
 class SegmentEntry;
 
 export class TableIndexMeta {
 public:
-    explicit TableIndexMeta(TableCollectionEntry *table_collection_entry, SharedPtr<String> index_name);
+    explicit TableIndexMeta(TableEntry *table_collection_entry, SharedPtr<String> index_name);
 
 public:
     static Status CreateTableIndexEntry(TableIndexMeta *table_index_meta,
@@ -53,13 +53,13 @@ public:
 
     static SharedPtr<String> ToString(TableIndexMeta *table_index_meta);
 
-    static inline TableCollectionEntry *GetTableCollectionEntry(TableIndexMeta *table_index_meta) {
+    static inline TableEntry *GetTableEntry(TableIndexMeta *table_index_meta) {
         return table_index_meta->table_collection_entry_;
     }
 
     static Json Serialize(TableIndexMeta *table_index_meta, TxnTimeStamp max_commit_ts);
 
-    static UniquePtr<TableIndexMeta> Deserialize(const Json &index_def_meta_json, TableCollectionEntry *table_entry, BufferManager *buffer_mgr);
+    static UniquePtr<TableIndexMeta> Deserialize(const Json &index_def_meta_json, TableEntry *table_entry, BufferManager *buffer_mgr);
 
     static Status GetEntry(TableIndexMeta *meta, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&base_entry);
 
@@ -85,7 +85,7 @@ private:
 private:
     //    RWMutex rw_locker_{};
     SharedPtr<String> index_name_{};
-    TableCollectionEntry *table_collection_entry_{};
+    TableEntry *table_collection_entry_{};
 
     RWMutex rw_locker_{};
     List<UniquePtr<BaseEntry>> entry_list_{};

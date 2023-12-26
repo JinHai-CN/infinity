@@ -62,9 +62,9 @@ module segment_entry;
 
 namespace infinity {
 
-SegmentEntry::SegmentEntry(const TableCollectionEntry *table_entry) : BaseEntry(EntryType::kSegment), table_entry_(table_entry) {}
+SegmentEntry::SegmentEntry(const TableEntry *table_entry) : BaseEntry(EntryType::kSegment), table_entry_(table_entry) {}
 
-SharedPtr<SegmentEntry> SegmentEntry::MakeNewSegmentEntry(const TableCollectionEntry *table_entry, u32 segment_id, BufferManager *buffer_mgr) {
+SharedPtr<SegmentEntry> SegmentEntry::MakeNewSegmentEntry(const TableEntry *table_entry, u32 segment_id, BufferManager *buffer_mgr) {
     SharedPtr<SegmentEntry> new_entry = MakeShared<SegmentEntry>(table_entry);
     new_entry->row_count_ = 0;
     new_entry->row_capacity_ = DEFAULT_SEGMENT_CAPACITY;
@@ -72,7 +72,7 @@ SharedPtr<SegmentEntry> SegmentEntry::MakeNewSegmentEntry(const TableCollectionE
     new_entry->min_row_ts_ = 0;
     new_entry->max_row_ts_ = 0;
 
-    const auto *table_ptr = (const TableCollectionEntry *)table_entry;
+    const auto *table_ptr = (const TableEntry *)table_entry;
     new_entry->column_count_ = table_ptr->columns_.size();
 
     new_entry->segment_dir_ = SegmentEntry::DetermineSegmentDir(*table_entry->table_entry_dir_, segment_id);
@@ -84,7 +84,7 @@ SharedPtr<SegmentEntry> SegmentEntry::MakeNewSegmentEntry(const TableCollectionE
 }
 
 SharedPtr<SegmentEntry>
-SegmentEntry::MakeReplaySegmentEntry(const TableCollectionEntry *table_entry, u32 segment_id, SharedPtr<String> segment_dir, TxnTimeStamp commit_ts) {
+SegmentEntry::MakeReplaySegmentEntry(const TableEntry *table_entry, u32 segment_id, SharedPtr<String> segment_dir, TxnTimeStamp commit_ts) {
 
     auto new_entry = MakeShared<SegmentEntry>(table_entry);
     new_entry->row_capacity_ = DEFAULT_SEGMENT_CAPACITY;
@@ -92,7 +92,7 @@ SegmentEntry::MakeReplaySegmentEntry(const TableCollectionEntry *table_entry, u3
     new_entry->min_row_ts_ = commit_ts;
     new_entry->max_row_ts_ = commit_ts;
 
-    const auto *table_ptr = (const TableCollectionEntry *)table_entry;
+    const auto *table_ptr = (const TableEntry *)table_entry;
     new_entry->column_count_ = table_ptr->columns_.size();
     new_entry->segment_dir_ = Move(segment_dir);
     return new_entry;
@@ -407,7 +407,7 @@ Json SegmentEntry::Serialize(SegmentEntry *segment_entry, TxnTimeStamp max_commi
     return json_res;
 }
 
-SharedPtr<SegmentEntry> SegmentEntry::Deserialize(const Json &segment_entry_json, TableCollectionEntry *table_entry, BufferManager *buffer_mgr) {
+SharedPtr<SegmentEntry> SegmentEntry::Deserialize(const Json &segment_entry_json, TableEntry *table_entry, BufferManager *buffer_mgr) {
     SharedPtr<SegmentEntry> segment_entry = MakeShared<SegmentEntry>(table_entry);
 
     segment_entry->segment_dir_ = MakeShared<String>(segment_entry_json["segment_dir"]);

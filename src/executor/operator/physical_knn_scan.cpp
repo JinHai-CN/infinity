@@ -175,7 +175,7 @@ bool PhysicalKnnScan::Execute(QueryContext *query_context, OperatorState *operat
     return true;
 }
 
-TableCollectionEntry *PhysicalKnnScan::table_collection_ptr() const { return base_table_ref_->table_entry_ptr_; }
+TableEntry *PhysicalKnnScan::table_collection_ptr() const { return base_table_ref_->table_entry_ptr_; }
 
 String PhysicalKnnScan::TableAlias() const { return base_table_ref_->alias_; }
 
@@ -194,7 +194,7 @@ void PhysicalKnnScan::PlanWithIndex(QueryContext *query_context) { // TODO: retu
     block_column_entries_ = MakeUnique<Vector<BlockColumnEntry *>>();
     index_entries_ = MakeUnique<Vector<SegmentColumnIndexEntry *>>();
 
-    TableCollectionEntry *table_entry = base_table_ref_->table_entry_ptr_;
+    TableEntry *table_entry = base_table_ref_->table_entry_ptr_;
     HashMap<u32, Vector<SegmentColumnIndexEntry *>> index_entry_map;
     for (auto &[index_name, table_index_meta] : table_entry->index_meta_map_) {
         BaseEntry *base_entry{nullptr};
