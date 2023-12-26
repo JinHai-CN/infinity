@@ -219,19 +219,19 @@ void DBMeta::DeleteNewEntry(DBMeta *db_meta, u64 txn_id, TxnManager *) {
     db_meta->entry_list_.erase(removed_iter, db_meta->entry_list_.end());
 }
 
-Status DBMeta::GetEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&new_db_entry) {
+Tuple<DBEntry *, Status> DBMeta::GetEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts) {
     SharedLock<RWMutex> r_locker(db_meta->rw_locker_);
     if (db_meta->entry_list_.empty()) {
         UniquePtr<String> err_msg = MakeUnique<String>("Empty db entry list.");
         LOG_ERROR(*err_msg);
-        return Status(ErrorCode::kNotFound, Move(err_msg));
+        return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
 
     for (const auto &db_entry : db_meta->entry_list_) {
         if (db_entry->entry_type_ == EntryType::kDummy) {
             UniquePtr<String> err_msg = MakeUnique<String>("No valid db entry.");
             LOG_ERROR(*err_msg);
-            return Status(ErrorCode::kNotFound, Move(err_msg));
+            return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
         }
 
         if (db_entry->Committed()) {
@@ -239,11 +239,10 @@ Status DBMeta::GetEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, Base
                 if (db_entry->deleted_) {
                     UniquePtr<String> err_msg = MakeUnique<String>("DB is dropped.");
                     LOG_ERROR(*err_msg);
-                    return Status(ErrorCode::kNotFound, Move(err_msg));
+                    return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
                 } else {
                     // check the tables meta
-                    new_db_entry = db_entry.get();
-                    return Status::OK();
+                    return {(DBEntry*)(db_entry.get()), Status::OK()};
                 }
             }
         } else {
@@ -253,17 +252,16 @@ Status DBMeta::GetEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, Base
                 if (db_entry->deleted_) {
                     UniquePtr<String> err_msg = MakeUnique<String>("DB is dropped.");
                     LOG_ERROR(*err_msg);
-                    return Status(ErrorCode::kNotFound, Move(err_msg));
+                    return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
                 } else {
-                    new_db_entry = db_entry.get();
-                    return Status::OK();
+                    return {(DBEntry*)(db_entry.get()), Status::OK()};
                 }
             }
         }
     }
     UniquePtr<String> err_msg = MakeUnique<String>("No db entry found.");
     LOG_ERROR(*err_msg);
-    return Status(ErrorCode::kNotFound, Move(err_msg));
+    return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
 }
 
 SharedPtr<String> DBMeta::ToString(DBMeta *db_meta) {

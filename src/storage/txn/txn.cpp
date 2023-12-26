@@ -249,7 +249,7 @@ Status Txn::DropDatabase(const String &db_name, ConflictType) {
     return Status::OK();
 }
 
-Status Txn::GetDatabase(const String &db_name, BaseEntry *&new_db_entry) {
+Tuple<DBEntry *, Status> Txn::GetDatabase(const String &db_name) {
     TxnState txn_state = txn_context_.GetTxnState();
 
     if (txn_state != TxnState::kStarted) {
@@ -258,7 +258,7 @@ Status Txn::GetDatabase(const String &db_name, BaseEntry *&new_db_entry) {
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    return NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts, new_db_entry);
+    return NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts);
 }
 
 Vector<DatabaseDetail> Txn::ListDatabases() {
@@ -275,13 +275,11 @@ Vector<DatabaseDetail> Txn::ListDatabases() {
 }
 
 Status Txn::GetTableCollections(const String &db_name, Vector<TableCollectionDetail> &output_table_array) {
-    BaseEntry *base_entry{nullptr};
-    Status status = GetDatabase(db_name, base_entry);
+    auto [db_entry, status] = GetDatabase(db_name);
     if (!status.ok()) {
         return status;
     }
 
-    DBEntry *db_entry = (DBEntry *)base_entry;
     return DBEntry::GetTableCollectionsDetail(db_entry, txn_id_, txn_context_.GetBeginTS(), output_table_array);
 }
 
@@ -294,14 +292,11 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    BaseEntry *base_db_entry{nullptr};
-    Status status = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts, base_db_entry);
+    auto [db_entry, status] = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts);
     if (!status.ok()) {
         // Error
         return status;
     }
-
-    DBEntry *db_entry = (DBEntry *)base_db_entry;
 
     status = DBEntry::CreateTableCollection(db_entry,
                                             TableCollectionType::kTableEntry,
@@ -313,7 +308,7 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
                                             new_table_entry);
 
     if (new_table_entry == nullptr) {
-        if(status.ok()) {
+        if (status.ok()) {
             UniquePtr<String> err_msg = MakeUnique<String>("TODO: CreateTableCollectionFailed");
             LOG_ERROR(*err_msg);
             return Status(ErrorCode::kError, Move(err_msg));
@@ -341,14 +336,11 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    BaseEntry *base_db_entry{nullptr};
-    Status status = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts, base_db_entry);
+    auto [db_entry, status] = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts);
     if (!status.ok()) {
         // Error
         return status;
     }
-
-    DBEntry *db_entry = (DBEntry *)base_db_entry;
 
     status = DBEntry::DropTableCollection(db_entry, table_name, conflict_type, txn_id_, begin_ts, txn_mgr_, drop_table_entry);
 
@@ -368,8 +360,7 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
     return Status::OK();
 }
 
-
-Status Txn::CreateIndex(const String &db_name, const String &table_name, const SharedPtr<IndexDef>& index_def, ConflictType conflict_type) {
+Status Txn::CreateIndex(const String &db_name, const String &table_name, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type) {
     TxnState txn_state = txn_context_.GetTxnState();
 
     if (txn_state != TxnState::kStarted) {
@@ -457,20 +448,16 @@ Tuple<BaseEntry *, Status> Txn::GetTableByName(const String &db_name, const Stri
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
     // Check the db entries
-    BaseEntry *base_db_entry{nullptr};
-    Status status = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts, base_db_entry);
+    auto [db_entry, status] = NewCatalog::GetDatabase(catalog_, db_name, this->txn_id_, begin_ts);
     if (!status.ok()) {
         // Error
         return {nullptr, status};
     }
 
-    // Check the table entries
-    auto db_entry = (DBEntry *)base_db_entry;
-
     return DBEntry::GetTableCollection(db_entry, table_name, txn_id_, begin_ts);
 }
 
-Status Txn::CreateCollection(const String &, const String &, ConflictType , BaseEntry *&) {
+Status Txn::CreateCollection(const String &, const String &, ConflictType, BaseEntry *&) {
     Error<TransactionException>("Not Implemented");
     return {ErrorCode::kNotImplemented, "Not Implemented"};
 }
@@ -480,12 +467,12 @@ Status Txn::GetCollectionByName(const String &, const String &, BaseEntry *&) {
     return {ErrorCode::kNotImplemented, "Not Implemented"};
 }
 
-Status Txn::CreateView(const String &, const String &, ConflictType , BaseEntry *&) {
+Status Txn::CreateView(const String &, const String &, ConflictType, BaseEntry *&) {
     Error<TransactionException>("Not Implemented");
     return {ErrorCode::kNotImplemented, "Not Implemented"};
 }
 
-Status Txn::DropViewByName(const String &, const String &, ConflictType , BaseEntry *&) {
+Status Txn::DropViewByName(const String &, const String &, ConflictType, BaseEntry *&) {
     Error<TransactionException>("Not Implemented");
     return {ErrorCode::kNotImplemented, "Not Implemented"};
 }

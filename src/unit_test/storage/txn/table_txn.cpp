@@ -433,10 +433,9 @@ TEST_F(TableTxnTest, test7) {
     new_txn2->Begin();
 
     // Txn3: Get db1, NOT OK
-    BaseEntry* db_entry{nullptr};
-    Status s2 = new_txn2->GetDatabase("db1", db_entry);
+    auto [db_entry2, s2] = new_txn2->GetDatabase("db1");
     EXPECT_TRUE(!s2.ok());
-    EXPECT_EQ(db_entry, nullptr);
+    EXPECT_EQ(db_entry2, nullptr);
 
     // Txn3: Get tbl1, NOT OK
     auto [table_entry3, s3] = new_txn2->GetTableByName("db1", "tbl1");
@@ -485,8 +484,7 @@ TEST_F(TableTxnTest, test8) {
     new_txn3->Begin();
 
     // Txn3: Get db1, OK
-    BaseEntry* db_entry{nullptr};
-    Status s2 = new_txn3->GetDatabase("db1", db_entry);
+    auto [db_entry, s2] = new_txn3->GetDatabase("db1");
     EXPECT_TRUE(s2.ok());
     EXPECT_NE(db_entry, nullptr);
 

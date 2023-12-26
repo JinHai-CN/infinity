@@ -73,7 +73,7 @@ public:
 
     Status DropDatabase(const String &db_name, ConflictType conflict_type);
 
-    Status GetDatabase(const String &db_name, BaseEntry *&new_db_entry);
+    Tuple<DBEntry*, Status> GetDatabase(const String &db_name);
 
     Vector<DatabaseDetail> ListDatabases();
 

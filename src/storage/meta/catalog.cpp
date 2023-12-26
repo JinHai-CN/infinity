@@ -127,7 +127,7 @@ NewCatalog::DropDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id,
     return DBMeta::DropNewEntry(db_meta, txn_id, begin_ts, txn_mgr);
 }
 
-Status NewCatalog::GetDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&new_db_entry) {
+Tuple<DBEntry *, Status> NewCatalog::GetDatabase(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnTimeStamp begin_ts) {
 
     DBMeta *db_meta{nullptr};
     catalog->rw_locker_.lock_shared();
@@ -139,9 +139,9 @@ Status NewCatalog::GetDatabase(NewCatalog *catalog, const String &db_name, u64 t
     if (db_meta == nullptr) {
         UniquePtr<String> err_msg = MakeUnique<String>(Format("Attempt to get not existed database {}", db_name));
         LOG_ERROR(*err_msg);
-        return Status(ErrorCode::kNotFound, Move(err_msg));
+        return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
-    return DBMeta::GetEntry(db_meta, txn_id, begin_ts, new_db_entry);
+    return DBMeta::GetEntry(db_meta, txn_id, begin_ts);
 }
 
 void NewCatalog::RemoveDBEntry(NewCatalog *catalog, const String &db_name, u64 txn_id, TxnManager *txn_mgr) {
@@ -163,10 +163,9 @@ Vector<DBEntry *> NewCatalog::Databases(NewCatalog *catalog, u64 txn_id, TxnTime
     Vector<DBEntry *> res;
     res.reserve(catalog->databases_.size());
     for (const auto &db_meta : catalog->databases_) {
-        BaseEntry *base_db_entry{nullptr};
-        Status status = DBMeta::GetEntry(db_meta.second.get(), txn_id, begin_ts, base_db_entry);
+        auto [db_entry, status] = DBMeta::GetEntry(db_meta.second.get(), txn_id, begin_ts);
         if (status.ok()) {
-            res.emplace_back(static_cast<DBEntry *>(base_db_entry));
+            res.emplace_back(db_entry);
         }
     }
     catalog->rw_locker_.unlock_shared();

@@ -66,10 +66,9 @@ TEST_F(DBTxnTest, test1) {
     Status status = new_txn->CreateDatabase("db1", ConflictType::kError);
 
     // Txn1: Get db1, OK
-    BaseEntry* base_entry1{nullptr};
-    Status status1 = new_txn->GetDatabase("db1", base_entry1);
+    auto [db_entry1, status1] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(status1.ok());
-    EXPECT_NE(base_entry1, nullptr);
+    EXPECT_NE(db_entry1, nullptr);
 
     // Txn1: Commit OK
     txn_mgr->CommitTxn(new_txn);
@@ -81,8 +80,7 @@ TEST_F(DBTxnTest, test1) {
     new_txn->Begin();
 
     // Txn2: Get db1, OK
-    BaseEntry* base_entry2 = nullptr;
-    Status status2 = new_txn->GetDatabase("db1", base_entry2);
+    auto [db_entry2, status2] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(status2.ok());
 
     // Txn2: Drop db1, OK
@@ -99,10 +97,9 @@ TEST_F(DBTxnTest, test1) {
     new_txn->Begin();
 
     // Txn3: Get db1, NOT OK
-    BaseEntry* base_entry{nullptr};
-    Status status3 = new_txn->GetDatabase("db1", base_entry);
+    auto [db_entry3, status3] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(!status3.ok());
-    EXPECT_EQ(base_entry, nullptr);
+    EXPECT_EQ(db_entry3, nullptr);
 
     // Txn3: Drop db1, NOT OK
     status3 = new_txn->DropDatabase("db1", ConflictType::kError);
@@ -136,10 +133,9 @@ TEST_F(DBTxnTest, test20) {
     new_txn->Begin();
 
     // Txn2: Get db1, OK
-    BaseEntry* base_entry1{nullptr};
-    Status status1 = new_txn->GetDatabase("db1", base_entry1);
+    auto [db_entry1, status1] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(status1.ok());
-    EXPECT_NE(base_entry1, nullptr);
+    EXPECT_NE(db_entry1, nullptr);
 
     // Txn2: Drop db1, OK
     status = new_txn->DropDatabase("db1", ConflictType::kError);
@@ -150,10 +146,9 @@ TEST_F(DBTxnTest, test20) {
     EXPECT_TRUE(status.ok());
 
     // Txn2: Get db1, OK
-    BaseEntry* base_entry{nullptr};
-    Status status2 = new_txn->GetDatabase("db1", base_entry);
+    auto [db_entry2, status2] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(status2.ok());
-    EXPECT_NE(base_entry, nullptr);
+    EXPECT_NE(db_entry2, nullptr);
 
     // Txn2: Commit, OK
     txn_mgr->CommitTxn(new_txn);
@@ -165,10 +160,9 @@ TEST_F(DBTxnTest, test20) {
     new_txn->Begin();
 
     // Txn3: Get db1, OK
-    base_entry = nullptr;
-    Status status3 = new_txn->GetDatabase("db1", base_entry);
+    auto [db_entry3, status3] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(status3.ok());
-    EXPECT_NE(base_entry, nullptr);
+    EXPECT_NE(db_entry3, nullptr);
 
     // Txn3: Create db1, NOT OK
     status = new_txn->CreateDatabase("db1", ConflictType::kError);
@@ -194,7 +188,6 @@ TEST_F(DBTxnTest, test2) {
     EXPECT_TRUE(status.ok());
 
     // Txn1: Create db1, duplicated，NOT OK
-    BaseEntry* base_entry2{nullptr};
     status = new_txn->CreateDatabase("db1", ConflictType::kError);
     EXPECT_TRUE(!status.ok());
 
@@ -203,10 +196,9 @@ TEST_F(DBTxnTest, test2) {
     EXPECT_TRUE(status.ok());
 
     // Txn1: Get db1, NOT OK
-    BaseEntry* base_entry{nullptr};
-    Status status1 = new_txn->GetDatabase("db1", base_entry);
+    auto [db_entry1, status1] = new_txn->GetDatabase("db1");
     EXPECT_FALSE(status1.ok());
-    EXPECT_EQ(base_entry, nullptr);
+    EXPECT_EQ(db_entry1, nullptr);
 
     // Txn1: Commit, OK
     txn_mgr->CommitTxn(new_txn);
@@ -218,8 +210,7 @@ TEST_F(DBTxnTest, test2) {
     new_txn->Begin();
 
     // Txn2: Get db1, OK
-    base_entry = nullptr;
-    Status status2 = new_txn->GetDatabase("db1", base_entry);
+    auto [db_entry2, status2] = new_txn->GetDatabase("db1");
     EXPECT_FALSE(status2.ok());
 
     // Txn2: Create db1, OK
@@ -227,8 +218,7 @@ TEST_F(DBTxnTest, test2) {
     EXPECT_TRUE(status.ok());
 
     // Txn2: Get db1, OK
-    BaseEntry* base_entry1 = nullptr;
-    Status status3 = new_txn->GetDatabase("db1", base_entry1);
+    auto [db_entry3, status3] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(status3.ok());
 
     // Txn2: Commit, OK
@@ -241,10 +231,9 @@ TEST_F(DBTxnTest, test2) {
     new_txn->Begin();
 
     // Txn3: Get db1, OK
-    base_entry = nullptr;
-    Status status4 = new_txn->GetDatabase("db1", base_entry);
+    auto [db_entry4, status4] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(status4.ok());
-    EXPECT_NE(base_entry, nullptr);
+    EXPECT_NE(db_entry4, nullptr);
 
     // Txn3: Create db1, NOT OK
     status = new_txn->CreateDatabase("db1", ConflictType::kError);
@@ -346,10 +335,9 @@ TEST_F(DBTxnTest, test5) {
     new_txn->Begin();
 
     // Txn2: Get db1, NOT OK
-    BaseEntry* base_entry{nullptr};
-    Status status1 = new_txn->GetDatabase("db1", base_entry);
+    auto [db_entry, status1] = new_txn->GetDatabase("db1");
     EXPECT_TRUE(!status1.ok());
-    EXPECT_EQ(base_entry, nullptr);
+    EXPECT_EQ(db_entry, nullptr);
 
     // Txn2: Commit, OK
     txn_mgr->CommitTxn(new_txn);
@@ -368,7 +356,6 @@ TEST_F(DBTxnTest, test6) {
 
     // Txn2: Create, OK
     Txn *new_txn2 = txn_mgr->CreateTxn();
-
 
     // Txn1: Begin, OK
     new_txn1->Begin();
@@ -402,10 +389,9 @@ TEST_F(DBTxnTest, test6) {
     new_txn3->Begin();
 
     // Txn3: Get db1, OK
-    BaseEntry* base_entry{nullptr};
-    Status status1 = new_txn3->GetDatabase("db1", base_entry);
+    auto [db_entry, status1] = new_txn3->GetDatabase("db1");
     EXPECT_TRUE(status1.ok());
-    EXPECT_NE(base_entry, nullptr);
+    EXPECT_NE(db_entry, nullptr);
 
     // Txn3: Commit, OK
     txn_mgr->CommitTxn(new_txn3);
@@ -461,10 +447,9 @@ TEST_F(DBTxnTest, test7) {
     new_txn3->Begin();
 
     // Txn3: Get db1, OK
-    BaseEntry* base_entry{nullptr};
-    Status status1 = new_txn3->GetDatabase("db1", base_entry);
+    auto [db_entry, status1] = new_txn3->GetDatabase("db1");
     EXPECT_TRUE(status1.ok());
-    EXPECT_NE(base_entry, nullptr);
+    EXPECT_NE(db_entry, nullptr);
 
     // Txn3: Commit, OK
     txn_mgr->CommitTxn(new_txn3);

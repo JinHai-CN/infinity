@@ -33,13 +33,14 @@ public:
 
 public:
     // Reserved
-    static Tuple<DBEntry*, Status> CreateNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, ConflictType conflict_type = ConflictType::kError);
+    static Tuple<DBEntry *, Status>
+    CreateNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, ConflictType conflict_type = ConflictType::kError);
 
-    static Tuple<DBEntry*, Status> DropNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
+    static Tuple<DBEntry *, Status> DropNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
     static void DeleteNewEntry(DBMeta *db_meta, u64 txn_id, TxnManager *txn_mgr);
 
-    static Status GetEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&new_db_entry);
+    static Tuple<DBEntry *, Status> GetEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts);
 
     static SharedPtr<String> ToString(DBMeta *db_meta);
 
@@ -52,21 +53,14 @@ public:
 
     void MergeFrom(DBMeta &other);
 
-    SharedPtr<String> db_name() const {
-        return db_name_;
-    }
+    SharedPtr<String> db_name() const { return db_name_; }
 
-    SharedPtr<String> data_dir() const {
-        return data_dir_;
-    }
+    SharedPtr<String> data_dir() const { return data_dir_; }
 
     // Thread-unsafe
-    List<UniquePtr<BaseEntry>>& entry_list() {
-        return entry_list_;
-    }
+    List<UniquePtr<BaseEntry>> &entry_list() { return entry_list_; }
 
 private:
-
     SharedPtr<String> db_name_{};
     SharedPtr<String> data_dir_{};
 
