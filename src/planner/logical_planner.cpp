@@ -35,7 +35,7 @@ import base_expression;
 import base_entry;
 import txn;
 import table_collection_entry;
-import table_collection_type;
+import table_entry_type;
 import third_party;
 import table_def;
 import logical_create_table;
@@ -166,7 +166,7 @@ Status LogicalPlanner::BuildInsertValue(const InsertStatement *statement, Shared
 
     TableEntry *table_entry = static_cast<TableEntry *>(base_table_entry);
 
-    if (table_entry->table_collection_type_ == TableEntryType::kCollectionEntry) {
+    if (table_entry->table_entry_type_ == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
     }
 

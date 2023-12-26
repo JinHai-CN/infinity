@@ -16,11 +16,11 @@ module;
 
 import base_entry;
 import stl;
-import table_collection_type;
+import table_entry_type;
 import table_collection_entry;
 import parser;
 import third_party;
-import table_collection_detail;
+import table_detail;
 import table_collection_meta;
 import buffer_manager;
 import txn_manager;
@@ -41,7 +41,7 @@ public:
 
 public:
     static Status CreateTableCollection(DBEntry *db_entry,
-                                        TableEntryType table_collection_type,
+                                        TableEntryType table_entry_type,
                                         const SharedPtr<String> &table_collection_name,
                                         const Vector<SharedPtr<ColumnDef>> &columns,
                                         u64 txn_id,
@@ -64,7 +64,7 @@ public:
 
     static Vector<TableEntry *> TableCollections(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts);
 
-    static Status GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableCollectionDetail> &output_table_array);
+    static Status GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array);
 
     static SharedPtr<String> ToString(DBEntry *db_entry);
 

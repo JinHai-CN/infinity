@@ -16,7 +16,7 @@ module;
 import stl;
 import base_entry;
 import parser;
-import table_collection_detail;
+import table_detail;
 // import table_collection_entry;
 import table_def;
 import index_def;
@@ -78,7 +78,7 @@ public:
     Vector<DatabaseDetail> ListDatabases();
 
     // Table and Collection OPs
-    Status GetTableCollections(const String &db_name, Vector<TableCollectionDetail> &output_table_array);
+    Status GetTableCollections(const String &db_name, Vector<TableDetail> &output_table_array);
 
     Status CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType conflict_type, BaseEntry *&new_table_entry);
 

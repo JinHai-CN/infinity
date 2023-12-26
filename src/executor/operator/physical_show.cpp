@@ -28,10 +28,10 @@ import operator_state;
 import data_block;
 
 import infinity_exception;
-import table_collection_type;
+import table_entry_type;
 import value_expression;
 import logical_show;
-import table_collection_detail;
+import table_detail;
 import view_entry;
 import base_entry;
 import value;
@@ -325,7 +325,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
     // Get tables from catalog
     Txn *txn = query_context->GetTxn();
 
-    Vector<TableCollectionDetail> table_collections_detail;
+    Vector<TableDetail> table_collections_detail;
     Status status = txn->GetTableCollections(db_name_, table_collections_detail);
     if (!status.ok()) {
         Error<ExecutorException>(status.message());
@@ -338,12 +338,12 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
 
     output_block_ptr->Init(column_types);
 
-    for (auto &table_collection_detail : table_collections_detail) {
+    for (auto &table_detail : table_collections_detail) {
 
         SizeT column_id = 0;
         {
             // Append schema name to the 0 column
-            const String *db_name = table_collection_detail.db_name_.get();
+            const String *db_name = table_detail.db_name_.get();
             Value value = Value::MakeVarchar(*db_name);
             ValueExpression value_expr(value);
             value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
@@ -352,14 +352,14 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
         ++column_id;
         {
             // Append table name to the 1 column
-            const String *table_name = table_collection_detail.table_collection_name_.get();
+            const String *table_name = table_detail.table_collection_name_.get();
             Value value = Value::MakeVarchar(*table_name);
             ValueExpression value_expr(value);
             value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
         }
 
         ++column_id;
-        TableEntryType table_type = table_collection_detail.table_collection_type_;
+        TableEntryType table_type = table_detail.table_entry_type_;
         {
             // Append base table type to the 2 column
             const String &base_table_type_str = ToString(table_type);
@@ -373,7 +373,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
             // Append column count the 3 column
             switch (table_type) {
                 case TableEntryType::kTableEntry: {
-                    Value value = Value::MakeBigInt(static_cast<i64>(table_collection_detail.column_count_));
+                    Value value = Value::MakeBigInt(static_cast<i64>(table_detail.column_count_));
                     ValueExpression value_expr(value);
                     value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
                     break;
@@ -393,7 +393,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
             // Append row count the 4 column
             switch (table_type) {
                 case TableEntryType::kTableEntry: {
-                    Value value = Value::MakeBigInt(static_cast<i64>(table_collection_detail.row_count_));
+                    Value value = Value::MakeBigInt(static_cast<i64>(table_detail.row_count_));
                     ValueExpression value_expr(value);
                     value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
                     break;
@@ -416,7 +416,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
             // Append segment count the 5 column
             switch (table_type) {
                 case TableEntryType::kTableEntry: {
-                    Value value = Value::MakeBigInt(static_cast<i64>(table_collection_detail.segment_count_));
+                    Value value = Value::MakeBigInt(static_cast<i64>(table_detail.segment_count_));
                     ValueExpression value_expr(value);
                     value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
                     break;
@@ -439,7 +439,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
             // Append segment count the 5 column
             switch (table_type) {
                 case TableEntryType::kTableEntry: {
-                    Value value = Value::MakeBigInt(static_cast<i64>(table_collection_detail.block_count_));
+                    Value value = Value::MakeBigInt(static_cast<i64>(table_detail.block_count_));
                     ValueExpression value_expr(value);
                     value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
                     break;
@@ -460,7 +460,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
         ++column_id;
         {
             // Append block limit the 6 column
-            SizeT default_row_size = table_collection_detail.segment_capacity_;
+            SizeT default_row_size = table_detail.segment_capacity_;
             Value value = Value::MakeBigInt(default_row_size);
             ValueExpression value_expr(value);
             value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);

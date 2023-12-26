@@ -17,12 +17,12 @@ module;
 #include <vector>
 
 import base_entry;
-import table_collection_type;
+import table_entry_type;
 import stl;
 import parser;
 import txn_manager;
 import table_collection_entry;
-import table_collection_detail;
+import table_detail;
 import table_collection_meta;
 import buffer_manager;
 import default_values;
@@ -37,7 +37,7 @@ module db_entry;
 namespace infinity {
 
 Status DBEntry::CreateTableCollection(DBEntry *db_entry,
-                                      TableEntryType table_collection_type,
+                                      TableEntryType table_entry_type,
                                       const SharedPtr<String> &table_collection_name,
                                       const Vector<SharedPtr<ColumnDef>> &columns,
                                       u64 txn_id,
@@ -76,7 +76,7 @@ Status DBEntry::CreateTableCollection(DBEntry *db_entry,
     }
 
     return TableCollectionMeta::CreateNewEntry(table_meta,
-                                               table_collection_type,
+                                               table_entry_type,
                                                table_collection_name,
                                                columns,
                                                txn_id,
@@ -166,23 +166,23 @@ Vector<TableEntry *> DBEntry::TableCollections(DBEntry *db_entry, u64 txn_id, Tx
     return results;
 }
 
-Status DBEntry::GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableCollectionDetail> &output_table_array) {
+Status DBEntry::GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array) {
     Vector<TableEntry *> table_collection_entries = DBEntry::TableCollections(db_entry, txn_id, begin_ts);
     output_table_array.reserve(table_collection_entries.size());
     for (TableEntry *table_collection_entry : table_collection_entries) {
-        TableCollectionDetail table_collection_detail;
-        table_collection_detail.db_name_ = db_entry->db_name_;
-        table_collection_detail.table_collection_name_ = table_collection_entry->table_collection_name_;
-        table_collection_detail.table_collection_type_ = table_collection_entry->table_collection_type_;
-        table_collection_detail.column_count_ = table_collection_entry->columns_.size();
-        table_collection_detail.row_count_ = table_collection_entry->row_count_;
-        table_collection_detail.segment_capacity_ = DEFAULT_SEGMENT_CAPACITY;
+        TableDetail table_detail;
+        table_detail.db_name_ = db_entry->db_name_;
+        table_detail.table_collection_name_ = table_collection_entry->table_collection_name_;
+        table_detail.table_entry_type_ = table_collection_entry->table_entry_type_;
+        table_detail.column_count_ = table_collection_entry->columns_.size();
+        table_detail.row_count_ = table_collection_entry->row_count_;
+        table_detail.segment_capacity_ = DEFAULT_SEGMENT_CAPACITY;
 
         SharedPtr<BlockIndex> segment_index = TableEntry::GetBlockIndex(table_collection_entry, txn_id, begin_ts);
 
-        table_collection_detail.segment_count_ = segment_index->SegmentCount();
-        table_collection_detail.block_count_ = segment_index->BlockCount();
-        output_table_array.emplace_back(table_collection_detail);
+        table_detail.segment_count_ = segment_index->SegmentCount();
+        table_detail.block_count_ = segment_index->BlockCount();
+        output_table_array.emplace_back(table_detail);
     }
     return Status::OK();
 }

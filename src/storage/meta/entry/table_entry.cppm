@@ -19,7 +19,7 @@ import parser;
 import txn_store;
 import buffer_manager;
 import third_party;
-import table_collection_type;
+import table_entry_type;
 import base_entry;
 import segment_entry;
 import block_index;
@@ -49,7 +49,7 @@ public:
     explicit TableEntry(const SharedPtr<String> &db_entry_dir,
                                   SharedPtr<String> table_collection_name,
                                   const Vector<SharedPtr<ColumnDef>> &columns,
-                                  TableEntryType table_collection_type,
+                                  TableEntryType table_entry_type,
                                   TableCollectionMeta *table_collection_meta,
                                   u64 txn_id,
                                   TxnTimeStamp begin_ts);
@@ -140,7 +140,7 @@ public:
 
     Vector<SharedPtr<ColumnDef>> columns_{};
 
-    TableEntryType table_collection_type_{TableEntryType::kTableEntry};
+    TableEntryType table_entry_type_{TableEntryType::kTableEntry};
 
     TableCollectionMeta *table_collection_meta_{};
 

@@ -38,8 +38,8 @@ import segment_entry;
 import block_entry;
 import table_collection_meta;
 import table_collection_entry;
-import table_collection_detail;
-import table_collection_type;
+import table_detail;
+import table_entry_type;
 import new_catalog;
 import database_detail;
 import status;
@@ -274,7 +274,7 @@ Vector<DatabaseDetail> Txn::ListDatabases() {
     return res;
 }
 
-Status Txn::GetTableCollections(const String &db_name, Vector<TableCollectionDetail> &output_table_array) {
+Status Txn::GetTableCollections(const String &db_name, Vector<TableDetail> &output_table_array) {
     auto [db_entry, status] = GetDatabase(db_name);
     if (!status.ok()) {
         return status;

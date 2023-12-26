@@ -22,7 +22,7 @@ import parser;
 import third_party;
 import data_block;
 import table_def;
-import table_collection_type;
+import table_entry_type;
 import value;
 
 module data_table;

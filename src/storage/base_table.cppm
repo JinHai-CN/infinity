@@ -15,7 +15,7 @@
 module;
 
 import stl;
-import table_collection_type;
+import table_entry_type;
 
 import infinity_exception;
 

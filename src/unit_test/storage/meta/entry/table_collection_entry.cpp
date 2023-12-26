@@ -37,7 +37,7 @@ import table_collection_entry;
 import column_vector;
 import column_buffer;
 import block_column_entry;
-import table_collection_type;
+import table_entry_type;
 import meta_state;
 import status;
 

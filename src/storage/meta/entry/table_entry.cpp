@@ -21,7 +21,7 @@ import stl;
 import parser;
 import base_entry;
 import table_collection_meta;
-import table_collection_type;
+import table_entry_type;
 import third_party;
 import txn;
 import buffer_manager;
@@ -52,12 +52,12 @@ namespace infinity {
 TableEntry::TableEntry(const SharedPtr<String> &db_entry_dir,
                                            SharedPtr<String> table_collection_name,
                                            const Vector<SharedPtr<ColumnDef>> &columns,
-                                           TableEntryType table_collection_type,
+                                           TableEntryType table_entry_type,
                                            TableCollectionMeta *table_collection_meta,
                                            u64 txn_id,
                                            TxnTimeStamp begin_ts)
     : BaseEntry(EntryType::kTable), table_entry_dir_(MakeShared<String>(Format("{}/{}/txn_{}", *db_entry_dir, *table_collection_name, txn_id))),
-      table_collection_name_(Move(table_collection_name)), columns_(columns), table_collection_type_(table_collection_type),
+      table_collection_name_(Move(table_collection_name)), columns_(columns), table_entry_type_(table_entry_type),
       table_collection_meta_(table_collection_meta) {
     SizeT column_count = columns.size();
     for (SizeT idx = 0; idx < column_count; ++idx) {
@@ -395,7 +395,7 @@ Json TableEntry::Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, 
         SharedLock<RWMutex> lck(table_entry->rw_locker_);
         json_res["table_entry_dir"] = *table_entry->table_entry_dir_;
         json_res["table_name"] = *table_entry->table_collection_name_;
-        json_res["table_entry_type"] = table_entry->table_collection_type_;
+        json_res["table_entry_type"] = table_entry->table_entry_type_;
         json_res["row_count"] = table_entry->row_count_.load();
         json_res["begin_ts"] = table_entry->begin_ts_;
         json_res["commit_ts"] = table_entry->commit_ts_.load();
@@ -540,7 +540,7 @@ void TableEntry::MergeFrom(BaseEntry &other) {
     if (*this->table_entry_dir_ != *table_entry2->table_entry_dir_) {
         Error<StorageException>("DBEntry::MergeFrom requires table_entry_dir_ match");
     }
-    if (this->table_collection_type_ != table_entry2->table_collection_type_) {
+    if (this->table_entry_type_ != table_entry2->table_entry_type_) {
         Error<StorageException>("DBEntry::MergeFrom requires table_entry_dir_ match");
     }
 

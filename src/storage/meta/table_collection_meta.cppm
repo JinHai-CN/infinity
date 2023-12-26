@@ -18,7 +18,7 @@ import base_entry;
 import stl;
 import parser;
 import third_party;
-import table_collection_type;
+import table_entry_type;
 import txn_manager;
 import buffer_manager;
 import status;
@@ -36,7 +36,7 @@ public:
 
 public:
     static Status CreateNewEntry(TableCollectionMeta *table_meta,
-                                 TableEntryType table_collection_type,
+                                 TableEntryType table_entry_type,
                                  const SharedPtr<String> &table_collection_name,
                                  const Vector<SharedPtr<ColumnDef>> &columns,
                                  u64 txn_id,

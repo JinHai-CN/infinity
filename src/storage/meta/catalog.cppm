@@ -31,6 +31,7 @@ import buffer_manager;
 import profiler;
 import status;
 import default_values;
+import table_detail;
 
 export module new_catalog;
 
@@ -107,7 +108,9 @@ public:
     // Table related functions
     Tuple<TableEntry *, Status> CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType conflict_type);
 
-    Status DropTableByName(const String &db_name, const String &table_name, ConflictType conflict_type, BaseEntry *&drop_table_entry);
+    Status DropTableByName(const String &db_name, const String &table_name, ConflictType conflict_type);
+
+    Status GetTableCollections(const String &db_name, Vector<TableDetail> &output_table_array);
 
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

@@ -51,7 +51,7 @@ import cross_product_table_ref;
 import table_scan;
 import base_entry;
 import view_entry;
-import table_collection_type;
+import table_entry_type;
 import block_index;
 import cast_expression;
 import search_expression;
@@ -387,7 +387,7 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
         Error<PlannerException>(status.message());
     }
     TableEntry *table_collection_entry = static_cast<TableEntry *>(base_table_entry);
-    if (table_collection_entry->table_collection_type_ == TableEntryType::kCollectionEntry) {
+    if (table_collection_entry->table_entry_type_ == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
     }
 

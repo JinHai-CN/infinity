@@ -19,7 +19,7 @@ module;
 import base_entry;
 import stl;
 import table_collection_entry;
-import table_collection_type;
+import table_entry_type;
 import parser;
 import logger;
 import default_values;
@@ -40,7 +40,7 @@ namespace infinity {
  * @brief Create a new table entry.
  *        LIST: [👇(insert a new).... table_entry2 , table_entry1 , dummy_entry] insert new table entry from front.
  * @param table_meta
- * @param table_collection_type
+ * @param table_entry_type
  * @param table_collection_name_ptr
  * @param columns
  * @param txn_id
@@ -49,7 +49,7 @@ namespace infinity {
  * @return Status
  */
 Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
-                                           TableEntryType table_collection_type,
+                                           TableEntryType table_entry_type,
                                            const SharedPtr<String> &table_collection_name_ptr,
                                            const Vector<SharedPtr<ColumnDef>> &columns,
                                            u64 txn_id,
@@ -69,7 +69,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
         UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                        table_collection_name_ptr,
                                                                                        columns,
-                                                                                       table_collection_type,
+                                                                                       table_entry_type,
                                                                                        table_meta,
                                                                                        txn_id,
                                                                                        begin_ts);
@@ -86,7 +86,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
             UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                            table_collection_name_ptr,
                                                                                            columns,
-                                                                                           table_collection_type,
+                                                                                           table_entry_type,
                                                                                            table_meta,
                                                                                            txn_id,
                                                                                            begin_ts);
@@ -104,7 +104,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                     UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                                    table_collection_name_ptr,
                                                                                                    columns,
-                                                                                                   table_collection_type,
+                                                                                                   table_entry_type,
                                                                                                    table_meta,
                                                                                                    txn_id,
                                                                                                    begin_ts);
@@ -137,7 +137,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                             UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                                            table_collection_name_ptr,
                                                                                                            columns,
-                                                                                                           table_collection_type,
+                                                                                                           table_entry_type,
                                                                                                            table_meta,
                                                                                                            txn_id,
                                                                                                            begin_ts);
@@ -172,7 +172,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                     UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
                                                                                                    table_collection_name_ptr,
                                                                                                    columns,
-                                                                                                   table_collection_type,
+                                                                                                   table_entry_type,
                                                                                                    table_meta,
                                                                                                    txn_id,
                                                                                                    begin_ts);

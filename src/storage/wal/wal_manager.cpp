@@ -30,7 +30,7 @@ import infinity_exception;
 
 import new_catalog;
 import db_entry;
-import table_collection_type;
+import table_entry_type;
 import parser;
 import txn_store;
 import db_entry;

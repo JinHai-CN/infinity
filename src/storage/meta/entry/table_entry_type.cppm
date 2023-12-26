@@ -18,7 +18,7 @@ import stl;
 
 import infinity_exception;
 
-export module table_collection_type;
+export module table_entry_type;
 
 namespace infinity {
 
