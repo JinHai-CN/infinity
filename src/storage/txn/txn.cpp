@@ -299,12 +299,12 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
     }
 
     auto [table_entry, table_status] = DBEntry::CreateTableCollection(db_entry,
-                                            TableEntryType::kTableEntry,
-                                            table_def->table_name(),
-                                            table_def->columns(),
-                                            txn_id_,
-                                            begin_ts,
-                                            txn_mgr_);
+                                                                      TableEntryType::kTableEntry,
+                                                                      table_def->table_name(),
+                                                                      table_def->columns(),
+                                                                      txn_id_,
+                                                                      begin_ts,
+                                                                      txn_mgr_);
 
     if (table_entry == nullptr) {
         if (table_status.ok()) {
@@ -337,7 +337,7 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
     }
 
     auto [table_entry, table_status] = DBEntry::DropTableCollection(db_entry, table_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
-    if(table_entry == nullptr) {
+    if (table_entry == nullptr) {
         return table_status;
     }
 
@@ -366,21 +366,16 @@ Status Txn::CreateIndex(const String &db_name, const String &table_name, const S
     }
 
     // Create table index entry
-    BaseEntry *base_entry{nullptr};
-    Status index_status = TableEntry::CreateIndex(table_entry, index_def, conflict_type, txn_id_, begin_ts, txn_mgr_, base_entry);
+    auto [table_index_entry, index_status] = table_entry->CreateIndex(index_def, conflict_type, txn_id_, begin_ts, txn_mgr_);
 
     if (!index_status.ok()) {
         return index_status;
     }
 
-    if (index_status.ok() && base_entry == nullptr && conflict_type == ConflictType::kIgnore) {
+    if (index_status.ok() && table_index_entry == nullptr && conflict_type == ConflictType::kIgnore) {
         return index_status;
     }
 
-    if (base_entry->entry_type_ != EntryType::kTableIndex) {
-        Error<TransactionException>("Invalid index type");
-    }
-    auto table_index_entry = static_cast<TableIndexEntry *>(base_entry);
     txn_indexes_.emplace(*index_def->index_name_, table_index_entry);
 
     TxnTableStore *table_store{nullptr};
@@ -409,20 +404,19 @@ Status Txn::DropIndexByName(const String &db_name, const String &table_name, con
         return table_status;
     }
 
-    BaseEntry *base_entry{nullptr};
-    Status index_status = TableEntry::DropIndex(table_entry, index_name, conflict_type, txn_id_, begin_ts, txn_mgr_, base_entry);
+    auto [table_index_entry, index_status] = table_entry->DropIndex(index_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
     if (!index_status.ok()) {
         return index_status;
     }
 
-    if (index_status.ok() && base_entry == nullptr && conflict_type == ConflictType::kIgnore) {
+    if (index_status.ok() && table_index_entry == nullptr && conflict_type == ConflictType::kIgnore) {
         return index_status;
     }
 
     if (auto iter = txn_indexes_.find(index_name); iter != txn_indexes_.end()) {
         txn_indexes_.erase(iter);
     } else {
-        txn_indexes_.emplace(index_name, static_cast<TableIndexEntry *>(base_entry));
+        txn_indexes_.emplace(index_name, table_index_entry);
     }
 
     wal_entry_->cmds.push_back(MakeShared<WalCmdDropIndex>(db_name, table_name, index_name));

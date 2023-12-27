@@ -22,6 +22,7 @@ import third_party;
 import index_def;
 import base_entry;
 import status;
+import table_index_entry;
 
 export module table_index_meta;
 
@@ -36,26 +37,14 @@ public:
     explicit TableIndexMeta(TableEntry *table_collection_entry, SharedPtr<String> index_name);
 
 public:
-    static Status CreateTableIndexEntry(TableIndexMeta *table_index_meta,
-                                        const SharedPtr<IndexDef> &index_def,
-                                        ConflictType conflict_type,
-                                        u64 txn_id,
-                                        TxnTimeStamp begin_ts,
-                                        TxnManager *txn_mgr,
-                                        BaseEntry *&new_index_entry);
+    Tuple<TableIndexEntry *, Status>
+    CreateTableIndexEntry(const SharedPtr<IndexDef> &index_def, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
-    static Status DropTableIndexEntry(TableIndexMeta *table_index_meta,
-                                      ConflictType conflict_type,
-                                      u64 txn_id,
-                                      TxnTimeStamp begin_ts,
-                                      TxnManager *txn_mgr,
-                                      BaseEntry *&new_index_entry);
+    Tuple<TableIndexEntry *, Status> DropTableIndexEntry(ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
     static SharedPtr<String> ToString(TableIndexMeta *table_index_meta);
 
-    static inline TableEntry *GetTableEntry(TableIndexMeta *table_index_meta) {
-        return table_index_meta->table_collection_entry_;
-    }
+    static inline TableEntry *GetTableEntry(TableIndexMeta *table_index_meta) { return table_index_meta->table_collection_entry_; }
 
     static Json Serialize(TableIndexMeta *table_index_meta, TxnTimeStamp max_commit_ts);
 
@@ -65,22 +54,13 @@ public:
 
     static void DeleteNewEntry(TableIndexMeta *meta, u64 txn_id, TxnManager *txn_mgr);
 
-
     void MergeFrom(TableIndexMeta &other);
 
 private:
-    static Status CreateTableIndexEntryInternal(TableIndexMeta *table_index_meta,
-                                                const SharedPtr<IndexDef> &index_def,
-                                                u64 txn_id,
-                                                TxnTimeStamp begin_ts,
-                                                TxnManager *txn_mgr,
-                                                BaseEntry *&new_index_entry);
+    Tuple<TableIndexEntry *, Status>
+    CreateTableIndexEntryInternal(const SharedPtr<IndexDef> &index_def, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
-    static Status DropTableIndexEntryInternal(TableIndexMeta *table_index_meta,
-                                              u64 txn_id,
-                                              TxnTimeStamp begin_ts,
-                                              TxnManager *txn_mgr,
-                                              BaseEntry *&new_index_entry);
+    Tuple<TableIndexEntry *, Status> DropTableIndexEntryInternal(u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
 private:
     //    RWMutex rw_locker_{};

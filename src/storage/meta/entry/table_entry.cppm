@@ -55,21 +55,11 @@ public:
                         TxnTimeStamp begin_ts);
 
 public:
-    static Status CreateIndex(TableEntry *table_entry,
-                              const SharedPtr<IndexDef> &index_def,
-                              ConflictType conflict_type,
-                              u64 txn_id,
-                              TxnTimeStamp begin_ts,
-                              TxnManager *txn_mgr,
-                              BaseEntry *&new_index_entry);
+    Tuple<TableIndexEntry *, Status>
+    CreateIndex(const SharedPtr<IndexDef> &index_def, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
-    static Status DropIndex(TableEntry *table_entry,
-                            const String &index_name,
-                            ConflictType conflict_type,
-                            u64 txn_id,
-                            TxnTimeStamp begin_ts,
-                            TxnManager *txn_mgr,
-                            BaseEntry *&new_index_entry);
+    Tuple<TableIndexEntry *, Status>
+    DropIndex(const String &index_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
     static Status
     GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&segment_column_index_entry);

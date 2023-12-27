@@ -50,12 +50,12 @@ module table_collection_entry;
 namespace infinity {
 
 TableEntry::TableEntry(const SharedPtr<String> &db_entry_dir,
-                                           SharedPtr<String> table_collection_name,
-                                           const Vector<SharedPtr<ColumnDef>> &columns,
-                                           TableEntryType table_entry_type,
-                                           TableCollectionMeta *table_collection_meta,
-                                           u64 txn_id,
-                                           TxnTimeStamp begin_ts)
+                       SharedPtr<String> table_collection_name,
+                       const Vector<SharedPtr<ColumnDef>> &columns,
+                       TableEntryType table_entry_type,
+                       TableCollectionMeta *table_collection_meta,
+                       u64 txn_id,
+                       TxnTimeStamp begin_ts)
     : BaseEntry(EntryType::kTable), table_entry_dir_(MakeShared<String>(Format("{}/{}/txn_{}", *db_entry_dir, *table_collection_name, txn_id))),
       table_collection_name_(Move(table_collection_name)), columns_(columns), table_entry_type_(table_entry_type),
       table_collection_meta_(table_collection_meta) {
@@ -68,13 +68,11 @@ TableEntry::TableEntry(const SharedPtr<String> &db_entry_dir,
     txn_id_ = txn_id;
 }
 
-Status TableEntry::CreateIndex(TableEntry *table_entry,
-                                         const SharedPtr<IndexDef> &index_def,
-                                         ConflictType conflict_type,
-                                         u64 txn_id,
-                                         TxnTimeStamp begin_ts,
-                                         TxnManager *txn_mgr,
-                                         BaseEntry *&new_index_entry) {
+Tuple<TableIndexEntry *, Status> TableEntry::CreateIndex(const SharedPtr<IndexDef> &index_def,
+                                                         ConflictType conflict_type,
+                                                         u64 txn_id,
+                                                         TxnTimeStamp begin_ts,
+                                                         TxnManager *txn_mgr) {
     if (index_def->index_name_->empty()) {
         // Index name shouldn't be empty
         Error<StorageException>("Attempt to create no name index.");
@@ -83,56 +81,54 @@ Status TableEntry::CreateIndex(TableEntry *table_entry,
     TableIndexMeta *table_index_meta{nullptr};
 
     // TODO: lock granularity can be narrowed.
-    table_entry->rw_locker_.lock_shared();
-    if (auto iter = table_entry->index_meta_map_.find(*index_def->index_name_); iter != table_entry->index_meta_map_.end()) {
+    this->rw_locker_.lock_shared();
+    if (auto iter = this->index_meta_map_.find(*index_def->index_name_); iter != this->index_meta_map_.end()) {
         table_index_meta = iter->second.get();
     }
-    table_entry->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
 
     if (table_index_meta == nullptr) {
 
-        auto new_table_index_meta = MakeUnique<TableIndexMeta>(table_entry, index_def->index_name_);
+        auto new_table_index_meta = MakeUnique<TableIndexMeta>(this, index_def->index_name_);
         table_index_meta = new_table_index_meta.get();
 
-        table_entry->rw_locker_.lock();
+        this->rw_locker_.lock();
 
-        if (auto iter = table_entry->index_meta_map_.find(*index_def->index_name_); iter != table_entry->index_meta_map_.end()) {
+        if (auto iter = this->index_meta_map_.find(*index_def->index_name_); iter != this->index_meta_map_.end()) {
             table_index_meta = iter->second.get();
         } else {
 
-            table_entry->index_meta_map_[*index_def->index_name_] = Move(new_table_index_meta);
+            this->index_meta_map_[*index_def->index_name_] = Move(new_table_index_meta);
         }
-        table_entry->rw_locker_.unlock();
+        this->rw_locker_.unlock();
     }
 
     LOG_TRACE(Format("Creating new index: {}", *index_def->index_name_));
-    return TableIndexMeta::CreateTableIndexEntry(table_index_meta, index_def, conflict_type, txn_id, begin_ts, txn_mgr, new_index_entry);
+    return table_index_meta->CreateTableIndexEntry(index_def, conflict_type, txn_id, begin_ts, txn_mgr);
 }
 
-Status TableEntry::DropIndex(TableEntry *table_entry,
-                                       const String &index_name,
-                                       ConflictType conflict_type,
-                                       u64 txn_id,
-                                       TxnTimeStamp begin_ts,
-                                       TxnManager *txn_mgr,
-                                       BaseEntry *&new_index_entry) {
-    table_entry->rw_locker_.lock_shared();
+Tuple<TableIndexEntry *, Status> TableEntry::DropIndex(const String &index_name,
+                                                       ConflictType conflict_type,
+                                                       u64 txn_id,
+                                                       TxnTimeStamp begin_ts,
+                                                       TxnManager *txn_mgr) {
+    this->rw_locker_.lock_shared();
 
     TableIndexMeta *index_meta{nullptr};
-    if (auto iter = table_entry->index_meta_map_.find(index_name); iter != table_entry->index_meta_map_.end()) {
+    if (auto iter = this->index_meta_map_.find(index_name); iter != this->index_meta_map_.end()) {
         index_meta = iter->second.get();
     }
-    table_entry->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
     if (index_meta == nullptr) {
         switch (conflict_type) {
 
             case ConflictType::kIgnore: {
-                return Status::OK();
+                return {nullptr, Status::OK()};
             }
             case ConflictType::kError: {
                 String error_message = Format("Attempt to drop not existed index entry {}", index_name);
                 LOG_TRACE(error_message);
-                return Status(ErrorCode::kNotFound, error_message.c_str());
+                return {nullptr, Status(ErrorCode::kNotFound, error_message.c_str())};
             }
             default: {
                 Error<StorageException>("Invalid conflict type.");
@@ -141,14 +137,10 @@ Status TableEntry::DropIndex(TableEntry *table_entry,
         Error<StorageException>("Should not reach here.");
     }
     LOG_TRACE(Format("Drop index entry {}", index_name));
-    return TableIndexMeta::DropTableIndexEntry(index_meta, conflict_type, txn_id, begin_ts, txn_mgr, new_index_entry);
+    return index_meta->DropTableIndexEntry(conflict_type, txn_id, begin_ts, txn_mgr);
 }
 
-Status TableEntry::GetIndex(TableEntry *table_entry,
-                                      const String &index_name,
-                                      u64 txn_id,
-                                      TxnTimeStamp begin_ts,
-                                      BaseEntry *&base_entry) {
+Status TableEntry::GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&base_entry) {
     if (auto iter = table_entry->index_meta_map_.find(index_name); iter != table_entry->index_meta_map_.end()) {
         return TableIndexMeta::GetEntry(iter->second.get(), txn_id, begin_ts, base_entry);
     }
@@ -171,10 +163,10 @@ void TableEntry::RemoveIndexEntry(TableEntry *table_entry, const String &index_n
 }
 
 void TableEntry::GetFullTextAnalyzers(TableEntry *table_entry,
-                                                u64 txn_id,
-                                                TxnTimeStamp begin_ts,
-                                                SharedPtr<IrsIndexEntry> &irs_index_entry,
-                                                Map<String, String> &column2analyzer) {
+                                      u64 txn_id,
+                                      TxnTimeStamp begin_ts,
+                                      SharedPtr<IrsIndexEntry> &irs_index_entry,
+                                      Map<String, String> &column2analyzer) {
     column2analyzer.clear();
     BaseEntry *base_entry;
     for (auto &[_, tableIndexMeta] : table_entry->index_meta_map_) {
@@ -230,10 +222,10 @@ void TableEntry::Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, 
 }
 
 void TableEntry::CreateIndexFile(TableEntry *table_entry,
-                                           void *txn_store,
-                                           TableIndexEntry *table_index_entry,
-                                           TxnTimeStamp begin_ts,
-                                           BufferManager *buffer_mgr) {
+                                 void *txn_store,
+                                 TableIndexEntry *table_index_entry,
+                                 TxnTimeStamp begin_ts,
+                                 BufferManager *buffer_mgr) {
     if (table_index_entry->irs_index_entry_.get() != nullptr) {
         IrsIndexEntry *irs_index_entry = table_index_entry->irs_index_entry_.get();
         for (const auto &[_segment_id, segment_entry] : table_entry->segment_map_) {
@@ -448,8 +440,7 @@ Json TableEntry::Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, 
     return json_res;
 }
 
-UniquePtr<TableEntry>
-TableEntry::Deserialize(const Json &table_entry_json, TableCollectionMeta *table_meta, BufferManager *buffer_mgr) {
+UniquePtr<TableEntry> TableEntry::Deserialize(const Json &table_entry_json, TableCollectionMeta *table_meta, BufferManager *buffer_mgr) {
     SharedPtr<String> table_entry_dir = MakeShared<String>(table_entry_json["table_entry_dir"]);
     SharedPtr<String> table_name = MakeShared<String>(table_entry_json["table_name"]);
     TableEntryType table_entry_type = table_entry_json["table_entry_type"];
@@ -481,8 +472,7 @@ TableEntry::Deserialize(const Json &table_entry_json, TableCollectionMeta *table
     u64 txn_id = table_entry_json["txn_id"];
     TxnTimeStamp begin_ts = table_entry_json["begin_ts"];
 
-    UniquePtr<TableEntry> table_entry =
-        MakeUnique<TableEntry>(table_entry_dir, table_name, columns, table_entry_type, table_meta, txn_id, begin_ts);
+    UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_entry_dir, table_name, columns, table_entry_type, table_meta, txn_id, begin_ts);
     table_entry->row_count_ = row_count;
     table_entry->next_segment_id_ = table_entry_json["next_segment_id"];
     table_entry->table_entry_dir_ = table_entry_dir;
