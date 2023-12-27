@@ -73,7 +73,7 @@ public:
 
     Status DropDatabase(const String &db_name, ConflictType conflict_type);
 
-    Tuple<DBEntry*, Status> GetDatabase(const String &db_name);
+    Tuple<DBEntry *, Status> GetDatabase(const String &db_name);
 
     Vector<DatabaseDetail> ListDatabases();
 
@@ -86,7 +86,7 @@ public:
 
     Status DropTableCollectionByName(const String &db_name, const String &table_name, ConflictType conflict_type);
 
-    Tuple<BaseEntry *, Status> GetTableByName(const String &db_name, const String &table_name);
+    Tuple<TableEntry *, Status> GetTableByName(const String &db_name, const String &table_name);
 
     Status GetCollectionByName(const String &db_name, const String &table_name, BaseEntry *&collection_entry);
 

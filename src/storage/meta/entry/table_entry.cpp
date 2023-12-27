@@ -57,8 +57,7 @@ TableEntry::TableEntry(const SharedPtr<String> &db_entry_dir,
                        u64 txn_id,
                        TxnTimeStamp begin_ts)
     : BaseEntry(EntryType::kTable), table_entry_dir_(MakeShared<String>(Format("{}/{}/txn_{}", *db_entry_dir, *table_collection_name, txn_id))),
-      table_collection_name_(Move(table_collection_name)), columns_(columns), table_entry_type_(table_entry_type),
-      table_entry_(table_meta) {
+      table_collection_name_(Move(table_collection_name)), columns_(columns), table_entry_type_(table_entry_type), table_entry_(table_meta) {
     SizeT column_count = columns.size();
     for (SizeT idx = 0; idx < column_count; ++idx) {
         column_name2column_id_[columns[idx]->name()] = idx;
@@ -68,11 +67,8 @@ TableEntry::TableEntry(const SharedPtr<String> &db_entry_dir,
     txn_id_ = txn_id;
 }
 
-Tuple<TableIndexEntry *, Status> TableEntry::CreateIndex(const SharedPtr<IndexDef> &index_def,
-                                                         ConflictType conflict_type,
-                                                         u64 txn_id,
-                                                         TxnTimeStamp begin_ts,
-                                                         TxnManager *txn_mgr) {
+Tuple<TableIndexEntry *, Status>
+TableEntry::CreateIndex(const SharedPtr<IndexDef> &index_def, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
     if (index_def->index_name_->empty()) {
         // Index name shouldn't be empty
         Error<StorageException>("Attempt to create no name index.");
@@ -107,11 +103,8 @@ Tuple<TableIndexEntry *, Status> TableEntry::CreateIndex(const SharedPtr<IndexDe
     return table_index_meta->CreateTableIndexEntry(index_def, conflict_type, txn_id, begin_ts, txn_mgr);
 }
 
-Tuple<TableIndexEntry *, Status> TableEntry::DropIndex(const String &index_name,
-                                                       ConflictType conflict_type,
-                                                       u64 txn_id,
-                                                       TxnTimeStamp begin_ts,
-                                                       TxnManager *txn_mgr) {
+Tuple<TableIndexEntry *, Status>
+TableEntry::DropIndex(const String &index_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
     this->rw_locker_.lock_shared();
 
     TableIndexMeta *index_meta{nullptr};
@@ -140,13 +133,14 @@ Tuple<TableIndexEntry *, Status> TableEntry::DropIndex(const String &index_name,
     return index_meta->DropTableIndexEntry(conflict_type, txn_id, begin_ts, txn_mgr);
 }
 
-Status TableEntry::GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&base_entry) {
+Tuple<TableIndexEntry *, Status>
+TableEntry::GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts) {
     if (auto iter = table_entry->index_meta_map_.find(index_name); iter != table_entry->index_meta_map_.end()) {
-        return TableIndexMeta::GetEntry(iter->second.get(), txn_id, begin_ts, base_entry);
+        return iter->second->GetEntry(txn_id, begin_ts);
     }
     UniquePtr<String> err_msg = MakeUnique<String>("Cannot find index def");
     LOG_ERROR(*err_msg);
-    return Status(ErrorCode::kNotFound, Move(err_msg));
+    return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
 }
 
 void TableEntry::RemoveIndexEntry(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnManager *txn_mgr) {
@@ -168,13 +162,9 @@ void TableEntry::GetFullTextAnalyzers(TableEntry *table_entry,
                                       SharedPtr<IrsIndexEntry> &irs_index_entry,
                                       Map<String, String> &column2analyzer) {
     column2analyzer.clear();
-    BaseEntry *base_entry;
-    for (auto &[_, tableIndexMeta] : table_entry->index_meta_map_) {
-        if (TableIndexMeta::GetEntry(tableIndexMeta.get(), txn_id, begin_ts, base_entry).ok()) {
-            if (EntryType::kTableIndex != base_entry->entry_type_) {
-                Error<StorageException>("unexpected entry type under TableIndexMeta");
-            }
-            TableIndexEntry *table_index_entry = static_cast<TableIndexEntry *>(base_entry);
+    for (auto &[_, table_index_meta] : table_entry->index_meta_map_) {
+        auto [table_index_entry, status] = table_index_meta->GetEntry(txn_id, begin_ts);
+        if (status.ok()) {
             irs_index_entry = table_index_entry->irs_index_entry_;
             for (SharedPtr<IndexBase> &indexBase : table_index_entry->index_def_->index_array_) {
                 if (indexBase->index_type_ != IndexType::kIRSFullText)

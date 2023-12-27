@@ -61,8 +61,7 @@ public:
     Tuple<TableIndexEntry *, Status>
     DropIndex(const String &index_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
-    static Status
-    GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&segment_column_index_entry);
+    Tuple<TableIndexEntry *, Status> GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts);
 
     static void RemoveIndexEntry(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnManager *txn_mgr);
 

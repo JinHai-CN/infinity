@@ -197,14 +197,12 @@ void PhysicalKnnScan::PlanWithIndex(QueryContext *query_context) { // TODO: retu
     TableEntry *table_entry = base_table_ref_->table_entry_ptr_;
     HashMap<u32, Vector<SegmentColumnIndexEntry *>> index_entry_map;
     for (auto &[index_name, table_index_meta] : table_entry->index_meta_map_) {
-        BaseEntry *base_entry{nullptr};
-        auto status = TableIndexMeta::GetEntry(table_index_meta.get(), txn_id, begin_ts, base_entry);
+        auto [table_index_entry, status] = table_index_meta->GetEntry(txn_id, begin_ts);
         if (!status.ok()) {
             // FIXME: not found index means exception??
             Error<StorageException>("Cannot find index entry.");
         }
 
-        TableIndexEntry *table_index_entry = (TableIndexEntry *)base_entry;
         auto column_index_iter = table_index_entry->column_index_map_.find(knn_column_id);
         if (column_index_iter == table_index_entry->column_index_map_.end()) {
             // knn_column_id isn't in this table index

@@ -40,8 +40,7 @@ namespace infinity {
 
 struct SegmentEntry;
 
-TableIndexMeta::TableIndexMeta(TableEntry *table_entry, SharedPtr<String> index_name)
-    : index_name_(Move(index_name)), table_entry_(table_entry) {}
+TableIndexMeta::TableIndexMeta(TableEntry *table_entry, SharedPtr<String> index_name) : index_name_(Move(index_name)), table_entry_(table_entry) {}
 
 Tuple<TableIndexEntry *, Status> TableIndexMeta::CreateTableIndexEntry(const SharedPtr<IndexDef> &index_def,
                                                                        ConflictType conflict_type,
@@ -303,13 +302,16 @@ UniquePtr<TableIndexMeta> TableIndexMeta::Deserialize(const Json &table_index_me
     return res;
 }
 
-Status TableIndexMeta::GetEntry(TableIndexMeta *meta, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&base_entry) {
-    SharedLock<RWMutex> r_locker(meta->rw_locker_);
-    for (const auto &entry : meta->entry_list_) {
+Tuple<TableIndexEntry *, Status> TableIndexMeta::GetEntry(u64 txn_id, TxnTimeStamp begin_ts) {
+
+    TableIndexEntry *table_index_entry{nullptr};
+
+    SharedLock<RWMutex> r_locker(this->rw_locker_);
+    for (const auto &entry : this->entry_list_) {
         if (entry->entry_type_ == EntryType::kDummy) {
             UniquePtr<String> err_msg = MakeUnique<String>("No valid entry");
             LOG_ERROR(*err_msg);
-            return Status(ErrorCode::kNotFound, Move(err_msg));
+            return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
         }
 
         if (entry->commit_ts_ < UNCOMMIT_TS) {
@@ -318,21 +320,22 @@ Status TableIndexMeta::GetEntry(TableIndexMeta *meta, u64 txn_id, TxnTimeStamp b
                 if (entry->deleted_) {
                     UniquePtr<String> err_msg = MakeUnique<String>("No valid entry");
                     LOG_ERROR(*err_msg);
-                    return Status(ErrorCode::kNotFound, Move(err_msg));
+                    return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
                 } else {
-                    base_entry = entry.get();
-                    return Status::OK();
+                    table_index_entry = static_cast<TableIndexEntry *>(entry.get());
+                    return {table_index_entry, Status::OK()};
                 }
             }
         } else if (txn_id == entry->txn_id_) {
             // same txn
-            base_entry = entry.get();
-            return Status::OK();
+            table_index_entry = static_cast<TableIndexEntry *>(entry.get());
+            return {table_index_entry, Status::OK()};
         }
     }
+
     UniquePtr<String> err_msg = MakeUnique<String>("No valid entry");
     LOG_ERROR(*err_msg);
-    return Status(ErrorCode::kNotFound, Move(err_msg));
+    return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
 }
 
 void TableIndexMeta::DeleteNewEntry(TableIndexMeta *meta, u64 txn_id, TxnManager *) {

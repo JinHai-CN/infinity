@@ -418,7 +418,7 @@ Status Txn::DropIndexByName(const String &db_name, const String &table_name, con
     return index_status;
 }
 
-Tuple<BaseEntry *, Status> Txn::GetTableByName(const String &db_name, const String &table_name) {
+Tuple<TableEntry *, Status> Txn::GetTableByName(const String &db_name, const String &table_name) {
     TxnState txn_state = txn_context_.GetTxnState();
 
     if (txn_state != TxnState::kStarted) {

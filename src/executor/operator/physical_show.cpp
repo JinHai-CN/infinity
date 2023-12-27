@@ -1314,13 +1314,11 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
     output_block_ptr->Init(column_types);
 
     for (const auto &[index_name, index_def_meta] : table_entry->index_meta_map_) {
-        BaseEntry *base_entry{nullptr};
-        Status status = TableIndexMeta::GetEntry(index_def_meta.get(), txn->TxnID(), txn->BeginTS(), base_entry);
+        auto [table_index_entry, status] = index_def_meta->GetEntry(txn->TxnID(), txn->BeginTS());
         if (!status.ok()) {
             // Index isn't found.
             continue;
         }
-        auto table_index_entry = static_cast<TableIndexEntry *>(base_entry);
 
         for (const auto &column_index_entry_pair : table_index_entry->column_index_map_) {
             u64 index_column_id = column_index_entry_pair.first;

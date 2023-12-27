@@ -50,7 +50,7 @@ public:
 
     static UniquePtr<TableIndexMeta> Deserialize(const Json &index_def_meta_json, TableEntry *table_entry, BufferManager *buffer_mgr);
 
-    static Status GetEntry(TableIndexMeta *meta, u64 txn_id, TxnTimeStamp begin_ts, BaseEntry *&base_entry);
+    Tuple<TableIndexEntry *, Status> GetEntry(u64 txn_id, TxnTimeStamp begin_ts);
 
     static void DeleteNewEntry(TableIndexMeta *meta, u64 txn_id, TxnManager *txn_mgr);
 
