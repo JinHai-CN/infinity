@@ -74,7 +74,7 @@ Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(TableEntryType table_
         LOG_TRACE(Format("Add new table entry for {} in new table meta of db_entry {} ", table_name, *this->db_entry_dir_));
     }
 
-    return TableMeta::CreateNewEntry(table_meta, table_entry_type, table_collection_name, columns, txn_id, begin_ts, txn_mgr);
+    return table_meta->CreateNewEntry(table_entry_type, table_collection_name, columns, txn_id, begin_ts, txn_mgr);
 }
 
 Tuple<TableEntry *, Status> DBEntry::DropTableCollection(const String &table_collection_name,
@@ -101,7 +101,7 @@ Tuple<TableEntry *, Status> DBEntry::DropTableCollection(const String &table_col
     }
 
     LOG_TRACE(Format("Drop a table/collection entry {}", table_collection_name));
-    return TableMeta::DropNewEntry(table_meta, txn_id, begin_ts, txn_mgr, table_collection_name, conflict_type);
+    return table_meta->DropNewEntry(txn_id, begin_ts, txn_mgr, table_collection_name, conflict_type);
 }
 
 Tuple<TableEntry *, Status> DBEntry::GetTableCollection(const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts) {
@@ -119,7 +119,7 @@ Tuple<TableEntry *, Status> DBEntry::GetTableCollection(const String &table_coll
         LOG_ERROR(*err_msg);
         return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
-    return TableMeta::GetEntry(table_meta, txn_id, begin_ts);
+    return table_meta->GetEntry(txn_id, begin_ts);
 }
 
 void DBEntry::RemoveTableEntry(const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr) {
@@ -132,7 +132,7 @@ void DBEntry::RemoveTableEntry(const String &table_collection_name, u64 txn_id, 
     this->rw_locker_.unlock_shared();
 
     LOG_TRACE(Format("Remove a table/collection entry: {}", table_collection_name));
-    TableMeta::DeleteNewEntry(table_meta, txn_id, txn_mgr);
+    table_meta->DeleteNewEntry(txn_id, txn_mgr);
 }
 
 Vector<TableEntry *> DBEntry::TableCollections(u64 txn_id, TxnTimeStamp begin_ts) {
@@ -143,7 +143,7 @@ Vector<TableEntry *> DBEntry::TableCollections(u64 txn_id, TxnTimeStamp begin_ts
     results.reserve(this->tables_.size());
     for (auto &table_collection_meta_pair : this->tables_) {
         TableMeta *table_meta = table_collection_meta_pair.second.get();
-        auto [table_entry, status] = TableMeta::GetEntry(table_meta, txn_id, begin_ts);
+        auto [table_entry, status] = table_meta->GetEntry(txn_id, begin_ts);
         if (!status.ok()) {
             LOG_TRACE(Format("error when get table/collection entry: {}", status.message()));
         } else {

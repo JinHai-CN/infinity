@@ -48,51 +48,40 @@ namespace infinity {
  * @param txn_mgr
  * @return Status
  */
-Tuple<TableEntry *, Status> TableMeta::CreateNewEntry(TableMeta *table_meta,
-                                           TableEntryType table_entry_type,
-                                           const SharedPtr<String> &table_collection_name_ptr,
-                                           const Vector<SharedPtr<ColumnDef>> &columns,
-                                           u64 txn_id,
-                                           TxnTimeStamp begin_ts,
-                                           TxnManager *txn_mgr) {
-    UniqueLock<RWMutex> rw_locker(table_meta->rw_locker_);
+Tuple<TableEntry *, Status> TableMeta::CreateNewEntry(TableEntryType table_entry_type,
+                                                      const SharedPtr<String> &table_collection_name_ptr,
+                                                      const Vector<SharedPtr<ColumnDef>> &columns,
+                                                      u64 txn_id,
+                                                      TxnTimeStamp begin_ts,
+                                                      TxnManager *txn_mgr) {
+    UniqueLock<RWMutex> rw_locker(this->rw_locker_);
     const String &table_collection_name = *table_collection_name_ptr;
 
-    TableEntry* table_entry_ptr{nullptr};
+    TableEntry *table_entry_ptr{nullptr};
 
-    if (table_meta->entry_list_.empty()) {
+    if (this->entry_list_.empty()) {
         // Insert a dummy entry.
         UniquePtr<BaseEntry> dummy_entry = MakeUnique<BaseEntry>(EntryType::kDummy);
         dummy_entry->deleted_ = true;
-        table_meta->entry_list_.emplace_back(Move(dummy_entry));
+        this->entry_list_.emplace_back(Move(dummy_entry));
 
         // Insert the new table entry
-        UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
-                                                                                       table_collection_name_ptr,
-                                                                                       columns,
-                                                                                       table_entry_type,
-                                                                                       table_meta,
-                                                                                       txn_id,
-                                                                                       begin_ts);
+        UniquePtr<TableEntry> table_entry =
+            MakeUnique<TableEntry>(this->db_entry_dir_, table_collection_name_ptr, columns, table_entry_type, this, txn_id, begin_ts);
         table_entry_ptr = table_entry.get();
-        table_meta->entry_list_.emplace_front(Move(table_entry));
+        this->entry_list_.emplace_front(Move(table_entry));
 
         LOG_TRACE(Format("New table entry is added: {}.", table_collection_name));
         return {table_entry_ptr, Status::OK()};
     } else {
         // Already have a table entry, check if the table entry is valid here.
-        BaseEntry *header_base_entry = table_meta->entry_list_.front().get();
+        BaseEntry *header_base_entry = this->entry_list_.front().get();
         if (header_base_entry->entry_type_ == EntryType::kDummy) {
             // Dummy entry in the header
-            UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
-                                                                                           table_collection_name_ptr,
-                                                                                           columns,
-                                                                                           table_entry_type,
-                                                                                           table_meta,
-                                                                                           txn_id,
-                                                                                           begin_ts);
+            UniquePtr<TableEntry> table_entry =
+                MakeUnique<TableEntry>(this->db_entry_dir_, table_collection_name_ptr, columns, table_entry_type, this, txn_id, begin_ts);
             table_entry_ptr = table_entry.get();
-            table_meta->entry_list_.emplace_front(Move(table_entry));
+            this->entry_list_.emplace_front(Move(table_entry));
             return {table_entry_ptr, Status::OK()};
         }
 
@@ -102,15 +91,10 @@ Tuple<TableEntry *, Status> TableMeta::CreateNewEntry(TableMeta *table_meta,
             if (begin_ts > header_table_entry->commit_ts_) {
                 if (header_table_entry->deleted_) {
                     // No conflict
-                    UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
-                                                                                                   table_collection_name_ptr,
-                                                                                                   columns,
-                                                                                                   table_entry_type,
-                                                                                                   table_meta,
-                                                                                                   txn_id,
-                                                                                                   begin_ts);
+                    UniquePtr<TableEntry> table_entry =
+                        MakeUnique<TableEntry>(this->db_entry_dir_, table_collection_name_ptr, columns, table_entry_type, this, txn_id, begin_ts);
                     table_entry_ptr = table_entry.get();
-                    table_meta->entry_list_.emplace_front(Move(table_entry));
+                    this->entry_list_.emplace_front(Move(table_entry));
                     return {table_entry_ptr, Status::OK()};
                 } else {
                     // Duplicated table
@@ -135,15 +119,15 @@ Tuple<TableEntry *, Status> TableMeta::CreateNewEntry(TableMeta *table_meta,
                     if (header_table_entry->txn_id_ == txn_id) {
                         // Same txn
                         if (header_table_entry->deleted_) {
-                            UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
-                                                                                                           table_collection_name_ptr,
-                                                                                                           columns,
-                                                                                                           table_entry_type,
-                                                                                                           table_meta,
-                                                                                                           txn_id,
-                                                                                                           begin_ts);
+                            UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(this->db_entry_dir_,
+                                                                                       table_collection_name_ptr,
+                                                                                       columns,
+                                                                                       table_entry_type,
+                                                                                       this,
+                                                                                       txn_id,
+                                                                                       begin_ts);
                             table_entry_ptr = table_entry.get();
-                            table_meta->entry_list_.emplace_front(Move(table_entry));
+                            this->entry_list_.emplace_front(Move(table_entry));
                             return {table_entry_ptr, Status::OK()};
                         } else {
                             UniquePtr<String> err_msg = MakeUnique<String>(Format("Create a duplicated table {}.", table_collection_name));
@@ -167,18 +151,18 @@ Tuple<TableEntry *, Status> TableMeta::CreateNewEntry(TableMeta *table_meta,
                 case TxnState::kRollbacking:
                 case TxnState::kRollbacked: {
                     // Remove the header entry
-                    table_meta->entry_list_.erase(table_meta->entry_list_.begin());
+                    this->entry_list_.erase(this->entry_list_.begin());
 
                     // Append new one
-                    UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
-                                                                                                   table_collection_name_ptr,
-                                                                                                   columns,
-                                                                                                   table_entry_type,
-                                                                                                   table_meta,
-                                                                                                   txn_id,
-                                                                                                   begin_ts);
+                    UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(this->db_entry_dir_,
+                                                                               table_collection_name_ptr,
+                                                                               columns,
+                                                                               table_entry_type,
+                                                                               this,
+                                                                               txn_id,
+                                                                               begin_ts);
                     table_entry_ptr = table_entry.get();
-                    table_meta->entry_list_.emplace_front(Move(table_entry));
+                    this->entry_list_.emplace_front(Move(table_entry));
                     return {table_entry_ptr, Status::OK()};
                 }
                 default: {
@@ -191,23 +175,22 @@ Tuple<TableEntry *, Status> TableMeta::CreateNewEntry(TableMeta *table_meta,
     }
 }
 
-Tuple<TableEntry *, Status> TableMeta::DropNewEntry(TableMeta *table_meta,
-                                         u64 txn_id,
-                                         TxnTimeStamp begin_ts,
-                                         TxnManager *,
-                                         const String &table_name,
-                                         ConflictType conflict_type) {
+Tuple<TableEntry *, Status> TableMeta::DropNewEntry(u64 txn_id,
+                                                    TxnTimeStamp begin_ts,
+                                                    TxnManager *,
+                                                    const String &table_name,
+                                                    ConflictType conflict_type) {
 
-    TableEntry* table_entry_ptr{nullptr};
+    TableEntry *table_entry_ptr{nullptr};
 
-    UniqueLock<RWMutex> rw_locker(table_meta->rw_locker_);
-    if (table_meta->entry_list_.empty()) {
+    UniqueLock<RWMutex> rw_locker(this->rw_locker_);
+    if (this->entry_list_.empty()) {
         UniquePtr<String> err_msg = MakeUnique<String>("Empty table entry list.");
         LOG_ERROR(*err_msg);
         return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
 
-    BaseEntry *header_base_entry = table_meta->entry_list_.front().get();
+    BaseEntry *header_base_entry = this->entry_list_.front().get();
     if (header_base_entry->entry_type_ == EntryType::kDummy) {
         UniquePtr<String> err_msg = MakeUnique<String>("No valid table entry.");
         LOG_ERROR(*err_msg);
@@ -230,16 +213,16 @@ Tuple<TableEntry *, Status> TableMeta::DropNewEntry(TableMeta *table_meta,
             }
 
             Vector<SharedPtr<ColumnDef>> dummy_columns;
-            UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(table_meta->db_entry_dir_,
-                                                                                           table_meta->table_collection_name_,
-                                                                                           dummy_columns,
-                                                                                           TableEntryType::kTableEntry,
-                                                                                           table_meta,
-                                                                                           txn_id,
-                                                                                           begin_ts);
+            UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(this->db_entry_dir_,
+                                                                       this->table_collection_name_,
+                                                                       dummy_columns,
+                                                                       TableEntryType::kTableEntry,
+                                                                       this,
+                                                                       txn_id,
+                                                                       begin_ts);
             table_entry_ptr = table_entry.get();
             table_entry_ptr->deleted_ = true;
-            table_meta->entry_list_.emplace_front(Move(table_entry));
+            this->entry_list_.emplace_front(Move(table_entry));
 
             return {table_entry_ptr, Status::OK()};
         } else {
@@ -254,7 +237,7 @@ Tuple<TableEntry *, Status> TableMeta::DropNewEntry(TableMeta *table_meta,
         if (txn_id == header_table_entry->txn_id_) {
             // Same txn, remove the header table entry
             table_entry_ptr = header_table_entry;
-            table_meta->entry_list_.erase(table_meta->entry_list_.begin());
+            this->entry_list_.erase(this->entry_list_.begin());
 
             return {table_entry_ptr, Status::OK()};
         } else {
@@ -266,18 +249,18 @@ Tuple<TableEntry *, Status> TableMeta::DropNewEntry(TableMeta *table_meta,
     }
 }
 
-void TableMeta::DeleteNewEntry(TableMeta *table_meta, u64 txn_id, TxnManager *) {
-    UniqueLock<RWMutex> rw_locker(table_meta->rw_locker_);
-    if (table_meta->entry_list_.empty()) {
+void TableMeta::DeleteNewEntry(u64 txn_id, TxnManager *) {
+    UniqueLock<RWMutex> rw_locker(this->rw_locker_);
+    if (this->entry_list_.empty()) {
         LOG_TRACE("Empty table entry list.");
         return;
     }
 
-    auto removed_iter = std::remove_if(table_meta->entry_list_.begin(), table_meta->entry_list_.end(), [&](UniquePtr<BaseEntry> &entry) -> bool {
+    auto removed_iter = std::remove_if(this->entry_list_.begin(), this->entry_list_.end(), [&](UniquePtr<BaseEntry> &entry) -> bool {
         return entry->txn_id_ == txn_id;
     });
 
-    table_meta->entry_list_.erase(removed_iter, table_meta->entry_list_.end());
+    this->entry_list_.erase(removed_iter, this->entry_list_.end());
 }
 
 /**
@@ -292,15 +275,15 @@ void TableMeta::DeleteNewEntry(TableMeta *table_meta, u64 txn_id, TxnManager *) 
  * @param begin_ts
  * @return Status
  */
-Tuple<TableEntry*, Status> TableMeta::GetEntry(TableMeta *table_meta, u64 txn_id, TxnTimeStamp begin_ts) {
-    SharedLock<RWMutex> r_locker(table_meta->rw_locker_);
-    if (table_meta->entry_list_.empty()) {
+Tuple<TableEntry *, Status> TableMeta::GetEntry(u64 txn_id, TxnTimeStamp begin_ts) {
+    SharedLock<RWMutex> r_locker(this->rw_locker_);
+    if (this->entry_list_.empty()) {
         UniquePtr<String> err_msg = MakeUnique<String>("Empty table entry list.");
         LOG_ERROR(*err_msg);
         return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
 
-    for (const auto &table_entry : table_meta->entry_list_) {
+    for (const auto &table_entry : this->entry_list_) {
         if (table_entry->entry_type_ == EntryType::kDummy) {
             UniquePtr<String> err_msg = MakeUnique<String>("No valid table entry. dummy entry");
             LOG_ERROR(*err_msg);
@@ -316,14 +299,14 @@ Tuple<TableEntry*, Status> TableMeta::GetEntry(TableMeta *table_meta, u64 txn_id
                     LOG_ERROR(*err_msg);
                     return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
                 } else {
-                    return {static_cast<TableEntry*>(table_entry.get()), Status::OK()};
+                    return {static_cast<TableEntry *>(table_entry.get()), Status::OK()};
                 }
             }
         } else {
             // not committed
             if (txn_id == table_entry->txn_id_) {
                 // same txn
-                return {static_cast<TableEntry*>(table_entry.get()), Status::OK()};
+                return {static_cast<TableEntry *>(table_entry.get()), Status::OK()};
             }
         }
     }
