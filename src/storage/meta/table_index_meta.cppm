@@ -52,7 +52,7 @@ public:
 
     Tuple<TableIndexEntry *, Status> GetEntry(u64 txn_id, TxnTimeStamp begin_ts);
 
-    static void DeleteNewEntry(TableIndexMeta *meta, u64 txn_id, TxnManager *txn_mgr);
+    void DeleteNewEntry(u64 txn_id, TxnManager *txn_mgr);
 
     void MergeFrom(TableIndexMeta &other);
 

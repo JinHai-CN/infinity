@@ -63,7 +63,7 @@ public:
 
     Tuple<TableIndexEntry *, Status> GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts);
 
-    static void RemoveIndexEntry(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnManager *txn_mgr);
+    void RemoveIndexEntry(const String &index_name, u64 txn_id, TxnManager *txn_mgr);
 
 public:
     static void Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, BufferManager *buffer_mgr);

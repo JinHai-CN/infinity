@@ -338,9 +338,9 @@ Tuple<TableIndexEntry *, Status> TableIndexMeta::GetEntry(u64 txn_id, TxnTimeSta
     return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
 }
 
-void TableIndexMeta::DeleteNewEntry(TableIndexMeta *meta, u64 txn_id, TxnManager *) {
-    UniqueLock<RWMutex> w_locker(meta->rw_locker_);
-    if (meta->entry_list_.empty()) {
+void TableIndexMeta::DeleteNewEntry(u64 txn_id, TxnManager *) {
+    UniqueLock<RWMutex> w_locker(this->rw_locker_);
+    if (this->entry_list_.empty()) {
         LOG_TRACE("Attempt to delete not existed entry.");
         return;
     }
@@ -348,9 +348,9 @@ void TableIndexMeta::DeleteNewEntry(TableIndexMeta *meta, u64 txn_id, TxnManager
     // `std::remove_if` move all elements that satisfy the predicate and move all the last element to the front of list. return value is the end of
     // the moved elements.
     auto removed_iter =
-        std::remove_if(meta->entry_list_.begin(), meta->entry_list_.end(), [&](UniquePtr<BaseEntry> &entry) { return entry->txn_id_ == txn_id; });
+        std::remove_if(this->entry_list_.begin(), this->entry_list_.end(), [&](UniquePtr<BaseEntry> &entry) { return entry->txn_id_ == txn_id; });
     // erase the all "moved" elements in the end of list
-    meta->entry_list_.erase(removed_iter, meta->entry_list_.end());
+    this->entry_list_.erase(removed_iter, this->entry_list_.end());
 }
 
 void TableIndexMeta::MergeFrom(TableIndexMeta &other) {

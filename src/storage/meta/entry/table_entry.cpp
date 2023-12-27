@@ -143,17 +143,17 @@ TableEntry::GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_
     return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
 }
 
-void TableEntry::RemoveIndexEntry(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnManager *txn_mgr) {
-    table_entry->rw_locker_.lock_shared();
+void TableEntry::RemoveIndexEntry(const String &index_name, u64 txn_id, TxnManager *txn_mgr) {
+    this->rw_locker_.lock_shared();
 
     TableIndexMeta *table_index_meta{nullptr};
-    if (auto iter = table_entry->index_meta_map_.find(index_name); iter != table_entry->index_meta_map_.end()) {
+    if (auto iter = this->index_meta_map_.find(index_name); iter != this->index_meta_map_.end()) {
         table_index_meta = iter->second.get();
     }
-    table_entry->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
 
     LOG_TRACE(Format("Remove index entry: {}", index_name));
-    TableIndexMeta::DeleteNewEntry(table_index_meta, txn_id, txn_mgr);
+    table_index_meta->DeleteNewEntry(txn_id, txn_mgr);
 }
 
 void TableEntry::GetFullTextAnalyzers(TableEntry *table_entry,

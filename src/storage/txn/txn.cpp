@@ -565,7 +565,7 @@ void Txn::Rollback() {
     for (const auto &[index_name, table_index_entry] : txn_indexes_) {
         TableIndexMeta *table_index_meta = table_index_entry->table_index_meta_;
         TableEntry *table_entry = TableIndexMeta::GetTableEntry(table_index_meta);
-        TableEntry::RemoveIndexEntry(table_entry, index_name, txn_id_, txn_mgr_);
+        table_entry->RemoveIndexEntry(index_name, txn_id_, txn_mgr_);
     }
 
     for (const auto &db_name : db_names_) {
