@@ -27,7 +27,7 @@ import join_table_ref;
 import base_table_ref;
 import query_context;
 import binding;
-import table_collection_entry;
+import table_entry;
 import bound_select_statement;
 import bound_delete_statement;
 import bound_update_statement;
@@ -386,8 +386,8 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
     if (!status.ok()) {
         Error<PlannerException>(status.message());
     }
-    TableEntry *table_collection_entry = static_cast<TableEntry *>(base_table_entry);
-    if (table_collection_entry->table_entry_type_ == TableEntryType::kCollectionEntry) {
+    TableEntry *table_entry = static_cast<TableEntry *>(base_table_entry);
+    if (table_entry->table_entry_type_ == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
     }
 
@@ -396,12 +396,12 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
     SharedPtr<Vector<String>> names_ptr = MakeShared<Vector<String>>();
     Vector<SizeT> columns;
 
-    SizeT column_count = table_collection_entry->columns_.size();
+    SizeT column_count = table_entry->columns_.size();
     types_ptr->reserve(column_count);
     names_ptr->reserve(column_count);
     columns.reserve(column_count);
     for (SizeT idx = 0; idx < column_count; ++idx) {
-        const ColumnDef *column_def = table_collection_entry->columns_[idx].get();
+        const ColumnDef *column_def = table_entry->columns_[idx].get();
         types_ptr->emplace_back(column_def->column_type_);
         names_ptr->emplace_back(column_def->name_);
         columns.emplace_back(idx);
@@ -410,13 +410,13 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
     u64 txn_id = query_context->GetTxn()->TxnID();
     TxnTimeStamp begin_ts = query_context->GetTxn()->BeginTS();
 
-    SharedPtr<BlockIndex> block_index = TableEntry::GetBlockIndex(table_collection_entry, txn_id, begin_ts);
+    SharedPtr<BlockIndex> block_index = TableEntry::GetBlockIndex(table_entry, txn_id, begin_ts);
 
     u64 table_index = bind_context_ptr_->GenerateTableIndex();
-    auto table_ref = MakeShared<BaseTableRef>(table_collection_entry, columns, Move(block_index), alias, table_index, names_ptr, types_ptr);
+    auto table_ref = MakeShared<BaseTableRef>(table_entry, columns, Move(block_index), alias, table_index, names_ptr, types_ptr);
 
     // Insert the table in the binding context
-    this->bind_context_ptr_->AddTableBinding(alias, table_index, table_collection_entry, types_ptr, names_ptr, block_index);
+    this->bind_context_ptr_->AddTableBinding(alias, table_index, table_entry, types_ptr, names_ptr, block_index);
 
     return table_ref;
 }

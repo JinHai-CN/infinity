@@ -30,7 +30,7 @@ import local_file_system;
 import serialize;
 
 import infinity_exception;
-import table_collection_entry;
+import table_entry;
 import parser;
 
 module block_entry;

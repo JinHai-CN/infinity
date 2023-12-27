@@ -34,7 +34,7 @@ import bound_cast_func;
 import base_expression;
 import base_entry;
 import txn;
-import table_collection_entry;
+import table_entry;
 import table_entry_type;
 import third_party;
 import table_def;
@@ -671,7 +671,7 @@ Status LogicalPlanner::BuildImport(const CopyStatement *statement, SharedPtr<Bin
     if (!status.ok()) {
         Error<PlannerException>(status.message());
     }
-    auto table_collection_entry = dynamic_cast<TableEntry *>(base_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_entry);
 
     // Check the file existence
     LocalFileSystem fs;
@@ -682,7 +682,7 @@ Status LogicalPlanner::BuildImport(const CopyStatement *statement, SharedPtr<Bin
     }
 
     SharedPtr<LogicalNode> logical_import = MakeShared<LogicalImport>(bind_context_ptr->GetNewLogicalNodeId(),
-                                                                      table_collection_entry,
+                                                                      table_entry,
                                                                       statement->file_path_,
                                                                       statement->header_,
                                                                       statement->delimiter_,

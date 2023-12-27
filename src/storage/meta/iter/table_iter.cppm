@@ -16,7 +16,7 @@ module;
 
 import stl;
 import segment_iter;
-import table_collection_entry;
+import table_entry;
 import segment_entry;
 
 export module table_iter;

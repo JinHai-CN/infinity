@@ -28,7 +28,7 @@ import logger;
 import third_party;
 
 import infinity_exception;
-import table_collection_entry;
+import table_entry;
 import status;
 import iresearch_datastore;
 import table_index_entry;
@@ -40,8 +40,8 @@ namespace infinity {
 
 struct SegmentEntry;
 
-TableIndexMeta::TableIndexMeta(TableEntry *table_collection_entry, SharedPtr<String> index_name)
-    : index_name_(Move(index_name)), table_collection_entry_(table_collection_entry) {}
+TableIndexMeta::TableIndexMeta(TableEntry *table_entry, SharedPtr<String> index_name)
+    : index_name_(Move(index_name)), table_entry_(table_entry) {}
 
 Tuple<TableIndexEntry *, Status> TableIndexMeta::CreateTableIndexEntry(const SharedPtr<IndexDef> &index_def,
                                                                        ConflictType conflict_type,

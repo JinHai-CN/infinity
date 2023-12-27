@@ -25,7 +25,7 @@ import column_identifer;
 import binding;
 import base_expression;
 import block_index;
-import table_collection_entry;
+import table_entry;
 
 export module bind_context;
 

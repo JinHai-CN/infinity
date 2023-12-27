@@ -28,7 +28,7 @@ import default_values;
 import random;
 import buffer_manager;
 import infinity_exception;
-import table_collection_entry;
+import table_entry;
 
 module column_index_entry;
 
@@ -96,7 +96,7 @@ Json ColumnIndexEntry::Serialize(ColumnIndexEntry *column_index_entry, TxnTimeSt
 UniquePtr<ColumnIndexEntry> ColumnIndexEntry::Deserialize(const Json &column_index_entry_json,
                                                           TableIndexEntry *table_index_entry,
                                                           BufferManager *buffer_mgr,
-                                                          TableEntry *table_collection_entry) {
+                                                          TableEntry *table_entry) {
     bool deleted = column_index_entry_json["deleted"];
     if (deleted) {
         Error<StorageException>("Column index entry can't be deleted.");
@@ -116,7 +116,7 @@ UniquePtr<ColumnIndexEntry> ColumnIndexEntry::Deserialize(const Json &column_ind
     if (column_index_entry_json.contains("index_by_segment")) {
         for (const auto &index_by_segment_json : column_index_entry_json["index_by_segment"]) {
             UniquePtr<SegmentColumnIndexEntry> segment_column_index_entry =
-                SegmentColumnIndexEntry::Deserialize(index_by_segment_json, column_index_entry.get(), buffer_mgr, table_collection_entry);
+                SegmentColumnIndexEntry::Deserialize(index_by_segment_json, column_index_entry.get(), buffer_mgr, table_entry);
             column_index_entry->index_by_segment.emplace(segment_column_index_entry->segment_id_, Move(segment_column_index_entry));
         }
     }

@@ -19,7 +19,7 @@ import parser;
 import logical_node;
 import logical_node_type;
 import column_binding;
-import table_collection_entry;
+import table_entry;
 
 export module logical_delete;
 

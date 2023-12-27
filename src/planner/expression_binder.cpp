@@ -56,7 +56,7 @@ import special_function;
 import new_catalog;
 import query_context;
 import logger;
-import table_collection_entry;
+import table_entry;
 
 module expression_binder;
 

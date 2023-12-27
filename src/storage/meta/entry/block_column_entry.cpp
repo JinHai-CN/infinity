@@ -28,7 +28,7 @@ import buffer_handle;
 import column_vector;
 import default_values;
 import third_party;
-import table_collection_entry;
+import table_entry;
 import vector_buffer;
 
 import infinity_exception;

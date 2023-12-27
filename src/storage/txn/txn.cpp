@@ -36,8 +36,8 @@ import data_access_state;
 import base_entry;
 import segment_entry;
 import block_entry;
-import table_collection_meta;
-import table_collection_entry;
+import table_meta;
+import table_entry;
 import table_detail;
 import table_entry_type;
 import new_catalog;
@@ -155,10 +155,10 @@ void Txn::GetMetaTableState(MetaTableState *meta_table_state, const String &db_n
     return GetMetaTableState(meta_table_state, table_entry, columns);
 }
 
-void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_collection_entry, const Vector<ColumnID> &columns) {
-    u64 max_segment_id = TableEntry::GetMaxSegmentID(table_collection_entry);
+void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_entry, const Vector<ColumnID> &columns) {
+    u64 max_segment_id = TableEntry::GetMaxSegmentID(table_entry);
     for (u64 segment_id = 0; segment_id < max_segment_id; ++segment_id) {
-        SegmentEntry *segment_entry_ptr = TableEntry::GetSegmentByID(table_collection_entry, segment_id);
+        SegmentEntry *segment_entry_ptr = TableEntry::GetSegmentByID(table_entry, segment_id);
 
         MetaSegmentState segment_state;
         segment_state.segment_entry_ = segment_entry_ptr;
@@ -557,7 +557,7 @@ void Txn::Rollback() {
 
     for (const auto &base_entry : txn_tables_) {
         auto *table_entry = (TableEntry *)(base_entry);
-        TableCollectionMeta *table_meta = TableEntry::GetTableMeta(table_entry);
+        TableMeta *table_meta = TableEntry::GetTableMeta(table_entry);
         DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
         db_entry->RemoveTableEntry(*table_meta->table_collection_name_, txn_id_, txn_mgr_);
     }

@@ -19,8 +19,8 @@ module;
 import stl;
 import third_party;
 import parser;
-import table_collection_entry;
-import table_collection_meta;
+import table_entry;
+import table_meta;
 
 import infinity_exception;
 import segment_entry;
@@ -135,7 +135,7 @@ void TxnTableStore::Rollback() {
     if (append_state_.get() != nullptr) {
         // Rollback the data already been appended.
         TableEntry::RollbackAppend(table_entry_, txn_, this);
-        TableCollectionMeta *table_meta = (TableCollectionMeta *)TableEntry::GetTableMeta(table_entry_);
+        TableMeta *table_meta = (TableMeta *)TableEntry::GetTableMeta(table_entry_);
         LOG_TRACE(Format("Rollback prepare appended data in table: {}", *table_meta->table_collection_name_));
     }
 

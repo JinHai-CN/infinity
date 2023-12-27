@@ -23,7 +23,7 @@ import physical_operator_type;
 import third_party;
 import txn;
 import txn_store;
-import table_collection_entry;
+import table_entry;
 import segment_entry;
 import block_entry;
 import block_column_entry;
@@ -45,27 +45,27 @@ public:
     ZsvParser parser_;
     SizeT row_count_{};
     SharedPtr<String> err_msg_{};
-    TableEntry *const table_collection_entry_{};
+    TableEntry *const table_entry_{};
     Txn *const txn_{};
     SharedPtr<SegmentEntry> segment_entry_{};
     const char delimiter_{};
 
 public:
-    ZxvParserCtx(TableEntry *table_collection_entry, Txn *txn, SharedPtr<SegmentEntry> &segment_entry, char delimiter)
-        : row_count_(0), err_msg_(nullptr), table_collection_entry_(table_collection_entry), txn_(txn), segment_entry_(segment_entry),
+    ZxvParserCtx(TableEntry *table_entry, Txn *txn, SharedPtr<SegmentEntry> &segment_entry, char delimiter)
+        : row_count_(0), err_msg_(nullptr), table_entry_(table_entry), txn_(txn), segment_entry_(segment_entry),
           delimiter_(delimiter) {}
 };
 
 export class PhysicalImport : public PhysicalOperator {
 public:
     explicit PhysicalImport(u64 id,
-                            TableEntry *table_collection_entry,
+                            TableEntry *table_entry,
                             String file_path,
                             bool header,
                             char delimiter,
                             CopyFileType type,
                             SharedPtr<Vector<LoadMeta>> load_metas)
-        : PhysicalOperator(PhysicalOperatorType::kImport, nullptr, nullptr, id, load_metas), table_collection_entry_(table_collection_entry),
+        : PhysicalOperator(PhysicalOperatorType::kImport, nullptr, nullptr, id, load_metas), table_entry_(table_entry),
           file_type_(type), file_path_(Move(file_path)), header_(header), delimiter_(delimiter) {}
 
     ~PhysicalImport() override = default;
@@ -88,7 +88,7 @@ public:
 
     void ImportJSONL(QueryContext *query_context, ImportOperatorState *import_op_state);
 
-    inline const TableEntry *table_collection_entry() const { return table_collection_entry_; }
+    inline const TableEntry *table_entry() const { return table_entry_; }
 
     inline CopyFileType FileType() const { return file_type_; }
 
@@ -111,7 +111,7 @@ private:
     SharedPtr<Vector<String>> output_names_{};
     SharedPtr<Vector<SharedPtr<DataType>>> output_types_{};
 
-    TableEntry *table_collection_entry_{};
+    TableEntry *table_entry_{};
     CopyFileType file_type_{CopyFileType::kCSV};
     String file_path_{};
     bool header_{false};

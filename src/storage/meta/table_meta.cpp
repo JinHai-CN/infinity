@@ -18,7 +18,7 @@ module;
 
 import base_entry;
 import stl;
-import table_collection_entry;
+import table_entry;
 import table_entry_type;
 import parser;
 import logger;
@@ -32,7 +32,7 @@ import third_party;
 import status;
 import infinity_exception;
 
-module table_collection_meta;
+module table_meta;
 
 namespace infinity {
 
@@ -48,7 +48,7 @@ namespace infinity {
  * @param txn_mgr
  * @return Status
  */
-Tuple<TableEntry *, Status> TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
+Tuple<TableEntry *, Status> TableMeta::CreateNewEntry(TableMeta *table_meta,
                                            TableEntryType table_entry_type,
                                            const SharedPtr<String> &table_collection_name_ptr,
                                            const Vector<SharedPtr<ColumnDef>> &columns,
@@ -191,7 +191,7 @@ Tuple<TableEntry *, Status> TableCollectionMeta::CreateNewEntry(TableCollectionM
     }
 }
 
-Tuple<TableEntry *, Status> TableCollectionMeta::DropNewEntry(TableCollectionMeta *table_meta,
+Tuple<TableEntry *, Status> TableMeta::DropNewEntry(TableMeta *table_meta,
                                          u64 txn_id,
                                          TxnTimeStamp begin_ts,
                                          TxnManager *,
@@ -266,7 +266,7 @@ Tuple<TableEntry *, Status> TableCollectionMeta::DropNewEntry(TableCollectionMet
     }
 }
 
-void TableCollectionMeta::DeleteNewEntry(TableCollectionMeta *table_meta, u64 txn_id, TxnManager *) {
+void TableMeta::DeleteNewEntry(TableMeta *table_meta, u64 txn_id, TxnManager *) {
     UniqueLock<RWMutex> rw_locker(table_meta->rw_locker_);
     if (table_meta->entry_list_.empty()) {
         LOG_TRACE("Empty table entry list.");
@@ -292,7 +292,7 @@ void TableCollectionMeta::DeleteNewEntry(TableCollectionMeta *table_meta, u64 tx
  * @param begin_ts
  * @return Status
  */
-Tuple<TableEntry*, Status> TableCollectionMeta::GetEntry(TableCollectionMeta *table_meta, u64 txn_id, TxnTimeStamp begin_ts) {
+Tuple<TableEntry*, Status> TableMeta::GetEntry(TableMeta *table_meta, u64 txn_id, TxnTimeStamp begin_ts) {
     SharedLock<RWMutex> r_locker(table_meta->rw_locker_);
     if (table_meta->entry_list_.empty()) {
         UniquePtr<String> err_msg = MakeUnique<String>("Empty table entry list.");
@@ -332,7 +332,7 @@ Tuple<TableEntry*, Status> TableCollectionMeta::GetEntry(TableCollectionMeta *ta
     return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
 }
 
-SharedPtr<String> TableCollectionMeta::ToString(TableCollectionMeta *table_meta) {
+SharedPtr<String> TableMeta::ToString(TableMeta *table_meta) {
     SharedLock<RWMutex> r_locker(table_meta->rw_locker_);
     SharedPtr<String> res = MakeShared<String>(Format("TableMeta, db_entry_dir: {}, table name: {}, entry count: ",
                                                       *table_meta->db_entry_dir_,
@@ -341,7 +341,7 @@ SharedPtr<String> TableCollectionMeta::ToString(TableCollectionMeta *table_meta)
     return res;
 }
 
-Json TableCollectionMeta::Serialize(TableCollectionMeta *table_meta, TxnTimeStamp max_commit_ts, bool is_full_checkpoint) {
+Json TableMeta::Serialize(TableMeta *table_meta, TxnTimeStamp max_commit_ts, bool is_full_checkpoint) {
     Json json_res;
     Vector<TableEntry *> table_candidates;
     {
@@ -373,13 +373,13 @@ Json TableCollectionMeta::Serialize(TableCollectionMeta *table_meta, TxnTimeStam
  * @param table_meta_json
  * @param db_entry
  * @param buffer_mgr
- * @return UniquePtr<TableCollectionMeta>
+ * @return UniquePtr<TableMeta>
  */
-UniquePtr<TableCollectionMeta> TableCollectionMeta::Deserialize(const Json &table_meta_json, DBEntry *db_entry, BufferManager *buffer_mgr) {
+UniquePtr<TableMeta> TableMeta::Deserialize(const Json &table_meta_json, DBEntry *db_entry, BufferManager *buffer_mgr) {
     SharedPtr<String> db_entry_dir = MakeShared<String>(table_meta_json["db_entry_dir"]);
     SharedPtr<String> table_name = MakeShared<String>(table_meta_json["table_name"]);
     LOG_TRACE(Format("load table {}", *table_name));
-    UniquePtr<TableCollectionMeta> res = MakeUnique<TableCollectionMeta>(db_entry_dir, table_name, db_entry);
+    UniquePtr<TableMeta> res = MakeUnique<TableMeta>(db_entry_dir, table_name, db_entry);
     if (table_meta_json.contains("table_entries")) {
         for (const auto &table_entry_json : table_meta_json["table_entries"]) {
             UniquePtr<TableEntry> table_entry = TableEntry::Deserialize(table_entry_json, res.get(), buffer_mgr);
@@ -394,7 +394,7 @@ UniquePtr<TableCollectionMeta> TableCollectionMeta::Deserialize(const Json &tabl
     return res;
 }
 
-void TableCollectionMeta::MergeFrom(TableCollectionMeta &other) {
+void TableMeta::MergeFrom(TableMeta &other) {
     // No locking here since only the load stage needs MergeFrom.
     if (!IsEqual(*this->table_collection_name_, *other.table_collection_name_) || !IsEqual(*this->db_entry_dir_, *other.db_entry_dir_)) {
         Error<StorageException>("DBEntry::MergeFrom requires table_collection_name_ and db_entry_dir_ match");

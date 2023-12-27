@@ -19,7 +19,7 @@ import parser;
 import base_entry;
 import db_entry;
 import db_meta;
-import table_collection_entry;
+import table_entry;
 import table_def;
 import txn_manager;
 import function;

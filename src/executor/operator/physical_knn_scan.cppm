@@ -23,7 +23,7 @@ import physical_operator_type;
 import base_expression;
 import global_block_id;
 import base_table_ref;
-import table_collection_entry;
+import table_entry;
 import block_index;
 import load_meta;
 import knn_expression;

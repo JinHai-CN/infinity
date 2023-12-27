@@ -23,7 +23,7 @@ import logical_node_type;
 import match_expression;
 import parser;
 import default_values;
-import table_collection_entry;
+import table_entry;
 import db_entry;
 import third_party;
 

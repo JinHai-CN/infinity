@@ -17,11 +17,11 @@ module;
 import base_entry;
 import stl;
 import table_entry_type;
-import table_collection_entry;
+import table_entry;
 import parser;
 import third_party;
 import table_detail;
-import table_collection_meta;
+import table_meta;
 import buffer_manager;
 import txn_manager;
 import status;
@@ -70,7 +70,7 @@ public:
     RWMutex rw_locker_{};
     SharedPtr<String> db_entry_dir_{};
     SharedPtr<String> db_name_{};
-    HashMap<String, UniquePtr<TableCollectionMeta>> tables_{}; // NOTE : can use SharedPtr<String> as key.
+    HashMap<String, UniquePtr<TableMeta>> tables_{}; // NOTE : can use SharedPtr<String> as key.
 };
 
 } // namespace infinity

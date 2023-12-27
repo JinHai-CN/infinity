@@ -38,7 +38,7 @@ import table_def;
 import table_entry_type;
 import table_detail;
 
-import table_collection_entry;
+import table_entry;
 
 module new_catalog;
 
@@ -297,7 +297,7 @@ void NewCatalog::CheckCatalog() {
                         continue;
                     }
                     auto table_entry = static_cast<TableEntry *>(base_entry.get());
-                    if (table_entry->table_collection_meta_->db_entry_ != db_entry) {
+                    if (table_entry->table_entry_->db_entry_ != db_entry) {
                         //                        int a = 1;
                     }
                 }

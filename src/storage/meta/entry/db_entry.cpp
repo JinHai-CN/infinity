@@ -21,16 +21,16 @@ import table_entry_type;
 import stl;
 import parser;
 import txn_manager;
-import table_collection_entry;
+import table_entry;
 import table_detail;
-import table_collection_meta;
+import table_meta;
 import buffer_manager;
 import default_values;
 import block_index;
 import logger;
 import third_party;
 import infinity_exception;
-import table_collection_entry;
+import table_entry;
 import status;
 
 module db_entry;
@@ -46,7 +46,7 @@ Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(TableEntryType table_
     const String &table_name = *table_collection_name;
 
     // Check if there is table_meta with the table_name
-    TableCollectionMeta *table_meta{nullptr};
+    TableMeta *table_meta{nullptr};
     this->rw_locker_.lock_shared();
     auto table_iter = this->tables_.find(table_name);
     if (table_iter != this->tables_.end()) {
@@ -59,7 +59,7 @@ Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(TableEntryType table_
         this->rw_locker_.unlock_shared();
 
         LOG_TRACE(Format("Create new table/collection: {}", table_name));
-        UniquePtr<TableCollectionMeta> new_table_meta = MakeUnique<TableCollectionMeta>(this->db_entry_dir_, table_collection_name, this);
+        UniquePtr<TableMeta> new_table_meta = MakeUnique<TableMeta>(this->db_entry_dir_, table_collection_name, this);
         table_meta = new_table_meta.get();
 
         this->rw_locker_.lock();
@@ -74,7 +74,7 @@ Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(TableEntryType table_
         LOG_TRACE(Format("Add new table entry for {} in new table meta of db_entry {} ", table_name, *this->db_entry_dir_));
     }
 
-    return TableCollectionMeta::CreateNewEntry(table_meta, table_entry_type, table_collection_name, columns, txn_id, begin_ts, txn_mgr);
+    return TableMeta::CreateNewEntry(table_meta, table_entry_type, table_collection_name, columns, txn_id, begin_ts, txn_mgr);
 }
 
 Tuple<TableEntry *, Status> DBEntry::DropTableCollection(const String &table_collection_name,
@@ -84,7 +84,7 @@ Tuple<TableEntry *, Status> DBEntry::DropTableCollection(const String &table_col
                                                          TxnManager *txn_mgr) {
     this->rw_locker_.lock_shared();
 
-    TableCollectionMeta *table_meta{nullptr};
+    TableMeta *table_meta{nullptr};
     if (this->tables_.find(table_collection_name) != this->tables_.end()) {
         table_meta = this->tables_[table_collection_name].get();
     }
@@ -101,13 +101,13 @@ Tuple<TableEntry *, Status> DBEntry::DropTableCollection(const String &table_col
     }
 
     LOG_TRACE(Format("Drop a table/collection entry {}", table_collection_name));
-    return TableCollectionMeta::DropNewEntry(table_meta, txn_id, begin_ts, txn_mgr, table_collection_name, conflict_type);
+    return TableMeta::DropNewEntry(table_meta, txn_id, begin_ts, txn_mgr, table_collection_name, conflict_type);
 }
 
 Tuple<TableEntry *, Status> DBEntry::GetTableCollection(const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts) {
     this->rw_locker_.lock_shared();
 
-    TableCollectionMeta *table_meta{nullptr};
+    TableMeta *table_meta{nullptr};
     if (this->tables_.find(table_collection_name) != this->tables_.end()) {
         table_meta = this->tables_[table_collection_name].get();
     }
@@ -119,20 +119,20 @@ Tuple<TableEntry *, Status> DBEntry::GetTableCollection(const String &table_coll
         LOG_ERROR(*err_msg);
         return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
-    return TableCollectionMeta::GetEntry(table_meta, txn_id, begin_ts);
+    return TableMeta::GetEntry(table_meta, txn_id, begin_ts);
 }
 
 void DBEntry::RemoveTableEntry(const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr) {
     this->rw_locker_.lock_shared();
 
-    TableCollectionMeta *table_meta{nullptr};
+    TableMeta *table_meta{nullptr};
     if (this->tables_.find(table_collection_name) != this->tables_.end()) {
         table_meta = this->tables_[table_collection_name].get();
     }
     this->rw_locker_.unlock_shared();
 
     LOG_TRACE(Format("Remove a table/collection entry: {}", table_collection_name));
-    TableCollectionMeta::DeleteNewEntry(table_meta, txn_id, txn_mgr);
+    TableMeta::DeleteNewEntry(table_meta, txn_id, txn_mgr);
 }
 
 Vector<TableEntry *> DBEntry::TableCollections(u64 txn_id, TxnTimeStamp begin_ts) {
@@ -142,12 +142,12 @@ Vector<TableEntry *> DBEntry::TableCollections(u64 txn_id, TxnTimeStamp begin_ts
 
     results.reserve(this->tables_.size());
     for (auto &table_collection_meta_pair : this->tables_) {
-        TableCollectionMeta *table_collection_meta = table_collection_meta_pair.second.get();
-        auto [table_collection_entry, status] = TableCollectionMeta::GetEntry(table_collection_meta, txn_id, begin_ts);
+        TableMeta *table_meta = table_collection_meta_pair.second.get();
+        auto [table_entry, status] = TableMeta::GetEntry(table_meta, txn_id, begin_ts);
         if (!status.ok()) {
             LOG_TRACE(Format("error when get table/collection entry: {}", status.message()));
         } else {
-            results.emplace_back((TableEntry *)table_collection_entry);
+            results.emplace_back((TableEntry *)table_entry);
         }
     }
     this->rw_locker_.unlock_shared();
@@ -158,16 +158,16 @@ Vector<TableEntry *> DBEntry::TableCollections(u64 txn_id, TxnTimeStamp begin_ts
 Status DBEntry::GetTablesDetail(u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array) {
     Vector<TableEntry *> table_collection_entries = this->TableCollections(txn_id, begin_ts);
     output_table_array.reserve(table_collection_entries.size());
-    for (TableEntry *table_collection_entry : table_collection_entries) {
+    for (TableEntry *table_entry : table_collection_entries) {
         TableDetail table_detail;
         table_detail.db_name_ = this->db_name_;
-        table_detail.table_collection_name_ = table_collection_entry->table_collection_name_;
-        table_detail.table_entry_type_ = table_collection_entry->table_entry_type_;
-        table_detail.column_count_ = table_collection_entry->columns_.size();
-        table_detail.row_count_ = table_collection_entry->row_count_;
+        table_detail.table_collection_name_ = table_entry->table_collection_name_;
+        table_detail.table_entry_type_ = table_entry->table_entry_type_;
+        table_detail.column_count_ = table_entry->columns_.size();
+        table_detail.row_count_ = table_entry->row_count_;
         table_detail.segment_capacity_ = DEFAULT_SEGMENT_CAPACITY;
 
-        SharedPtr<BlockIndex> segment_index = TableEntry::GetBlockIndex(table_collection_entry, txn_id, begin_ts);
+        SharedPtr<BlockIndex> segment_index = TableEntry::GetBlockIndex(table_entry, txn_id, begin_ts);
 
         table_detail.segment_count_ = segment_index->SegmentCount();
         table_detail.block_count_ = segment_index->BlockCount();
@@ -186,7 +186,7 @@ SharedPtr<String> DBEntry::ToString(DBEntry *db_entry) {
 Json DBEntry::Serialize(DBEntry *db_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint) {
     Json json_res;
 
-    Vector<TableCollectionMeta *> table_metas;
+    Vector<TableMeta *> table_metas;
     {
         SharedLock<RWMutex> lck(db_entry->rw_locker_);
         json_res["db_entry_dir"] = *db_entry->db_entry_dir_;
@@ -201,8 +201,8 @@ Json DBEntry::Serialize(DBEntry *db_entry, TxnTimeStamp max_commit_ts, bool is_f
             table_metas.push_back(table_meta_pair.second.get());
         }
     }
-    for (TableCollectionMeta *table_meta : table_metas) {
-        json_res["tables"].emplace_back(TableCollectionMeta::Serialize(table_meta, max_commit_ts, is_full_checkpoint));
+    for (TableMeta *table_meta : table_metas) {
+        json_res["tables"].emplace_back(TableMeta::Serialize(table_meta, max_commit_ts, is_full_checkpoint));
     }
     return json_res;
 }
@@ -226,7 +226,7 @@ UniquePtr<DBEntry> DBEntry::Deserialize(const Json &db_entry_json, BufferManager
 
     if (db_entry_json.contains("tables")) {
         for (const auto &table_meta_json : db_entry_json["tables"]) {
-            UniquePtr<TableCollectionMeta> table_meta = TableCollectionMeta::Deserialize(table_meta_json, res.get(), buffer_mgr);
+            UniquePtr<TableMeta> table_meta = TableMeta::Deserialize(table_meta_json, res.get(), buffer_mgr);
             res->tables_.emplace(*table_meta->table_collection_name_, Move(table_meta));
         }
     }

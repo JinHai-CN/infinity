@@ -17,7 +17,7 @@ import stl;
 import base_entry;
 import parser;
 import table_detail;
-// import table_collection_entry;
+// import table_entry;
 import table_def;
 import index_def;
 import data_block;
@@ -115,7 +115,7 @@ public:
     // TODO: Why need them
     void GetMetaTableState(MetaTableState *meta_table_state, const String &db_name, const String &table_name, const Vector<ColumnID> &columns);
 
-    void GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_collection_entry, const Vector<ColumnID> &columns);
+    void GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_entry, const Vector<ColumnID> &columns);
 
     // Getter
     BufferManager *GetBufferMgr() const;

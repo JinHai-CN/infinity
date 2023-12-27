@@ -80,8 +80,8 @@ import logical_show;
 
 import infinity_exception;
 
-import table_collection_meta;
-import table_collection_entry;
+import table_meta;
+import table_entry;
 import base_expression;
 import knn_expression;
 import third_party;
@@ -581,14 +581,14 @@ void ExplainPhysicalPlan::Explain(const PhysicalInsert *insert_node, SharedPtr<V
 
     // Schema name
     {
-        DBEntry *db_entry = TableCollectionMeta::GetDBEntry(insert_node->table_collection_entry()->table_collection_meta_);
+        DBEntry *db_entry = TableMeta::GetDBEntry(insert_node->table_entry()->table_entry_);
         String schema_name_str = String(intent_size, ' ') + " - schema name: " + *db_entry->db_name_;
         result->emplace_back(MakeShared<String>(schema_name_str));
     }
 
     // Table name
     {
-        String table_name_str = String(intent_size, ' ') + " - table name: " + *insert_node->table_collection_entry()->table_collection_name_;
+        String table_name_str = String(intent_size, ' ') + " - table name: " + *insert_node->table_entry()->table_collection_name_;
         result->emplace_back(MakeShared<String>(table_name_str));
     }
 
@@ -1256,7 +1256,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalImport *import_node, SharedPtr<V
     }
 
     {
-        DBEntry *db_entry = TableCollectionMeta::GetDBEntry(import_node->table_collection_entry()->table_collection_meta_);
+        DBEntry *db_entry = TableMeta::GetDBEntry(import_node->table_entry()->table_entry_);
 
         SharedPtr<String> schema_name = MakeShared<String>(String(intent_size, ' ') + " - schema name: " + *db_entry->db_name_);
         result->emplace_back(schema_name);
@@ -1264,7 +1264,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalImport *import_node, SharedPtr<V
 
     {
         SharedPtr<String> table_name =
-            MakeShared<String>(String(intent_size, ' ') + " - table name: " + *import_node->table_collection_entry()->table_collection_name_);
+            MakeShared<String>(String(intent_size, ' ') + " - table name: " + *import_node->table_entry()->table_collection_name_);
         result->emplace_back(table_name);
     }
 

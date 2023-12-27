@@ -20,7 +20,7 @@ module;
 import stl;
 import parser;
 import base_entry;
-import table_collection_meta;
+import table_meta;
 import table_entry_type;
 import third_party;
 import txn;
@@ -45,7 +45,7 @@ import irs_index_entry;
 import index_base;
 import index_full_text;
 
-module table_collection_entry;
+module table_entry;
 
 namespace infinity {
 
@@ -53,12 +53,12 @@ TableEntry::TableEntry(const SharedPtr<String> &db_entry_dir,
                        SharedPtr<String> table_collection_name,
                        const Vector<SharedPtr<ColumnDef>> &columns,
                        TableEntryType table_entry_type,
-                       TableCollectionMeta *table_collection_meta,
+                       TableMeta *table_meta,
                        u64 txn_id,
                        TxnTimeStamp begin_ts)
     : BaseEntry(EntryType::kTable), table_entry_dir_(MakeShared<String>(Format("{}/{}/txn_{}", *db_entry_dir, *table_collection_name, txn_id))),
       table_collection_name_(Move(table_collection_name)), columns_(columns), table_entry_type_(table_entry_type),
-      table_collection_meta_(table_collection_meta) {
+      table_entry_(table_meta) {
     SizeT column_count = columns.size();
     for (SizeT idx = 0; idx < column_count; ++idx) {
         column_name2column_id_[columns[idx]->name()] = idx;
@@ -355,22 +355,22 @@ SegmentEntry *TableEntry::GetSegmentByID(const TableEntry *table_entry, u32 segm
 }
 
 DBEntry *TableEntry::GetDBEntry(const TableEntry *table_entry) {
-    TableCollectionMeta *table_meta = (TableCollectionMeta *)table_entry->table_collection_meta_;
+    TableMeta *table_meta = (TableMeta *)table_entry->table_entry_;
     return (DBEntry *)table_meta->db_entry_;
 }
 
 SharedPtr<String> TableEntry::GetDBName(const TableEntry *table_entry) {
-    TableCollectionMeta *table_meta = (TableCollectionMeta *)table_entry->table_collection_meta_;
+    TableMeta *table_meta = (TableMeta *)table_entry->table_entry_;
     return table_meta->db_entry_->db_name_;
 }
 
-SharedPtr<BlockIndex> TableEntry::GetBlockIndex(TableEntry *table_collection_entry, u64, TxnTimeStamp begin_ts) {
+SharedPtr<BlockIndex> TableEntry::GetBlockIndex(TableEntry *table_entry, u64, TxnTimeStamp begin_ts) {
     //    SharedPtr<MultiIndex<u64, u64, SegmentEntry*>> result = MakeShared<MultiIndex<u64, u64, SegmentEntry*>>();
     SharedPtr<BlockIndex> result = MakeShared<BlockIndex>();
-    SharedLock<RWMutex> rw_locker(table_collection_entry->rw_locker_);
-    result->Reserve(table_collection_entry->segment_map_.size());
+    SharedLock<RWMutex> rw_locker(table_entry->rw_locker_);
+    result->Reserve(table_entry->segment_map_.size());
 
-    for (const auto &segment_pair : table_collection_entry->segment_map_) {
+    for (const auto &segment_pair : table_entry->segment_map_) {
         result->Insert(segment_pair.second.get(), begin_ts);
     }
 
@@ -440,7 +440,7 @@ Json TableEntry::Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, 
     return json_res;
 }
 
-UniquePtr<TableEntry> TableEntry::Deserialize(const Json &table_entry_json, TableCollectionMeta *table_meta, BufferManager *buffer_mgr) {
+UniquePtr<TableEntry> TableEntry::Deserialize(const Json &table_entry_json, TableMeta *table_meta, BufferManager *buffer_mgr) {
     SharedPtr<String> table_entry_dir = MakeShared<String>(table_entry_json["table_entry_dir"]);
     SharedPtr<String> table_name = MakeShared<String>(table_entry_json["table_name"]);
     TableEntryType table_entry_type = table_entry_json["table_entry_type"];

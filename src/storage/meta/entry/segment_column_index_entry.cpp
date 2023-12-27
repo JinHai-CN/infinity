@@ -29,7 +29,7 @@ import index_file_worker;
 import annivfflat_index_file_worker;
 import hnsw_file_worker;
 import column_index_entry;
-import table_collection_entry;
+import table_entry;
 import segment_entry;
 
 module segment_column_index_entry;
@@ -116,12 +116,12 @@ Json SegmentColumnIndexEntry::Serialize(SegmentColumnIndexEntry *segment_column_
 UniquePtr<SegmentColumnIndexEntry> SegmentColumnIndexEntry::Deserialize(const Json &index_entry_json,
                                                                         ColumnIndexEntry *column_index_entry,
                                                                         BufferManager *buffer_mgr,
-                                                                        TableEntry *table_collection_entry) {
+                                                                        TableEntry *table_entry) {
     u32 segment_id = index_entry_json["segment_id"];
-    SegmentEntry *segment_entry = TableEntry::GetSegmentByID(table_collection_entry, segment_id);
+    SegmentEntry *segment_entry = TableEntry::GetSegmentByID(table_entry, segment_id);
     u64 column_id = column_index_entry->column_id_;
     UniquePtr<CreateIndexParam> create_index_param =
-        SegmentEntry::GetCreateIndexParam(segment_entry, column_index_entry->index_base_.get(), table_collection_entry->columns_[column_id].get());
+        SegmentEntry::GetCreateIndexParam(segment_entry, column_index_entry->index_base_.get(), table_entry->columns_[column_id].get());
     // TODO: need to get create index param;
     //    UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry, index_base, column_def.get());
     auto segment_column_index_entry = LoadIndexEntry(column_index_entry, segment_id, buffer_mgr, create_index_param.get());

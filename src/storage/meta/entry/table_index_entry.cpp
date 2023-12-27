@@ -21,7 +21,7 @@ import stl;
 import index_def;
 import base_entry;
 import table_index_meta;
-import table_collection_entry;
+import table_entry;
 import third_party;
 import local_file_system;
 import default_values;

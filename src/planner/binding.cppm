@@ -17,7 +17,7 @@ module;
 import stl;
 import parser;
 import block_index;
-import table_collection_entry;
+import table_entry;
 
 export module binding;
 

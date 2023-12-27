@@ -35,7 +35,7 @@ import table_detail;
 import view_entry;
 import base_entry;
 import value;
-import table_collection_entry;
+import table_entry;
 import table_def;
 import data_table;
 import third_party;
@@ -605,7 +605,7 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
         return;
     }
 
-    auto table_collection_entry = dynamic_cast<TableEntry *>(base_table_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
 
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
 
@@ -627,7 +627,7 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
 
     output_block_ptr->Init(column_types);
 
-    for (auto &column : table_collection_entry->columns_) {
+    for (auto &column : table_entry->columns_) {
         SizeT column_id = 0;
         {
             // Append column name to the first column
@@ -681,7 +681,7 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
         return;
     }
 
-    auto table_collection_entry = dynamic_cast<TableEntry *>(base_table_entry);
+    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
 
     Vector<SharedPtr<ColumnDef>> column_defs = {
@@ -713,9 +713,9 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
     output_block_ptr->Init(column_types);
 
     if (segment_id_.has_value() && block_id_.has_value()) {
-        auto iter = table_collection_entry->segment_map_.find(*segment_id_);
+        auto iter = table_entry->segment_map_.find(*segment_id_);
 
-        if (iter != table_collection_entry->segment_map_.end() && iter->second->block_entries_.size() > *block_id_) {
+        if (iter != table_entry->segment_map_.end() && iter->second->block_entries_.size() > *block_id_) {
             auto block = iter->second->block_entries_[*block_id_];
             auto version_path = block->VersionFilePath();
 
@@ -730,9 +730,9 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
             }
         }
     } else if (segment_id_.has_value()) {
-        auto iter = table_collection_entry->segment_map_.find(*segment_id_);
+        auto iter = table_entry->segment_map_.find(*segment_id_);
 
-        if (iter != table_collection_entry->segment_map_.end()) {
+        if (iter != table_entry->segment_map_.end()) {
             for (auto &entry : iter->second->block_entries_) {
                 auto dir_path = entry->DirPath();
 
@@ -740,7 +740,7 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
             }
         }
     } else {
-        for (auto &[_, segment] : table_collection_entry->segment_map_) {
+        for (auto &[_, segment] : table_entry->segment_map_) {
             auto dir_path = segment->DirPath();
 
             chuck_filling(LocalFileSystem::GetFolderSizeByPath, dir_path);
@@ -1295,7 +1295,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
         return;
     }
 
-    auto table_collection_entry = static_cast<TableEntry *>(base_table_entry);
+    auto table_entry = static_cast<TableEntry *>(base_table_entry);
 
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
     auto bigint_type = MakeShared<DataType>(LogicalType::kBigInt);
@@ -1313,7 +1313,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
     Vector<SharedPtr<DataType>> column_types{varchar_type, varchar_type, bigint_type, varchar_type, varchar_type, varchar_type, varchar_type};
     output_block_ptr->Init(column_types);
 
-    for (const auto &[index_name, index_def_meta] : table_collection_entry->index_meta_map_) {
+    for (const auto &[index_name, index_def_meta] : table_entry->index_meta_map_) {
         BaseEntry *base_entry{nullptr};
         Status status = TableIndexMeta::GetEntry(index_def_meta.get(), txn->TxnID(), txn->BeginTS(), base_entry);
         if (!status.ok()) {
@@ -1373,7 +1373,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
             ++column_id;
             {
                 // Append Index segment
-                SizeT segment_count = table_collection_entry->segment_map_.size();
+                SizeT segment_count = table_entry->segment_map_.size();
                 SizeT index_segment_count = column_index_entry->index_by_segment.size();
                 String result_value = Format("{}/{}", index_segment_count, segment_count);
                 Value value = Value::MakeVarchar(result_value);

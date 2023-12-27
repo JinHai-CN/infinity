@@ -53,7 +53,7 @@ public:
     static UniquePtr<ColumnIndexEntry> Deserialize(const Json &column_index_entry_json,
                                                    TableIndexEntry *table_index_entry,
                                                    BufferManager *buffer_mgr,
-                                                   TableEntry *table_collection_entry);
+                                                   TableEntry *table_entry);
 
 private:
     static SharedPtr<String> DetermineIndexDir(const String &parent_dir, const String &index_name);

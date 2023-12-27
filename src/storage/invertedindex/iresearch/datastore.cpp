@@ -60,7 +60,7 @@ import default_values;
 import data_block;
 import txn;
 import index_def;
-import table_collection_entry;
+import table_entry;
 import base_entry;
 import buffer_handle;
 import local_file_system;

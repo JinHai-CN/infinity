@@ -51,8 +51,8 @@ import logical_fusion;
 import third_party;
 import parser;
 import db_entry;
-import table_collection_entry;
-import table_collection_meta;
+import table_entry;
+import table_meta;
 
 import expression_type;
 import knn_expression;
@@ -599,7 +599,7 @@ void ExplainLogicalPlan::Explain(const LogicalInsert *insert_node, SharedPtr<Vec
 
     // Schema name
     {
-        DBEntry *db_entry = TableCollectionMeta::GetDBEntry(insert_node->table_collection_entry()->table_collection_meta_);
+        DBEntry *db_entry = TableMeta::GetDBEntry(insert_node->table_entry()->table_entry_);
         String schema_name_str = Format("{} - schema name: {}", String(intent_size, ' '), *db_entry->db_name_);
 
         result->emplace_back(MakeShared<String>(schema_name_str));
@@ -608,7 +608,7 @@ void ExplainLogicalPlan::Explain(const LogicalInsert *insert_node, SharedPtr<Vec
     // Table name
     {
         String table_name_str =
-            Format("{} - table name: {}", String(intent_size, ' '), *insert_node->table_collection_entry()->table_collection_name_);
+            Format("{} - table name: {}", String(intent_size, ' '), *insert_node->table_entry()->table_collection_name_);
         result->emplace_back(MakeShared<String>(table_name_str));
     }
 
@@ -1467,14 +1467,14 @@ void ExplainLogicalPlan::Explain(const LogicalImport *import_node, SharedPtr<Vec
     }
 
     {
-        DBEntry *db_entry = TableCollectionMeta::GetDBEntry(import_node->table_collection_entry()->table_collection_meta_);
+        DBEntry *db_entry = TableMeta::GetDBEntry(import_node->table_entry()->table_entry_);
         SharedPtr<String> schema_name = MakeShared<String>(Format("{} - schema name: {}", String(intent_size, ' '), *db_entry->db_name_));
         result->emplace_back(schema_name);
     }
 
     {
         SharedPtr<String> table_name = MakeShared<String>(
-            Format("{} - table name: {}", String(intent_size, ' '), *import_node->table_collection_entry()->table_collection_name_));
+            Format("{} - table name: {}", String(intent_size, ' '), *import_node->table_entry()->table_collection_name_));
         result->emplace_back(table_name);
     }
 

@@ -34,7 +34,7 @@ class SegmentEntry;
 
 export class TableIndexMeta {
 public:
-    explicit TableIndexMeta(TableEntry *table_collection_entry, SharedPtr<String> index_name);
+    explicit TableIndexMeta(TableEntry *table_entry, SharedPtr<String> index_name);
 
 public:
     Tuple<TableIndexEntry *, Status>
@@ -44,7 +44,7 @@ public:
 
     static SharedPtr<String> ToString(TableIndexMeta *table_index_meta);
 
-    static inline TableEntry *GetTableEntry(TableIndexMeta *table_index_meta) { return table_index_meta->table_collection_entry_; }
+    static inline TableEntry *GetTableEntry(TableIndexMeta *table_index_meta) { return table_index_meta->table_entry_; }
 
     static Json Serialize(TableIndexMeta *table_index_meta, TxnTimeStamp max_commit_ts);
 
@@ -65,7 +65,7 @@ private:
 private:
     //    RWMutex rw_locker_{};
     SharedPtr<String> index_name_{};
-    TableEntry *table_collection_entry_{};
+    TableEntry *table_entry_{};
 
     RWMutex rw_locker_{};
     List<UniquePtr<BaseEntry>> entry_list_{};

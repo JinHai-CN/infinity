@@ -30,7 +30,7 @@ import buffer_manager;
 import meta_state;
 import block_column_entry;
 import column_buffer;
-import table_collection_entry;
+import table_entry;
 import wal_entry;
 import infinity_exception;
 import status;
@@ -516,12 +516,12 @@ TEST_F(WalReplayTest, WalReplayImport) {
             auto txn4 = txn_mgr->CreateTxn();
             txn4->Begin();
 
-            TableEntry *table_collection_entry = nullptr;
-            auto table_collection_entry_result = txn4->GetTableEntry("default", "tbl1", table_collection_entry);
-            EXPECT_NE(table_collection_entry, nullptr);
-            u64 segment_id = TableEntry::GetNextSegmentID(table_collection_entry);
+            TableEntry *table_entry = nullptr;
+            auto table_collection_entry_result = txn4->GetTableEntry("default", "tbl1", table_entry);
+            EXPECT_NE(table_entry, nullptr);
+            u64 segment_id = TableEntry::GetNextSegmentID(table_entry);
             EXPECT_EQ(segment_id, 0);
-            auto segment_entry = SegmentEntry::MakeNewSegmentEntry(table_collection_entry, segment_id, buffer_manager);
+            auto segment_entry = SegmentEntry::MakeNewSegmentEntry(table_entry, segment_id, buffer_manager);
             EXPECT_EQ(segment_entry->segment_id_, 0);
             auto last_block_entry = segment_entry->block_entries_.back().get();
 
@@ -582,7 +582,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
             last_block_entry->row_count_ = 1;
             segment_entry->row_count_ = 1;
 
-            auto txn_store = txn4->GetTxnTableStore(table_collection_entry);
+            auto txn_store = txn4->GetTxnTableStore(table_entry);
             PhysicalImport::SaveSegmentData(txn_store, segment_entry);
             txn_mgr->CommitTxn(txn4);
         }
@@ -607,10 +607,10 @@ TEST_F(WalReplayTest, WalReplayImport) {
             auto txn = txn_mgr->CreateTxn();
             txn->Begin();
             Vector<ColumnID> column_ids{0, 1, 2};
-            TableEntry *table_collection_entry = nullptr;
-            txn->GetTableEntry("default", "tbl1", table_collection_entry);
-            EXPECT_NE(table_collection_entry, nullptr);
-            auto segment_entry = table_collection_entry->segment_map_[0].get();
+            TableEntry *table_entry = nullptr;
+            txn->GetTableEntry("default", "tbl1", table_entry);
+            EXPECT_NE(table_entry, nullptr);
+            auto segment_entry = table_entry->segment_map_[0].get();
             EXPECT_EQ(segment_entry->segment_id_, 0);
             auto block_id = segment_entry->block_entries_[0]->block_id_;
             EXPECT_EQ(block_id, 0);

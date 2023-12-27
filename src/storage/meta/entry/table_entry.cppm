@@ -31,7 +31,7 @@ import table_index_meta;
 import txn;
 import status;
 
-export module table_collection_entry;
+export module table_entry;
 
 namespace infinity {
 
@@ -39,7 +39,7 @@ class DBEntry;
 class IndexDef;
 class TableIndexEntry;
 class IrsIndexEntry;
-class TableCollectionMeta;
+class TableMeta;
 
 export struct TableEntry : public BaseEntry {
 public:
@@ -50,7 +50,7 @@ public:
                         SharedPtr<String> table_collection_name,
                         const Vector<SharedPtr<ColumnDef>> &columns,
                         TableEntryType table_entry_type,
-                        TableCollectionMeta *table_collection_meta,
+                        TableMeta *table_meta,
                         u64 txn_id,
                         TxnTimeStamp begin_ts);
 
@@ -96,13 +96,13 @@ public:
 
     static SharedPtr<String> GetDBName(const TableEntry *table_entry);
 
-    inline static TableCollectionMeta *GetTableMeta(const TableEntry *table_entry) { return table_entry->table_collection_meta_; }
+    inline static TableMeta *GetTableMeta(const TableEntry *table_entry) { return table_entry->table_entry_; }
 
-    static SharedPtr<BlockIndex> GetBlockIndex(TableEntry *table_collection_entry, u64 txn_id, TxnTimeStamp begin_ts);
+    static SharedPtr<BlockIndex> GetBlockIndex(TableEntry *table_entry, u64 txn_id, TxnTimeStamp begin_ts);
 
     static Json Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
 
-    static UniquePtr<TableEntry> Deserialize(const Json &table_entry_json, TableCollectionMeta *table_meta, BufferManager *buffer_mgr);
+    static UniquePtr<TableEntry> Deserialize(const Json &table_entry_json, TableMeta *table_meta, BufferManager *buffer_mgr);
 
     static void GetFullTextAnalyzers(TableEntry *table_entry,
                                      u64 txn_id,
@@ -129,7 +129,7 @@ public:
 
     TableEntryType table_entry_type_{TableEntryType::kTableEntry};
 
-    TableCollectionMeta *table_collection_meta_{};
+    TableMeta *table_entry_{};
 
     // From data table
     Atomic<SizeT> row_count_{};

@@ -27,7 +27,7 @@ import data_block;
 import txn;
 import data_access_state;
 import index_def;
-import table_collection_entry;
+import table_entry;
 import base_entry;
 
 import infinity_exception;
