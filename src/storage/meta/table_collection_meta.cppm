@@ -22,6 +22,7 @@ import table_entry_type;
 import txn_manager;
 import buffer_manager;
 import status;
+import table_collection_entry;
 
 export module table_collection_meta;
 
@@ -35,26 +36,24 @@ public:
         : db_entry_dir_(db_entry_dir), table_collection_name_(Move(name)), db_entry_(db_entry) {}
 
 public:
-    static Status CreateNewEntry(TableCollectionMeta *table_meta,
-                                 TableEntryType table_entry_type,
-                                 const SharedPtr<String> &table_collection_name,
-                                 const Vector<SharedPtr<ColumnDef>> &columns,
-                                 u64 txn_id,
-                                 TxnTimeStamp begin_ts,
-                                 TxnManager *txn_mgr,
-                                 BaseEntry *&base_entry);
+    static Tuple<TableEntry *, Status> CreateNewEntry(TableCollectionMeta *table_meta,
+                                                      TableEntryType table_entry_type,
+                                                      const SharedPtr<String> &table_collection_name,
+                                                      const Vector<SharedPtr<ColumnDef>> &columns,
+                                                      u64 txn_id,
+                                                      TxnTimeStamp begin_ts,
+                                                      TxnManager *txn_mgr);
 
-    static Status DropNewEntry(TableCollectionMeta *table_meta,
-                               u64 txn_id,
-                               TxnTimeStamp begin_ts,
-                               TxnManager *txn_mgr,
-                               const String &table_name,
-                               ConflictType conflict_type,
-                               BaseEntry *&base_entry);
+    static Tuple<TableEntry *, Status> DropNewEntry(TableCollectionMeta *table_meta,
+                                                    u64 txn_id,
+                                                    TxnTimeStamp begin_ts,
+                                                    TxnManager *txn_mgr,
+                                                    const String &table_name,
+                                                    ConflictType conflict_type);
 
     static void DeleteNewEntry(TableCollectionMeta *table_meta, u64 txn_id, TxnManager *txn_mgr);
 
-    static Tuple<BaseEntry*, Status> GetEntry(TableCollectionMeta *table_meta, u64 txn_id, TxnTimeStamp begin_ts);
+    static Tuple<TableEntry *, Status> GetEntry(TableCollectionMeta *table_meta, u64 txn_id, TxnTimeStamp begin_ts);
 
     static SharedPtr<String> ToString(TableCollectionMeta *table_meta);
 

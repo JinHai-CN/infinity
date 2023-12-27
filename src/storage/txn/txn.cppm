@@ -78,13 +78,13 @@ public:
     Vector<DatabaseDetail> ListDatabases();
 
     // Table and Collection OPs
-    Status GetTableCollections(const String &db_name, Vector<TableDetail> &output_table_array);
+    Status GetTables(const String &db_name, Vector<TableDetail> &output_table_array);
 
-    Status CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType conflict_type, BaseEntry *&new_table_entry);
+    Status CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType conflict_type);
 
     Status CreateCollection(const String &db_name, const String &collection_name, ConflictType conflict_type, BaseEntry *&collection_entry);
 
-    Status DropTableCollectionByName(const String &db_name, const String &table_name, ConflictType conflict_type, BaseEntry *&drop_table_entry);
+    Status DropTableCollectionByName(const String &db_name, const String &table_name, ConflictType conflict_type);
 
     Tuple<BaseEntry *, Status> GetTableByName(const String &db_name, const String &table_name);
 

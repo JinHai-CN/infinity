@@ -48,16 +48,17 @@ namespace infinity {
  * @param txn_mgr
  * @return Status
  */
-Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
+Tuple<TableEntry *, Status> TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                                            TableEntryType table_entry_type,
                                            const SharedPtr<String> &table_collection_name_ptr,
                                            const Vector<SharedPtr<ColumnDef>> &columns,
                                            u64 txn_id,
                                            TxnTimeStamp begin_ts,
-                                           TxnManager *txn_mgr,
-                                           BaseEntry *&base_entry) {
+                                           TxnManager *txn_mgr) {
     UniqueLock<RWMutex> rw_locker(table_meta->rw_locker_);
     const String &table_collection_name = *table_collection_name_ptr;
+
+    TableEntry* table_entry_ptr{nullptr};
 
     if (table_meta->entry_list_.empty()) {
         // Insert a dummy entry.
@@ -73,11 +74,11 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                                                                                        table_meta,
                                                                                        txn_id,
                                                                                        begin_ts);
-        base_entry = table_entry.get();
+        table_entry_ptr = table_entry.get();
         table_meta->entry_list_.emplace_front(Move(table_entry));
 
         LOG_TRACE(Format("New table entry is added: {}.", table_collection_name));
-        return Status::OK();
+        return {table_entry_ptr, Status::OK()};
     } else {
         // Already have a table entry, check if the table entry is valid here.
         BaseEntry *header_base_entry = table_meta->entry_list_.front().get();
@@ -90,9 +91,9 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                                                                                            table_meta,
                                                                                            txn_id,
                                                                                            begin_ts);
-            base_entry = table_entry.get();
+            table_entry_ptr = table_entry.get();
             table_meta->entry_list_.emplace_front(Move(table_entry));
-            return Status::OK();
+            return {table_entry_ptr, Status::OK()};
         }
 
         TableEntry *header_table_entry = (TableEntry *)header_base_entry;
@@ -108,21 +109,21 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                                                                                                    table_meta,
                                                                                                    txn_id,
                                                                                                    begin_ts);
-                    base_entry = table_entry.get();
+                    table_entry_ptr = table_entry.get();
                     table_meta->entry_list_.emplace_front(Move(table_entry));
-                    return Status::OK();
+                    return {table_entry_ptr, Status::OK()};
                 } else {
                     // Duplicated table
                     UniquePtr<String> err_msg = MakeUnique<String>(Format("Duplicated table: {}.", table_collection_name));
                     LOG_ERROR(*err_msg);
-                    return Status(ErrorCode::kDuplicate, Move(err_msg));
+                    return {nullptr, Status(ErrorCode::kDuplicate, Move(err_msg))};
                 }
             } else {
                 // Write-Write conflict
                 UniquePtr<String> err_msg = MakeUnique<String>(
                     Format("Write-write conflict: There is a committed table: {} which is later than current transaction.", table_collection_name));
                 LOG_ERROR(*err_msg);
-                return Status(ErrorCode::kWWConflict, Move(err_msg));
+                return {nullptr, Status(ErrorCode::kWWConflict, Move(err_msg))};
             }
         } else {
 
@@ -141,18 +142,18 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                                                                                                            table_meta,
                                                                                                            txn_id,
                                                                                                            begin_ts);
-                            base_entry = table_entry.get();
+                            table_entry_ptr = table_entry.get();
                             table_meta->entry_list_.emplace_front(Move(table_entry));
-                            return Status::OK();
+                            return {table_entry_ptr, Status::OK()};
                         } else {
                             UniquePtr<String> err_msg = MakeUnique<String>(Format("Create a duplicated table {}.", table_collection_name));
                             LOG_ERROR(*err_msg);
-                            return Status(ErrorCode::kDuplicate, Move(err_msg));
+                            return {nullptr, Status(ErrorCode::kDuplicate, Move(err_msg))};
                         }
                     } else {
                         UniquePtr<String> err_msg = MakeUnique<String>(Format("Write-write conflict: There is a uncommitted transaction."));
                         LOG_ERROR(*err_msg);
-                        return Status(ErrorCode::kWWConflict, Move(err_msg));
+                        return {nullptr, Status(ErrorCode::kWWConflict, Move(err_msg))};
                     }
                 }
                 case TxnState::kCommitting:
@@ -161,7 +162,7 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                     UniquePtr<String> err_msg = MakeUnique<String>(
                         Format("Write-write conflict: There is a committing/committed table which is later than current transaction."));
                     LOG_ERROR(*err_msg);
-                    return Status(ErrorCode::kWWConflict, Move(err_msg));
+                    return {nullptr, Status(ErrorCode::kWWConflict, Move(err_msg))};
                 }
                 case TxnState::kRollbacking:
                 case TxnState::kRollbacked: {
@@ -176,39 +177,41 @@ Status TableCollectionMeta::CreateNewEntry(TableCollectionMeta *table_meta,
                                                                                                    table_meta,
                                                                                                    txn_id,
                                                                                                    begin_ts);
-                    base_entry = table_entry.get();
+                    table_entry_ptr = table_entry.get();
                     table_meta->entry_list_.emplace_front(Move(table_entry));
-                    return Status::OK();
+                    return {table_entry_ptr, Status::OK()};
                 }
                 default: {
                     UniquePtr<String> err_msg = MakeUnique<String>("Invalid table entry txn state");
                     LOG_ERROR(*err_msg);
-                    return Status(ErrorCode::kUndefined, Move(err_msg));
+                    return {nullptr, Status(ErrorCode::kUndefined, Move(err_msg))};
                 }
             }
         }
     }
 }
 
-Status TableCollectionMeta::DropNewEntry(TableCollectionMeta *table_meta,
+Tuple<TableEntry *, Status> TableCollectionMeta::DropNewEntry(TableCollectionMeta *table_meta,
                                          u64 txn_id,
                                          TxnTimeStamp begin_ts,
                                          TxnManager *,
                                          const String &table_name,
-                                         ConflictType conflict_type,
-                                         BaseEntry *&base_entry) {
+                                         ConflictType conflict_type) {
+
+    TableEntry* table_entry_ptr{nullptr};
+
     UniqueLock<RWMutex> rw_locker(table_meta->rw_locker_);
     if (table_meta->entry_list_.empty()) {
         UniquePtr<String> err_msg = MakeUnique<String>("Empty table entry list.");
         LOG_ERROR(*err_msg);
-        return Status(ErrorCode::kNotFound, Move(err_msg));
+        return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
 
     BaseEntry *header_base_entry = table_meta->entry_list_.front().get();
     if (header_base_entry->entry_type_ == EntryType::kDummy) {
         UniquePtr<String> err_msg = MakeUnique<String>("No valid table entry.");
         LOG_ERROR(*err_msg);
-        return Status(ErrorCode::kNotFound, Move(err_msg));
+        return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
 
     auto *header_table_entry = (TableEntry *)header_base_entry;
@@ -219,11 +222,11 @@ Status TableCollectionMeta::DropNewEntry(TableCollectionMeta *table_meta,
             if (header_table_entry->deleted_) {
                 if (conflict_type == ConflictType::kIgnore) {
                     LOG_TRACE(Format("Ignore drop a not existed table entry {}", table_name));
-                    return Status::OK();
+                    return {nullptr, Status::OK()};
                 }
                 UniquePtr<String> err_msg = MakeUnique<String>("Table was dropped before.");
                 LOG_ERROR(*err_msg);
-                return Status(ErrorCode::kNotFound, Move(err_msg));
+                return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
             }
 
             Vector<SharedPtr<ColumnDef>> dummy_columns;
@@ -234,31 +237,31 @@ Status TableCollectionMeta::DropNewEntry(TableCollectionMeta *table_meta,
                                                                                            table_meta,
                                                                                            txn_id,
                                                                                            begin_ts);
-            base_entry = table_entry.get();
-            base_entry->deleted_ = true;
+            table_entry_ptr = table_entry.get();
+            table_entry_ptr->deleted_ = true;
             table_meta->entry_list_.emplace_front(Move(table_entry));
 
-            return Status::OK();
+            return {table_entry_ptr, Status::OK()};
         } else {
             // Write-Write conflict
             UniquePtr<String> err_msg =
                 MakeUnique<String>(Format("Write-write conflict: There is a committed database which is later than current transaction."));
             LOG_ERROR(*err_msg);
-            return Status(ErrorCode::kWWConflict, Move(err_msg));
+            return {nullptr, Status(ErrorCode::kWWConflict, Move(err_msg))};
         }
     } else {
         // Uncommitted, check if the same txn
         if (txn_id == header_table_entry->txn_id_) {
             // Same txn, remove the header table entry
-            base_entry = header_table_entry;
+            table_entry_ptr = header_table_entry;
             table_meta->entry_list_.erase(table_meta->entry_list_.begin());
 
-            return Status::OK();
+            return {table_entry_ptr, Status::OK()};
         } else {
             // Not same txn, issue WW conflict
             UniquePtr<String> err_msg = MakeUnique<String>(Format("Write-write conflict: There is another uncommitted table entry."));
             LOG_ERROR(*err_msg);
-            return Status(ErrorCode::kWWConflict, Move(err_msg));
+            return {table_entry_ptr, Status(ErrorCode::kWWConflict, Move(err_msg))};
         }
     }
 }
@@ -289,7 +292,7 @@ void TableCollectionMeta::DeleteNewEntry(TableCollectionMeta *table_meta, u64 tx
  * @param begin_ts
  * @return Status
  */
-Tuple<BaseEntry*, Status> TableCollectionMeta::GetEntry(TableCollectionMeta *table_meta, u64 txn_id, TxnTimeStamp begin_ts) {
+Tuple<TableEntry*, Status> TableCollectionMeta::GetEntry(TableCollectionMeta *table_meta, u64 txn_id, TxnTimeStamp begin_ts) {
     SharedLock<RWMutex> r_locker(table_meta->rw_locker_);
     if (table_meta->entry_list_.empty()) {
         UniquePtr<String> err_msg = MakeUnique<String>("Empty table entry list.");
@@ -313,14 +316,14 @@ Tuple<BaseEntry*, Status> TableCollectionMeta::GetEntry(TableCollectionMeta *tab
                     LOG_ERROR(*err_msg);
                     return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
                 } else {
-                    return {table_entry.get(), Status::OK()};
+                    return {static_cast<TableEntry*>(table_entry.get()), Status::OK()};
                 }
             }
         } else {
             // not committed
             if (txn_id == table_entry->txn_id_) {
                 // same txn
-                return {table_entry.get(), Status::OK()};
+                return {static_cast<TableEntry*>(table_entry.get()), Status::OK()};
             }
         }
     }

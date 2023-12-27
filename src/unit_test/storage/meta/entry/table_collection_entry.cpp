@@ -142,10 +142,8 @@ TEST_F(TableEntryTest, test2) {
     }
 
     UniquePtr<TableDef> tbl1_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl1"), columns);
-    BaseEntry* base_table_entry{nullptr};
-    Status s1 = new_txn->CreateTable("db1", Move(tbl1_def), ConflictType::kError, base_table_entry);
+    Status s1 = new_txn->CreateTable("db1", Move(tbl1_def), ConflictType::kError);
     EXPECT_TRUE(s1.ok());
-    EXPECT_NE(base_table_entry, nullptr);
 
     // Txn1: Commit, OK
     txn_mgr->CommitTxn(new_txn);

@@ -40,31 +40,28 @@ public:
     }
 
 public:
-    static Status CreateTableCollection(DBEntry *db_entry,
-                                        TableEntryType table_entry_type,
-                                        const SharedPtr<String> &table_collection_name,
-                                        const Vector<SharedPtr<ColumnDef>> &columns,
-                                        u64 txn_id,
-                                        TxnTimeStamp begin_ts,
-                                        TxnManager *txn_mgr,
-                                        BaseEntry *&base_entry);
+    static Tuple<TableEntry *, Status> CreateTableCollection(DBEntry *db_entry,
+                                                             TableEntryType table_entry_type,
+                                                             const SharedPtr<String> &table_collection_name,
+                                                             const Vector<SharedPtr<ColumnDef>> &columns,
+                                                             u64 txn_id,
+                                                             TxnTimeStamp begin_ts,
+                                                             TxnManager *txn_mgr);
 
-    static Status DropTableCollection(DBEntry *db_entry,
-                                      const String &table_collection_name,
-                                      ConflictType conflict_type,
-                                      u64 txn_id,
-                                      TxnTimeStamp begin_ts,
-                                      TxnManager *txn_mgr,
-                                      BaseEntry *&base_entry);
+    static Tuple<TableEntry *, Status> DropTableCollection(DBEntry *db_entry,
+                                                           const String &table_collection_name,
+                                                           ConflictType conflict_type,
+                                                           u64 txn_id,
+                                                           TxnTimeStamp begin_ts,
+                                                           TxnManager *txn_mgr);
 
-    static Tuple<BaseEntry*, Status>
-    GetTableCollection(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts);
+    static Tuple<TableEntry *, Status> GetTableCollection(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts);
 
     static void RemoveTableEntry(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr);
 
     static Vector<TableEntry *> TableCollections(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts);
 
-    static Status GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array);
+    static Status GetTablesDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array);
 
     static SharedPtr<String> ToString(DBEntry *db_entry);
 

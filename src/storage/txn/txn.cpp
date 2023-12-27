@@ -274,16 +274,16 @@ Vector<DatabaseDetail> Txn::ListDatabases() {
     return res;
 }
 
-Status Txn::GetTableCollections(const String &db_name, Vector<TableDetail> &output_table_array) {
+Status Txn::GetTables(const String &db_name, Vector<TableDetail> &output_table_array) {
     auto [db_entry, status] = GetDatabase(db_name);
     if (!status.ok()) {
         return status;
     }
 
-    return DBEntry::GetTableCollectionsDetail(db_entry, txn_id_, txn_context_.GetBeginTS(), output_table_array);
+    return DBEntry::GetTablesDetail(db_entry, txn_id_, txn_context_.GetBeginTS(), output_table_array);
 }
 
-Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType, BaseEntry *&new_table_entry) {
+Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType) {
     TxnState txn_state = txn_context_.GetTxnState();
 
     if (txn_state != TxnState::kStarted) {
@@ -292,42 +292,36 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [db_entry, status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
-    if (!status.ok()) {
+    auto [db_entry, db_status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
+    if (!db_status.ok()) {
         // Error
-        return status;
+        return db_status;
     }
 
-    status = DBEntry::CreateTableCollection(db_entry,
+    auto [table_entry, table_status] = DBEntry::CreateTableCollection(db_entry,
                                             TableEntryType::kTableEntry,
                                             table_def->table_name(),
                                             table_def->columns(),
                                             txn_id_,
                                             begin_ts,
-                                            txn_mgr_,
-                                            new_table_entry);
+                                            txn_mgr_);
 
-    if (new_table_entry == nullptr) {
-        if (status.ok()) {
+    if (table_entry == nullptr) {
+        if (table_status.ok()) {
             UniquePtr<String> err_msg = MakeUnique<String>("TODO: CreateTableCollectionFailed");
             LOG_ERROR(*err_msg);
             return Status(ErrorCode::kError, Move(err_msg));
         } else {
-            return status;
+            return table_status;
         }
     }
 
-    if (new_table_entry->entry_type_ != EntryType::kTable) {
-        Error<TransactionException>("Entry type should be table entry.");
-    }
-
-    auto *table_entry = static_cast<TableEntry *>(new_table_entry);
     txn_tables_.insert(table_entry);
     wal_entry_->cmds.push_back(MakeShared<WalCmdCreateTable>(db_name, table_def));
     return Status::OK();
 }
 
-Status Txn::DropTableCollectionByName(const String &db_name, const String &table_name, ConflictType conflict_type, BaseEntry *&drop_table_entry) {
+Status Txn::DropTableCollectionByName(const String &db_name, const String &table_name, ConflictType conflict_type) {
     TxnState txn_state = txn_context_.GetTxnState();
 
     if (txn_state != TxnState::kStarted) {
@@ -336,24 +330,21 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [db_entry, status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
-    if (!status.ok()) {
+    auto [db_entry, db_status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
+    if (!db_status.ok()) {
         // Error
-        return status;
+        return db_status;
     }
 
-    status = DBEntry::DropTableCollection(db_entry, table_name, conflict_type, txn_id_, begin_ts, txn_mgr_, drop_table_entry);
-
-    if (drop_table_entry == nullptr) {
-        return status;
+    auto [table_entry, table_status] = DBEntry::DropTableCollection(db_entry, table_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
+    if(table_entry == nullptr) {
+        return table_status;
     }
 
-    TableEntry *dropped_table_entry = static_cast<TableEntry *>(drop_table_entry);
-
-    if (txn_tables_.contains(dropped_table_entry)) {
-        txn_tables_.erase(dropped_table_entry);
+    if (txn_tables_.contains(table_entry)) {
+        txn_tables_.erase(table_entry);
     } else {
-        txn_tables_.insert(dropped_table_entry);
+        txn_tables_.insert(table_entry);
     }
 
     wal_entry_->cmds.push_back(MakeShared<WalCmdDropTable>(db_name, table_name));

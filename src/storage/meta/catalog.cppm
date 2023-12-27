@@ -106,11 +106,17 @@ public:
     Vector<DBEntry *> Databases(u64 txn_id, TxnTimeStamp begin_ts);
 
     // Table related functions
-    Tuple<TableEntry *, Status> CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType conflict_type);
+    Tuple<TableEntry *, Status> CreateTable(const String &db_name,
+                                            u64 txn_id,
+                                            TxnTimeStamp begin_ts,
+                                            const SharedPtr<TableDef> &table_def,
+                                            ConflictType conflict_type,
+                                            TxnManager *txn_mgr);
 
-    Status DropTableByName(const String &db_name, const String &table_name, ConflictType conflict_type);
+    Tuple<TableEntry *, Status>
+    DropTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts, ConflictType conflict_type);
 
-    Status GetTableCollections(const String &db_name, Vector<TableDetail> &output_table_array);
+    Status GetTables(const String &db_name, Vector<TableDetail> &output_table_array, u64 txn_id, TxnTimeStamp begin_ts);
 
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

@@ -315,7 +315,7 @@ void WalManager::Checkpoint(ForceCheckpointTask *ckp_task) {
 
     auto [max_commit_ts, wal_size] = GetWalState();
     if (wal_size == full_ckp_wal_size_) {
-        return ;
+        return;
     }
 
     bool is_full_checkpoint = true;
@@ -621,24 +621,21 @@ void WalManager::WalCmdCreateDatabaseReplay(const WalCmdCreateDatabase &cmd, u64
     db_entry->Commit(commit_ts);
 }
 void WalManager::WalCmdCreateTableReplay(const WalCmdCreateTable &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
-    if (!status.ok()) {
+    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
+    if (!db_status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    BaseEntry *base_table_entry{nullptr};
-    status = DBEntry::CreateTableCollection(db_entry,
-                                            TableEntryType::kTableEntry,
-                                            cmd.table_def->table_name(),
-                                            cmd.table_def->columns(),
-                                            txn_id,
-                                            commit_ts,
-                                            storage_->txn_manager(),
-                                            base_table_entry);
-    if (!status.ok()) {
-        Error<StorageException>("Wal Replay: Create table failed" + *status.msg_);
+    auto [table_entry, table_status] = DBEntry::CreateTableCollection(db_entry,
+                                                                      TableEntryType::kTableEntry,
+                                                                      cmd.table_def->table_name(),
+                                                                      cmd.table_def->columns(),
+                                                                      txn_id,
+                                                                      commit_ts,
+                                                                      storage_->txn_manager());
+    if (!table_status.ok()) {
+        Error<StorageException>("Wal Replay: Create table failed" + *table_status.msg_);
     }
-    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     table_entry->Commit(commit_ts);
 }
 
@@ -651,17 +648,16 @@ void WalManager::WalCmdDropDatabaseReplay(const WalCmdDropDatabase &cmd, u64 txn
 }
 
 void WalManager::WalCmdDropTableReplay(const WalCmdDropTable &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
-    if (!status.ok()) {
+    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
+    if (!db_status.ok()) {
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    BaseEntry *base_table_entry{nullptr};
-    status = DBEntry::DropTableCollection(db_entry, cmd.table_name, ConflictType::kReplace, txn_id, commit_ts, nullptr, base_table_entry);
-    if (!status.ok()) {
+    auto [table_entry, table_status] = DBEntry::DropTableCollection(db_entry, cmd.table_name, ConflictType::kReplace, txn_id, commit_ts, nullptr);
+    if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Drop table failed");
     }
-    base_table_entry->Commit(commit_ts);
+    table_entry->Commit(commit_ts);
 }
 
 void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_id, i64 commit_ts) {
@@ -676,8 +672,7 @@ void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_i
     }
     auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     BaseEntry *base_entry{nullptr};
-    auto index_def_entry_status =
-        TableEntry::CreateIndex(table_entry, cmd.index_def_, ConflictType::kError, txn_id, commit_ts, nullptr, base_entry);
+    auto index_def_entry_status = TableEntry::CreateIndex(table_entry, cmd.index_def_, ConflictType::kError, txn_id, commit_ts, nullptr, base_entry);
     if (!index_def_entry_status.ok()) {
         Error<StorageException>("Wal Replay: Create index failed");
     }

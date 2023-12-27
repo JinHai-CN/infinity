@@ -34,6 +34,9 @@ import buffer_manager;
 import local_file_system;
 import file_system_type;
 import file_system;
+import table_def;
+import table_entry_type;
+import table_detail;
 
 import table_collection_entry;
 
@@ -62,11 +65,8 @@ NewCatalog::NewCatalog(SharedPtr<String> dir, bool create_default_db) : current_
 // it will not record database in transaction, so when you commit transaction
 // it will lose operation
 // use Txn::CreateDatabase instead
-Tuple<DBEntry *, Status> NewCatalog::CreateDatabase(const String &db_name,
-                                                    u64 txn_id,
-                                                    TxnTimeStamp begin_ts,
-                                                    TxnManager *txn_mgr,
-                                                    ConflictType conflict_type) {
+Tuple<DBEntry *, Status>
+NewCatalog::CreateDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, ConflictType conflict_type) {
 
     // Check if there is db_meta with the db_name
     DBMeta *db_meta{nullptr};
@@ -106,8 +106,7 @@ Tuple<DBEntry *, Status> NewCatalog::CreateDatabase(const String &db_name,
 // it will not record database in transaction, so when you commit transaction
 // it will lose operation
 // use Txn::DropDatabase instead
-Tuple<DBEntry *, Status>
-NewCatalog::DropDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
+Tuple<DBEntry *, Status> NewCatalog::DropDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
 
     this->rw_locker_.lock_shared();
 
@@ -170,6 +169,33 @@ Vector<DBEntry *> NewCatalog::Databases(u64 txn_id, TxnTimeStamp begin_ts) {
     this->rw_locker_.unlock_shared();
     return res;
 }
+
+Tuple<TableEntry *, Status> NewCatalog::CreateTable(const String &db_name,
+                                                    u64 txn_id,
+                                                    TxnTimeStamp begin_ts,
+                                                    const SharedPtr<TableDef> &table_def,
+                                                    ConflictType conflict_type,
+                                                    TxnManager *txn_mgr) {
+    auto [db_entry, status] = this->GetDatabase(db_name, txn_id, begin_ts);
+    if (!status.ok()) {
+        // Error
+        LOG_ERROR(Format("Database: {} is invalid.", db_name));
+        return {nullptr, status};
+    }
+
+    return DBEntry::CreateTableCollection(db_entry,
+                                          TableEntryType::kTableEntry,
+                                          table_def->table_name(),
+                                          table_def->columns(),
+                                          txn_id,
+                                          begin_ts,
+                                          txn_mgr);
+}
+
+Tuple<TableEntry *, Status>
+NewCatalog::DropTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts, ConflictType conflict_type) {}
+
+Status NewCatalog::GetTables(const String &db_name, Vector<TableDetail> &output_table_array, u64 txn_id, TxnTimeStamp begin_ts) {}
 
 SharedPtr<FunctionSet> NewCatalog::GetFunctionSetByName(NewCatalog *catalog, String function_name) {
     // Transfer the function to upper case.

@@ -160,10 +160,8 @@ TEST_F(WalReplayTest, WalReplayTables) {
             auto tbl1_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl1"), columns);
             auto *txn = txn_mgr->CreateTxn();
             txn->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn->CreateTable("default", Move(tbl1_def), ConflictType::kIgnore, base_table_entry);
+            Status status = txn->CreateTable("default", Move(tbl1_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
             txn_mgr->CommitTxn(txn);
         }
 
@@ -172,29 +170,27 @@ TEST_F(WalReplayTest, WalReplayTables) {
         auto *txn2 = txn_mgr->CreateTxn();
         txn2->Begin();
 
-        BaseEntry* base_table2_entry{nullptr};
-        Status status2 = txn2->CreateTable("default", Move(tbl2_def), ConflictType::kIgnore, base_table2_entry);
+        Status status2 = txn2->CreateTable("default", Move(tbl2_def), ConflictType::kIgnore);
         EXPECT_TRUE(status2.ok());
-        EXPECT_NE(base_table2_entry, nullptr);
         TxnTimeStamp txn2_ts = txn_mgr->CommitTxn(txn2);
 
         {
             auto *txn = txn_mgr->CreateTxn();
             txn->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn->DropTableCollectionByName("default", "tbl2", ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn->DropTableCollectionByName("default", "tbl2", ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn);
         }
         {
             auto tbl3_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl3"), columns);
             auto *txn3 = txn_mgr->CreateTxn();
             txn3->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn3->CreateTable("default", Move(tbl3_def), ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn3->CreateTable("default", Move(tbl3_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn3);
         }
         {
@@ -221,19 +217,19 @@ TEST_F(WalReplayTest, WalReplayTables) {
             auto tbl2_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl2"), columns);
             auto *txn = txn_mgr->CreateTxn();
             txn->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn->CreateTable("default", Move(tbl2_def), ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn->CreateTable("default", Move(tbl2_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn);
         }
         {
             auto *txn = txn_mgr->CreateTxn();
             txn->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn->DropTableCollectionByName("default", "tbl3", ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn->DropTableCollectionByName("default", "tbl3", ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn);
         }
 
@@ -284,30 +280,30 @@ TEST_F(WalReplayTest, WalReplayAppend) {
             auto tbl1_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl1"), columns);
             auto *txn = txn_mgr->CreateTxn();
             txn->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn->CreateTable("default", Move(tbl1_def), ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn->CreateTable("default", Move(tbl1_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn);
         }
         {
             auto tbl3_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl3"), columns);
             auto *txn3 = txn_mgr->CreateTxn();
             txn3->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn3->CreateTable("default", Move(tbl3_def), ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn3->CreateTable("default", Move(tbl3_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn3);
         }
         {
             auto tbl4_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl4"), columns);
             auto *txn4 = txn_mgr->CreateTxn();
             txn4->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn4->CreateTable("default", Move(tbl4_def), ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn4->CreateTable("default", Move(tbl4_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn4);
         }
         {
@@ -376,10 +372,10 @@ TEST_F(WalReplayTest, WalReplayAppend) {
             auto tbl5_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl5"), columns);
             auto *txn = txn_mgr->CreateTxn();
             txn->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn->CreateTable("default", Move(tbl5_def), ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn->CreateTable("default", Move(tbl5_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn);
         }
         {
@@ -481,20 +477,20 @@ TEST_F(WalReplayTest, WalReplayImport) {
             auto tbl1_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl1"), columns);
             auto *txn = txn_mgr->CreateTxn();
             txn->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn->CreateTable("default", Move(tbl1_def), ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn->CreateTable("default", Move(tbl1_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn);
         }
 
         auto tbl2_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl2"), columns);
         auto *txn2 = txn_mgr->CreateTxn();
         txn2->Begin();
-        BaseEntry* base_table_entry{nullptr};
-        Status status = txn2->CreateTable("default", Move(tbl2_def), ConflictType::kIgnore, base_table_entry);
+        
+        Status status = txn2->CreateTable("default", Move(tbl2_def), ConflictType::kIgnore);
         EXPECT_TRUE(status.ok());
-        EXPECT_NE(base_table_entry, nullptr);
+        
         TxnTimeStamp tx4_commit_ts = txn_mgr->CommitTxn(txn2);
 
         {
@@ -509,10 +505,10 @@ TEST_F(WalReplayTest, WalReplayImport) {
             auto tbl3_def = MakeUnique<TableDef>(MakeShared<String>("default"), MakeShared<String>("tbl3"), columns);
 
             txn->Begin();
-            BaseEntry* base_table_entry{nullptr};
-            Status status = txn->CreateTable("default", Move(tbl3_def), ConflictType::kIgnore, base_table_entry);
+            
+            Status status = txn->CreateTable("default", Move(tbl3_def), ConflictType::kIgnore);
             EXPECT_TRUE(status.ok());
-            EXPECT_NE(base_table_entry, nullptr);
+            
             txn_mgr->CommitTxn(txn);
         }
 

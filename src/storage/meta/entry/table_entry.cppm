@@ -23,7 +23,6 @@ import table_entry_type;
 import base_entry;
 import segment_entry;
 import block_index;
-import table_collection_meta;
 import data_access_state;
 import txn_manager;
 import segment_column_index_entry;
@@ -40,6 +39,7 @@ class DBEntry;
 class IndexDef;
 class TableIndexEntry;
 class IrsIndexEntry;
+class TableCollectionMeta;
 
 export struct TableEntry : public BaseEntry {
 public:

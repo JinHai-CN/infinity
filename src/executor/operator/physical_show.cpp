@@ -326,7 +326,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
     Txn *txn = query_context->GetTxn();
 
     Vector<TableDetail> table_collections_detail;
-    Status status = txn->GetTableCollections(db_name_, table_collections_detail);
+    Status status = txn->GetTables(db_name_, table_collections_detail);
     if (!status.ok()) {
         Error<ExecutorException>(status.message());
     }

@@ -30,20 +30,20 @@ import block_index;
 import logger;
 import third_party;
 import infinity_exception;
+import table_collection_entry;
 import status;
 
 module db_entry;
 
 namespace infinity {
 
-Status DBEntry::CreateTableCollection(DBEntry *db_entry,
-                                      TableEntryType table_entry_type,
-                                      const SharedPtr<String> &table_collection_name,
-                                      const Vector<SharedPtr<ColumnDef>> &columns,
-                                      u64 txn_id,
-                                      TxnTimeStamp begin_ts,
-                                      TxnManager *txn_mgr,
-                                      BaseEntry *&base_entry) {
+Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(DBEntry *db_entry,
+                                                           TableEntryType table_entry_type,
+                                                           const SharedPtr<String> &table_collection_name,
+                                                           const Vector<SharedPtr<ColumnDef>> &columns,
+                                                           u64 txn_id,
+                                                           TxnTimeStamp begin_ts,
+                                                           TxnManager *txn_mgr) {
     const String &table_name = *table_collection_name;
 
     // Check if there is table_meta with the table_name
@@ -75,23 +75,15 @@ Status DBEntry::CreateTableCollection(DBEntry *db_entry,
         LOG_TRACE(Format("Add new table entry for {} in new table meta of db_entry {} ", table_name, *db_entry->db_entry_dir_));
     }
 
-    return TableCollectionMeta::CreateNewEntry(table_meta,
-                                               table_entry_type,
-                                               table_collection_name,
-                                               columns,
-                                               txn_id,
-                                               begin_ts,
-                                               txn_mgr,
-                                               base_entry);
+    return TableCollectionMeta::CreateNewEntry(table_meta, table_entry_type, table_collection_name, columns, txn_id, begin_ts, txn_mgr);
 }
 
-Status DBEntry::DropTableCollection(DBEntry *db_entry,
-                                    const String &table_collection_name,
-                                    ConflictType conflict_type,
-                                    u64 txn_id,
-                                    TxnTimeStamp begin_ts,
-                                    TxnManager *txn_mgr,
-                                    BaseEntry *&base_entry) {
+Tuple<TableEntry *, Status> DBEntry::DropTableCollection(DBEntry *db_entry,
+                                                         const String &table_collection_name,
+                                                         ConflictType conflict_type,
+                                                         u64 txn_id,
+                                                         TxnTimeStamp begin_ts,
+                                                         TxnManager *txn_mgr) {
     db_entry->rw_locker_.lock_shared();
 
     TableCollectionMeta *table_meta{nullptr};
@@ -102,20 +94,19 @@ Status DBEntry::DropTableCollection(DBEntry *db_entry,
     if (table_meta == nullptr) {
         if (conflict_type == ConflictType::kIgnore) {
             LOG_TRACE(Format("Ignore drop a not existed table/collection entry {}", table_collection_name));
-            return Status::OK();
+            return {nullptr, Status::OK()};
         }
 
         UniquePtr<String> err_msg = MakeUnique<String>(Format("Attempt to drop not existed table/collection entry {}", table_collection_name));
         LOG_ERROR(*err_msg);
-        return Status(ErrorCode::kNotFound, Move(err_msg));
+        return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
 
     LOG_TRACE(Format("Drop a table/collection entry {}", table_collection_name));
-    return TableCollectionMeta::DropNewEntry(table_meta, txn_id, begin_ts, txn_mgr, table_collection_name, conflict_type, base_entry);
+    return TableCollectionMeta::DropNewEntry(table_meta, txn_id, begin_ts, txn_mgr, table_collection_name, conflict_type);
 }
 
-Tuple<BaseEntry*, Status>
-DBEntry::GetTableCollection(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts) {
+Tuple<TableEntry *, Status> DBEntry::GetTableCollection(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts) {
     db_entry->rw_locker_.lock_shared();
 
     TableCollectionMeta *table_meta{nullptr};
@@ -166,7 +157,7 @@ Vector<TableEntry *> DBEntry::TableCollections(DBEntry *db_entry, u64 txn_id, Tx
     return results;
 }
 
-Status DBEntry::GetTableCollectionsDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array) {
+Status DBEntry::GetTablesDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array) {
     Vector<TableEntry *> table_collection_entries = DBEntry::TableCollections(db_entry, txn_id, begin_ts);
     output_table_array.reserve(table_collection_entries.size());
     for (TableEntry *table_collection_entry : table_collection_entries) {
