@@ -161,7 +161,7 @@ Vector<DBEntry *> NewCatalog::Databases(u64 txn_id, TxnTimeStamp begin_ts) {
     Vector<DBEntry *> res;
     res.reserve(this->databases_.size());
     for (const auto &db_meta_pair : this->databases_) {
-        DBMeta* db_meta = db_meta_pair.second.get();
+        DBMeta *db_meta = db_meta_pair.second.get();
         auto [db_entry, status] = db_meta->GetEntry(txn_id, begin_ts);
         if (status.ok()) {
             res.emplace_back(db_entry);
@@ -184,13 +184,7 @@ Tuple<TableEntry *, Status> NewCatalog::CreateTable(const String &db_name,
         return {nullptr, status};
     }
 
-    return DBEntry::CreateTableCollection(db_entry,
-                                          TableEntryType::kTableEntry,
-                                          table_def->table_name(),
-                                          table_def->columns(),
-                                          txn_id,
-                                          begin_ts,
-                                          txn_mgr);
+    return db_entry->CreateTableCollection(TableEntryType::kTableEntry, table_def->table_name(), table_def->columns(), txn_id, begin_ts, txn_mgr);
 }
 
 Tuple<TableEntry *, Status>

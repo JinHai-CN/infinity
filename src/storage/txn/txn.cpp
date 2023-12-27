@@ -280,7 +280,7 @@ Status Txn::GetTables(const String &db_name, Vector<TableDetail> &output_table_a
         return status;
     }
 
-    return DBEntry::GetTablesDetail(db_entry, txn_id_, txn_context_.GetBeginTS(), output_table_array);
+    return db_entry->GetTablesDetail(txn_id_, txn_context_.GetBeginTS(), output_table_array);
 }
 
 Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType) {
@@ -298,13 +298,8 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
         return db_status;
     }
 
-    auto [table_entry, table_status] = DBEntry::CreateTableCollection(db_entry,
-                                                                      TableEntryType::kTableEntry,
-                                                                      table_def->table_name(),
-                                                                      table_def->columns(),
-                                                                      txn_id_,
-                                                                      begin_ts,
-                                                                      txn_mgr_);
+    auto [table_entry, table_status] =
+        db_entry->CreateTableCollection(TableEntryType::kTableEntry, table_def->table_name(), table_def->columns(), txn_id_, begin_ts, txn_mgr_);
 
     if (table_entry == nullptr) {
         if (table_status.ok()) {
@@ -336,7 +331,7 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
         return db_status;
     }
 
-    auto [table_entry, table_status] = DBEntry::DropTableCollection(db_entry, table_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
+    auto [table_entry, table_status] = db_entry->DropTableCollection(table_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
     if (table_entry == nullptr) {
         return table_status;
     }
@@ -439,7 +434,7 @@ Tuple<BaseEntry *, Status> Txn::GetTableByName(const String &db_name, const Stri
         return {nullptr, status};
     }
 
-    return DBEntry::GetTableCollection(db_entry, table_name, txn_id_, begin_ts);
+    return db_entry->GetTableCollection(table_name, txn_id_, begin_ts);
 }
 
 Status Txn::CreateCollection(const String &, const String &, ConflictType, BaseEntry *&) {
@@ -564,7 +559,7 @@ void Txn::Rollback() {
         auto *table_entry = (TableEntry *)(base_entry);
         TableCollectionMeta *table_meta = TableEntry::GetTableMeta(table_entry);
         DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
-        DBEntry::RemoveTableEntry(db_entry, *table_meta->table_collection_name_, txn_id_, txn_mgr_);
+        db_entry->RemoveTableEntry(*table_meta->table_collection_name_, txn_id_, txn_mgr_);
     }
 
     for (const auto &[index_name, table_index_entry] : txn_indexes_) {

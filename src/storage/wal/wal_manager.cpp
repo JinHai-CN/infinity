@@ -626,13 +626,12 @@ void WalManager::WalCmdCreateTableReplay(const WalCmdCreateTable &cmd, u64 txn_i
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    auto [table_entry, table_status] = DBEntry::CreateTableCollection(db_entry,
-                                                                      TableEntryType::kTableEntry,
-                                                                      cmd.table_def->table_name(),
-                                                                      cmd.table_def->columns(),
-                                                                      txn_id,
-                                                                      commit_ts,
-                                                                      storage_->txn_manager());
+    auto [table_entry, table_status] = db_entry->CreateTableCollection(TableEntryType::kTableEntry,
+                                                                       cmd.table_def->table_name(),
+                                                                       cmd.table_def->columns(),
+                                                                       txn_id,
+                                                                       commit_ts,
+                                                                       storage_->txn_manager());
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Create table failed" + *table_status.msg_);
     }
@@ -653,7 +652,7 @@ void WalManager::WalCmdDropTableReplay(const WalCmdDropTable &cmd, u64 txn_id, i
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    auto [table_entry, table_status] = DBEntry::DropTableCollection(db_entry, cmd.table_name, ConflictType::kReplace, txn_id, commit_ts, nullptr);
+    auto [table_entry, table_status] = db_entry->DropTableCollection(cmd.table_name, ConflictType::kReplace, txn_id, commit_ts, nullptr);
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Drop table failed");
     }
@@ -666,7 +665,7 @@ void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_i
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    auto [base_table_entry, table_status] = DBEntry::GetTableCollection(db_entry, cmd.table_name_, txn_id, commit_ts);
+    auto [base_table_entry, table_status] = db_entry->GetTableCollection(cmd.table_name_, txn_id, commit_ts);
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Get table failed");
     }
@@ -689,7 +688,7 @@ void WalManager::WalCmdDropIndexReplay(const WalCmdDropIndex &cmd, u64 txn_id, i
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    auto [base_table_entry, table_status] = DBEntry::GetTableCollection(db_entry, cmd.table_name_, txn_id, commit_ts);
+    auto [base_table_entry, table_status] = db_entry->GetTableCollection(cmd.table_name_, txn_id, commit_ts);
     if (!table_status.ok()) {
         Error<StorageException>(Format("Wal Replay: Get table failed {}", table_status.message()));
     }
@@ -709,7 +708,7 @@ void WalManager::WalCmdImportReplay(const WalCmdImport &cmd, u64 txn_id, i64 com
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    auto [base_table_entry, table_status] = DBEntry::GetTableCollection(db_entry, cmd.table_name, txn_id, commit_ts);
+    auto [base_table_entry, table_status] = db_entry->GetTableCollection(cmd.table_name, txn_id, commit_ts);
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Get table failed");
     }
@@ -741,7 +740,7 @@ void WalManager::WalCmdDeleteReplay(const WalCmdDelete &cmd, u64 txn_id, i64 com
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    auto [base_table_entry, table_status] = DBEntry::GetTableCollection(db_entry, cmd.table_name, txn_id, commit_ts);
+    auto [base_table_entry, table_status] = db_entry->GetTableCollection(cmd.table_name, txn_id, commit_ts);
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Get table failed");
     }
@@ -760,7 +759,7 @@ void WalManager::WalCmdAppendReplay(const WalCmdAppend &cmd, u64 txn_id, i64 com
         Error<StorageException>("Wal Replay: Get database failed");
     }
 
-    auto [base_table_entry, table_status] = DBEntry::GetTableCollection(db_entry, cmd.table_name, txn_id, commit_ts);
+    auto [base_table_entry, table_status] = db_entry->GetTableCollection(cmd.table_name, txn_id, commit_ts);
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Get table failed");
     }

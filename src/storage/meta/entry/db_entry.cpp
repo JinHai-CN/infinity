@@ -37,8 +37,7 @@ module db_entry;
 
 namespace infinity {
 
-Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(DBEntry *db_entry,
-                                                           TableEntryType table_entry_type,
+Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(TableEntryType table_entry_type,
                                                            const SharedPtr<String> &table_collection_name,
                                                            const Vector<SharedPtr<ColumnDef>> &columns,
                                                            u64 txn_id,
@@ -48,49 +47,48 @@ Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(DBEntry *db_entry,
 
     // Check if there is table_meta with the table_name
     TableCollectionMeta *table_meta{nullptr};
-    db_entry->rw_locker_.lock_shared();
-    auto table_iter = db_entry->tables_.find(table_name);
-    if (table_iter != db_entry->tables_.end()) {
+    this->rw_locker_.lock_shared();
+    auto table_iter = this->tables_.find(table_name);
+    if (table_iter != this->tables_.end()) {
         table_meta = table_iter->second.get();
-        db_entry->rw_locker_.unlock_shared();
+        this->rw_locker_.unlock_shared();
 
-        LOG_TRACE(Format("Add new table entry for {} in existed table meta of db_entry {}", table_name, *db_entry->db_entry_dir_));
+        LOG_TRACE(Format("Add new table entry for {} in existed table meta of db_entry {}", table_name, *this->db_entry_dir_));
 
     } else {
-        db_entry->rw_locker_.unlock_shared();
+        this->rw_locker_.unlock_shared();
 
         LOG_TRACE(Format("Create new table/collection: {}", table_name));
-        UniquePtr<TableCollectionMeta> new_table_meta = MakeUnique<TableCollectionMeta>(db_entry->db_entry_dir_, table_collection_name, db_entry);
+        UniquePtr<TableCollectionMeta> new_table_meta = MakeUnique<TableCollectionMeta>(this->db_entry_dir_, table_collection_name, this);
         table_meta = new_table_meta.get();
 
-        db_entry->rw_locker_.lock();
-        auto table_iter2 = db_entry->tables_.find(table_name);
-        if (table_iter2 != db_entry->tables_.end()) {
+        this->rw_locker_.lock();
+        auto table_iter2 = this->tables_.find(table_name);
+        if (table_iter2 != this->tables_.end()) {
             table_meta = table_iter2->second.get();
         } else {
-            db_entry->tables_[table_name] = Move(new_table_meta);
+            this->tables_[table_name] = Move(new_table_meta);
         }
-        db_entry->rw_locker_.unlock();
+        this->rw_locker_.unlock();
 
-        LOG_TRACE(Format("Add new table entry for {} in new table meta of db_entry {} ", table_name, *db_entry->db_entry_dir_));
+        LOG_TRACE(Format("Add new table entry for {} in new table meta of db_entry {} ", table_name, *this->db_entry_dir_));
     }
 
     return TableCollectionMeta::CreateNewEntry(table_meta, table_entry_type, table_collection_name, columns, txn_id, begin_ts, txn_mgr);
 }
 
-Tuple<TableEntry *, Status> DBEntry::DropTableCollection(DBEntry *db_entry,
-                                                         const String &table_collection_name,
+Tuple<TableEntry *, Status> DBEntry::DropTableCollection(const String &table_collection_name,
                                                          ConflictType conflict_type,
                                                          u64 txn_id,
                                                          TxnTimeStamp begin_ts,
                                                          TxnManager *txn_mgr) {
-    db_entry->rw_locker_.lock_shared();
+    this->rw_locker_.lock_shared();
 
     TableCollectionMeta *table_meta{nullptr};
-    if (db_entry->tables_.find(table_collection_name) != db_entry->tables_.end()) {
-        table_meta = db_entry->tables_[table_collection_name].get();
+    if (this->tables_.find(table_collection_name) != this->tables_.end()) {
+        table_meta = this->tables_[table_collection_name].get();
     }
-    db_entry->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
     if (table_meta == nullptr) {
         if (conflict_type == ConflictType::kIgnore) {
             LOG_TRACE(Format("Ignore drop a not existed table/collection entry {}", table_collection_name));
@@ -106,14 +104,14 @@ Tuple<TableEntry *, Status> DBEntry::DropTableCollection(DBEntry *db_entry,
     return TableCollectionMeta::DropNewEntry(table_meta, txn_id, begin_ts, txn_mgr, table_collection_name, conflict_type);
 }
 
-Tuple<TableEntry *, Status> DBEntry::GetTableCollection(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts) {
-    db_entry->rw_locker_.lock_shared();
+Tuple<TableEntry *, Status> DBEntry::GetTableCollection(const String &table_collection_name, u64 txn_id, TxnTimeStamp begin_ts) {
+    this->rw_locker_.lock_shared();
 
     TableCollectionMeta *table_meta{nullptr};
-    if (db_entry->tables_.find(table_collection_name) != db_entry->tables_.end()) {
-        table_meta = db_entry->tables_[table_collection_name].get();
+    if (this->tables_.find(table_collection_name) != this->tables_.end()) {
+        table_meta = this->tables_[table_collection_name].get();
     }
-    db_entry->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
 
     //    LOG_TRACE("Get a table entry {}", table_name);
     if (table_meta == nullptr) {
@@ -124,26 +122,26 @@ Tuple<TableEntry *, Status> DBEntry::GetTableCollection(DBEntry *db_entry, const
     return TableCollectionMeta::GetEntry(table_meta, txn_id, begin_ts);
 }
 
-void DBEntry::RemoveTableEntry(DBEntry *db_entry, const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr) {
-    db_entry->rw_locker_.lock_shared();
+void DBEntry::RemoveTableEntry(const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr) {
+    this->rw_locker_.lock_shared();
 
     TableCollectionMeta *table_meta{nullptr};
-    if (db_entry->tables_.find(table_collection_name) != db_entry->tables_.end()) {
-        table_meta = db_entry->tables_[table_collection_name].get();
+    if (this->tables_.find(table_collection_name) != this->tables_.end()) {
+        table_meta = this->tables_[table_collection_name].get();
     }
-    db_entry->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
 
     LOG_TRACE(Format("Remove a table/collection entry: {}", table_collection_name));
     TableCollectionMeta::DeleteNewEntry(table_meta, txn_id, txn_mgr);
 }
 
-Vector<TableEntry *> DBEntry::TableCollections(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts) {
+Vector<TableEntry *> DBEntry::TableCollections(u64 txn_id, TxnTimeStamp begin_ts) {
     Vector<TableEntry *> results;
 
-    db_entry->rw_locker_.lock_shared();
+    this->rw_locker_.lock_shared();
 
-    results.reserve(db_entry->tables_.size());
-    for (auto &table_collection_meta_pair : db_entry->tables_) {
+    results.reserve(this->tables_.size());
+    for (auto &table_collection_meta_pair : this->tables_) {
         TableCollectionMeta *table_collection_meta = table_collection_meta_pair.second.get();
         auto [table_collection_entry, status] = TableCollectionMeta::GetEntry(table_collection_meta, txn_id, begin_ts);
         if (!status.ok()) {
@@ -152,17 +150,17 @@ Vector<TableEntry *> DBEntry::TableCollections(DBEntry *db_entry, u64 txn_id, Tx
             results.emplace_back((TableEntry *)table_collection_entry);
         }
     }
-    db_entry->rw_locker_.unlock_shared();
+    this->rw_locker_.unlock_shared();
 
     return results;
 }
 
-Status DBEntry::GetTablesDetail(DBEntry *db_entry, u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array) {
-    Vector<TableEntry *> table_collection_entries = DBEntry::TableCollections(db_entry, txn_id, begin_ts);
+Status DBEntry::GetTablesDetail(u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array) {
+    Vector<TableEntry *> table_collection_entries = this->TableCollections(txn_id, begin_ts);
     output_table_array.reserve(table_collection_entries.size());
     for (TableEntry *table_collection_entry : table_collection_entries) {
         TableDetail table_detail;
-        table_detail.db_name_ = db_entry->db_name_;
+        table_detail.db_name_ = this->db_name_;
         table_detail.table_collection_name_ = table_collection_entry->table_collection_name_;
         table_detail.table_entry_type_ = table_collection_entry->table_entry_type_;
         table_detail.column_count_ = table_collection_entry->columns_.size();
