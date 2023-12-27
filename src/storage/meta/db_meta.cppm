@@ -33,14 +33,14 @@ public:
 
 public:
     // Reserved
-    static Tuple<DBEntry *, Status>
-    CreateNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, ConflictType conflict_type = ConflictType::kError);
+    Tuple<DBEntry *, Status>
+    CreateNewEntry(u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, ConflictType conflict_type = ConflictType::kError);
 
-    static Tuple<DBEntry *, Status> DropNewEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
+    Tuple<DBEntry *, Status> DropNewEntry(u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
-    static void DeleteNewEntry(DBMeta *db_meta, u64 txn_id, TxnManager *txn_mgr);
+    void DeleteNewEntry(u64 txn_id, TxnManager *txn_mgr);
 
-    static Tuple<DBEntry *, Status> GetEntry(DBMeta *db_meta, u64 txn_id, TxnTimeStamp begin_ts);
+    Tuple<DBEntry *, Status> GetEntry(u64 txn_id, TxnTimeStamp begin_ts);
 
     static SharedPtr<String> ToString(DBMeta *db_meta);
 

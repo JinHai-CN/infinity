@@ -99,7 +99,7 @@ NewCatalog::CreateDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin
     }
 
     LOG_TRACE(Format("Add new database entry: {}", db_name));
-    return DBMeta::CreateNewEntry(db_meta, txn_id, begin_ts, txn_mgr, conflict_type);
+    return db_meta->CreateNewEntry(txn_id, begin_ts, txn_mgr, conflict_type);
 }
 
 // do not only use this method to drop database
@@ -122,7 +122,7 @@ Tuple<DBEntry *, Status> NewCatalog::DropDatabase(const String &db_name, u64 txn
     }
 
     LOG_TRACE(Format("Drop a database entry {}", db_name));
-    return DBMeta::DropNewEntry(db_meta, txn_id, begin_ts, txn_mgr);
+    return db_meta->DropNewEntry(txn_id, begin_ts, txn_mgr);
 }
 
 Tuple<DBEntry *, Status> NewCatalog::GetDatabase(const String &db_name, u64 txn_id, TxnTimeStamp begin_ts) {
@@ -139,7 +139,7 @@ Tuple<DBEntry *, Status> NewCatalog::GetDatabase(const String &db_name, u64 txn_
         LOG_ERROR(*err_msg);
         return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
-    return DBMeta::GetEntry(db_meta, txn_id, begin_ts);
+    return db_meta->GetEntry(txn_id, begin_ts);
 }
 
 void NewCatalog::RemoveDBEntry(const String &db_name, u64 txn_id, TxnManager *txn_mgr) {
@@ -152,7 +152,7 @@ void NewCatalog::RemoveDBEntry(const String &db_name, u64 txn_id, TxnManager *tx
     this->rw_locker_.unlock_shared();
 
     LOG_TRACE(Format("Remove a database entry {}", db_name));
-    DBMeta::DeleteNewEntry(db_meta, txn_id, txn_mgr);
+    db_meta->DeleteNewEntry(txn_id, txn_mgr);
 }
 
 Vector<DBEntry *> NewCatalog::Databases(u64 txn_id, TxnTimeStamp begin_ts) {
@@ -160,8 +160,9 @@ Vector<DBEntry *> NewCatalog::Databases(u64 txn_id, TxnTimeStamp begin_ts) {
 
     Vector<DBEntry *> res;
     res.reserve(this->databases_.size());
-    for (const auto &db_meta : this->databases_) {
-        auto [db_entry, status] = DBMeta::GetEntry(db_meta.second.get(), txn_id, begin_ts);
+    for (const auto &db_meta_pair : this->databases_) {
+        DBMeta* db_meta = db_meta_pair.second.get();
+        auto [db_entry, status] = db_meta->GetEntry(txn_id, begin_ts);
         if (status.ok()) {
             res.emplace_back(db_entry);
         }

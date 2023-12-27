@@ -47,12 +47,12 @@ public:
     explicit TableEntry() : BaseEntry(EntryType::kTable) {}
 
     explicit TableEntry(const SharedPtr<String> &db_entry_dir,
-                                  SharedPtr<String> table_collection_name,
-                                  const Vector<SharedPtr<ColumnDef>> &columns,
-                                  TableEntryType table_entry_type,
-                                  TableCollectionMeta *table_collection_meta,
-                                  u64 txn_id,
-                                  TxnTimeStamp begin_ts);
+                        SharedPtr<String> table_collection_name,
+                        const Vector<SharedPtr<ColumnDef>> &columns,
+                        TableEntryType table_entry_type,
+                        TableCollectionMeta *table_collection_meta,
+                        u64 txn_id,
+                        TxnTimeStamp begin_ts);
 
 public:
     static Status CreateIndex(TableEntry *table_entry,
@@ -79,11 +79,8 @@ public:
 public:
     static void Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, BufferManager *buffer_mgr);
 
-    static void CreateIndexFile(TableEntry *table_entry,
-                                void *txn_store,
-                                TableIndexEntry *table_index_entry,
-                                TxnTimeStamp begin_ts,
-                                BufferManager *buffer_mgr);
+    static void
+    CreateIndexFile(TableEntry *table_entry, void *txn_store, TableIndexEntry *table_index_entry, TxnTimeStamp begin_ts, BufferManager *buffer_mgr);
 
     static UniquePtr<String> Delete(TableEntry *table_entry, Txn *txn_ptr, DeleteState &delete_state);
 
