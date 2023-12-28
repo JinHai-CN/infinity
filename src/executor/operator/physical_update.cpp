@@ -45,7 +45,7 @@ bool PhysicalUpdate::Execute(QueryContext *query_context, OperatorState *operato
         DataBlock *input_data_block_ptr = prev_op_state->data_block_array_[block_idx].get();
 
         auto txn = query_context->GetTxn();
-        auto db_name = TableEntry::GetDBEntry(table_entry_ptr_)->db_name_;
+        const String& db_name = TableEntry::GetDBEntry(table_entry_ptr_)->db_name();
         auto table_name = table_entry_ptr_->table_collection_name_;
         Vector<RowID> row_ids;
         Vector<SharedPtr<ColumnVector>> column_vectors;
@@ -74,8 +74,8 @@ bool PhysicalUpdate::Execute(QueryContext *query_context, OperatorState *operato
 
             SharedPtr<DataBlock> output_data_block = DataBlock::Make();
             output_data_block->Init(column_vectors);
-            txn->Append(*db_name, *table_name, output_data_block);
-            txn->Delete(*db_name, *table_name, row_ids);
+            txn->Append(db_name, *table_name, output_data_block);
+            txn->Delete(db_name, *table_name, row_ids);
 
             UpdateOperatorState* update_operator_state = static_cast<UpdateOperatorState*>(operator_state);
             ++ update_operator_state->count_;

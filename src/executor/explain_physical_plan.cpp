@@ -582,7 +582,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalInsert *insert_node, SharedPtr<V
     // Schema name
     {
         DBEntry *db_entry = TableMeta::GetDBEntry(insert_node->table_entry()->table_entry_);
-        String schema_name_str = String(intent_size, ' ') + " - schema name: " + *db_entry->db_name_;
+        String schema_name_str = String(intent_size, ' ') + " - schema name: " + db_entry->db_name();
         result->emplace_back(MakeShared<String>(schema_name_str));
     }
 
@@ -701,7 +701,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalTableScan *table_scan_node, Shar
     DBEntry *db_entry = TableEntry::GetDBEntry(table_scan_node->TableEntry());
 
     String table_name = String(intent_size, ' ') + " - table name: " + table_scan_node->table_alias() + "(";
-    table_name += *db_entry->db_name_ + ".";
+    table_name += db_entry->db_name() + ".";
     table_name += *table_scan_node->TableEntry()->table_collection_name_ + ")";
     result->emplace_back(MakeShared<String>(table_name));
 
@@ -739,7 +739,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalKnnScan *knn_scan_node, SharedPt
 
     DBEntry *db_entry = TableEntry::GetDBEntry(knn_scan_node->table_collection_ptr());
 
-    table_name += *db_entry->db_name_ + ".";
+    table_name += db_entry->db_name() + ".";
     table_name += *knn_scan_node->table_collection_ptr()->table_collection_name_ + ")";
     result->emplace_back(MakeShared<String>(table_name));
 
@@ -1224,7 +1224,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalDelete *delete_node, SharedPtr<V
 
     TableEntry *table_entry = delete_node->table_entry_ptr_;
     DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
-    header += *db_entry->db_name_ + "." + *table_entry->table_collection_name_;
+    header += db_entry->db_name() + "." + *table_entry->table_collection_name_;
     result->emplace_back(MakeShared<String>(header));
 }
 
@@ -1238,7 +1238,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalUpdate *update_node, SharedPtr<V
 
     TableEntry *table_entry = update_node->table_entry_ptr_;
     DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
-    header += *db_entry->db_name_ + "." + *table_entry->table_collection_name_;
+    header += db_entry->db_name() + "." + *table_entry->table_collection_name_;
     result->emplace_back(MakeShared<String>(header));
 }
 
@@ -1258,7 +1258,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalImport *import_node, SharedPtr<V
     {
         DBEntry *db_entry = TableMeta::GetDBEntry(import_node->table_entry()->table_entry_);
 
-        SharedPtr<String> schema_name = MakeShared<String>(String(intent_size, ' ') + " - schema name: " + *db_entry->db_name_);
+        SharedPtr<String> schema_name = MakeShared<String>(String(intent_size, ' ') + " - schema name: " + db_entry->db_name());
         result->emplace_back(schema_name);
     }
 
@@ -1676,7 +1676,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalMatch *match_node, SharedPtr<Vec
 
     DBEntry *db_entry = TableEntry::GetDBEntry(match_node->table_collection_ptr());
 
-    table_name += *db_entry->db_name_ + ".";
+    table_name += db_entry->db_name() + ".";
     table_name += *match_node->table_collection_ptr()->table_collection_name_ + ")";
     result->emplace_back(MakeShared<String>(table_name));
 

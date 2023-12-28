@@ -43,7 +43,7 @@ bool PhysicalDelete::Execute(QueryContext *query_context, OperatorState *operato
     for(SizeT block_idx = 0; block_idx < data_block_count; ++ block_idx) {
         DataBlock *input_data_block_ptr = prev_op_state->data_block_array_[block_idx].get();
         auto txn = query_context->GetTxn();
-        auto db_name = TableEntry::GetDBEntry(table_entry_ptr_)->db_name_;
+        const String& db_name = TableEntry::GetDBEntry(table_entry_ptr_)->db_name();
         auto table_name = table_entry_ptr_->table_collection_name_;
         Vector<RowID> row_ids;
         for (SizeT i = 0; i < input_data_block_ptr->column_count(); i++) {
@@ -55,7 +55,7 @@ bool PhysicalDelete::Execute(QueryContext *query_context, OperatorState *operato
             }
         }
         if (!row_ids.empty()) {
-            txn->Delete(*db_name, *table_name, row_ids);
+            txn->Delete(db_name, *table_name, row_ids);
             DeleteOperatorState* delete_operator_state = static_cast<DeleteOperatorState*>(operator_state);
             ++ delete_operator_state->count_;
             delete_operator_state->sum_ += row_ids.size();

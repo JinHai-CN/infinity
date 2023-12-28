@@ -43,6 +43,20 @@ public:
         txn_id_ = txn_id;
     }
 
+public:
+
+    static SharedPtr<String> ToString(DBEntry *db_entry);
+
+    static Json Serialize(DBEntry *db_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
+
+    static UniquePtr<DBEntry> Deserialize(const Json &db_entry_json, BufferManager *buffer_mgr);
+
+    virtual void MergeFrom(BaseEntry &other);
+
+    [[nodiscard]] const String& db_name() const { return *db_name_; }
+
+    [[nodiscard]] const SharedPtr<String>& db_name_ptr() const { return db_name_; }
+
 private:
     Tuple<TableEntry *, Status> CreateTable(TableEntryType table_entry_type,
                                             const SharedPtr<String> &table_collection_name,
@@ -62,17 +76,7 @@ private:
 
     Status GetTablesDetail(u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array);
 
-public:
-
-    static SharedPtr<String> ToString(DBEntry *db_entry);
-
-    static Json Serialize(DBEntry *db_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
-
-    static UniquePtr<DBEntry> Deserialize(const Json &db_entry_json, BufferManager *buffer_mgr);
-
-    virtual void MergeFrom(BaseEntry &other);
-
-public:
+private:
     RWMutex rw_locker_{};
     SharedPtr<String> db_entry_dir_{};
     SharedPtr<String> db_name_{};

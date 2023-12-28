@@ -63,7 +63,7 @@ String LogicalImport::ToString(i64 &space) const {
     }
 
     DBEntry *db_entry = TableMeta::GetDBEntry(table_entry_->table_entry_);
-    ss << "to " << *db_entry->db_name_ << '.' << *table_entry_->table_collection_name_;
+    ss << "to " << db_entry->db_name() << '.' << *table_entry_->table_collection_name_;
 
     space += arrow_str.size();
 

@@ -268,7 +268,7 @@ Vector<DatabaseDetail> Txn::ListDatabases() {
     SizeT db_count = db_entries.size();
     for (SizeT idx = 0; idx < db_count; ++idx) {
         DBEntry *db_entry = db_entries[idx];
-        res.emplace_back(DatabaseDetail{db_entry->db_name_});
+        res.emplace_back(DatabaseDetail{db_entry->db_name_ptr()});
     }
 
     return res;

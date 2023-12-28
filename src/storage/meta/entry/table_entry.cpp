@@ -351,7 +351,7 @@ DBEntry *TableEntry::GetDBEntry(const TableEntry *table_entry) {
 
 SharedPtr<String> TableEntry::GetDBName(const TableEntry *table_entry) {
     TableMeta *table_meta = (TableMeta *)table_entry->table_entry_;
-    return table_meta->db_entry_->db_name_;
+    return table_meta->db_entry_->db_name_ptr();
 }
 
 SharedPtr<BlockIndex> TableEntry::GetBlockIndex(TableEntry *table_entry, u64, TxnTimeStamp begin_ts) {
