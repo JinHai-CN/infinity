@@ -40,8 +40,11 @@ class IndexDef;
 class TableIndexEntry;
 class IrsIndexEntry;
 class TableMeta;
+struct NewCatalog;
 
 export struct TableEntry : public BaseEntry {
+friend struct NewCatalog;
+
 public:
     // for iterator unit test.
     explicit TableEntry() : BaseEntry(EntryType::kTable) {}
@@ -54,7 +57,7 @@ public:
                         u64 txn_id,
                         TxnTimeStamp begin_ts);
 
-public:
+private:
     Tuple<TableIndexEntry *, Status>
     CreateIndex(const SharedPtr<IndexDef> &index_def, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
@@ -65,12 +68,12 @@ public:
 
     void RemoveIndexEntry(const String &index_name, u64 txn_id, TxnManager *txn_mgr);
 
+    TableMeta *GetTableMeta() const { return table_meta_; }
+
 public:
     const SharedPtr<String>& GetDBName() const;
 
     const SharedPtr<String>& GetTableName() const { return table_name_; }
-
-    TableMeta *GetTableMeta() const { return table_meta_; }
 
 public:
     static void Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, BufferManager *buffer_mgr);

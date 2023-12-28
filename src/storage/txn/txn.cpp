@@ -346,15 +346,7 @@ Status Txn::CreateIndex(const String &db_name, const String &table_name, const S
     }
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    TableEntry *table_entry{nullptr};
-    Status table_status = GetTableEntry(db_name, table_name, table_entry);
-    if (!table_status.ok()) {
-        return table_status;
-    }
-
-    // Create table index entry
-    auto [table_index_entry, index_status] = table_entry->CreateIndex(index_def, conflict_type, txn_id_, begin_ts, txn_mgr_);
-
+    auto [table_entry, table_index_entry, index_status] = catalog_->CreateIndex(db_name, table_name, index_def, conflict_type, txn_id_, begin_ts, txn_mgr_);
     if (!index_status.ok()) {
         return index_status;
     }
@@ -385,13 +377,8 @@ Status Txn::DropIndexByName(const String &db_name, const String &table_name, con
     }
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
-    TableEntry *table_entry{nullptr};
-    Status table_status = GetTableEntry(db_name, table_name, table_entry);
-    if (!table_status.ok()) {
-        return table_status;
-    }
 
-    auto [table_index_entry, index_status] = table_entry->DropIndex(index_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
+    auto [table_index_entry, index_status] = catalog_->DropIndex(db_name, table_name, index_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
     if (!index_status.ok()) {
         return index_status;
     }
@@ -546,9 +533,7 @@ void Txn::Rollback() {
     }
 
     for (const auto &[index_name, table_index_entry] : txn_indexes_) {
-        TableIndexMeta *table_index_meta = table_index_entry->table_index_meta_;
-        TableEntry *table_entry = TableIndexMeta::GetTableEntry(table_index_meta);
-        table_entry->RemoveIndexEntry(index_name, txn_id_, txn_mgr_);
+        NewCatalog::RemoveIndexEntry(index_name, table_index_entry, txn_id_, txn_mgr_);
     }
 
     for (const auto &db_name : db_names_) {

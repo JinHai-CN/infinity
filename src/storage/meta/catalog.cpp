@@ -39,6 +39,9 @@ import table_entry_type;
 import table_detail;
 import table_meta;
 import table_entry;
+import table_index_entry;
+import index_def;
+import table_index_meta;
 
 module new_catalog;
 
@@ -225,11 +228,52 @@ Tuple<TableEntry *, Status> NewCatalog::GetTableByName(const String &db_name, co
     return db_entry->GetTableCollection(table_name, txn_id, begin_ts);
 }
 
-Status NewCatalog::RemoveTableEntry(TableEntry* table_entry, u64 txn_id, TxnManager* txn_mgr) {
-    TableMeta* table_meta = table_entry->GetTableMeta();
+Status NewCatalog::RemoveTableEntry(TableEntry *table_entry, u64 txn_id, TxnManager *txn_mgr) {
+    TableMeta *table_meta = table_entry->GetTableMeta();
     LOG_TRACE(Format("Remove a table/collection entry: {}", *table_entry->GetTableName()));
     table_meta->DeleteNewEntry(txn_id, txn_mgr);
 
+    return Status::OK();
+}
+
+Tuple<TableEntry *, TableIndexEntry *, Status> NewCatalog::CreateIndex(const String &db_name,
+                                                                       const String &table_name,
+                                                                       const SharedPtr<IndexDef> &index_def,
+                                                                       ConflictType conflict_type,
+                                                                       u64 txn_id,
+                                                                       TxnTimeStamp begin_ts,
+                                                                       TxnManager *txn_mgr) {
+    auto [table_entry, table_status] = GetTableByName(db_name, table_name, txn_id, begin_ts);
+    if (!table_status.ok()) {
+        LOG_ERROR(Format("Database: {}, Table: {} is invalid", db_name, table_name));
+        return {nullptr, nullptr, table_status};
+    }
+
+    auto [table_index_entry, index_status] = table_entry->CreateIndex(index_def, conflict_type, txn_id, begin_ts, txn_mgr);
+
+    return {table_entry, table_index_entry, index_status};
+}
+
+Tuple<TableIndexEntry *, Status> NewCatalog::DropIndex(const String &db_name,
+                                                       const String &table_name,
+                                                       const String &index_name,
+                                                       ConflictType conflict_type,
+                                                       u64 txn_id,
+                                                       TxnTimeStamp begin_ts,
+                                                       TxnManager *txn_mgr) {
+    auto [table_entry, table_status] = GetTableByName(db_name, table_name, txn_id, begin_ts);
+    if (!table_status.ok()) {
+        LOG_ERROR(Format("Database: {}, Table: {} is invalid", db_name, table_name));
+        return {nullptr, table_status};
+    }
+
+    return table_entry->DropIndex(index_name, conflict_type, txn_id, begin_ts, txn_mgr);
+}
+
+Status NewCatalog::RemoveIndexEntry(const String &index_name, TableIndexEntry *table_index_entry, u64 txn_id, TxnManager *txn_mgr) {
+    TableIndexMeta *table_index_meta = table_index_entry->table_index_meta_;
+    TableEntry *table_entry = TableIndexMeta::GetTableEntry(table_index_meta);
+    table_entry->RemoveIndexEntry(index_name, txn_id, txn_mgr);
     return Status::OK();
 }
 
@@ -325,27 +369,27 @@ Json NewCatalog::Serialize(NewCatalog *catalog, TxnTimeStamp max_commit_ts, bool
     return json_res;
 }
 
-//void NewCatalog::CheckCatalog() {
-//    for (auto &[db_name, db_meta] : this->databases_) {
-//        for (auto &base_entry : db_meta->entry_list()) {
-//            if (base_entry->entry_type_ == EntryType::kDummy) {
-//                continue;
-//            }
-//            auto db_entry = static_cast<DBEntry *>(base_entry.get());
-//            for (auto &[table_name, table_meta] : db_entry->tables_) {
-//                for (auto &base_entry : table_meta->entry_list_) {
-//                    if (base_entry->entry_type_ == EntryType::kDummy) {
-//                        continue;
-//                    }
-//                    auto table_entry = static_cast<TableEntry *>(base_entry.get());
-//                    if (table_entry->table_entry_->db_entry_ != db_entry) {
-//                        //                        int a = 1;
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
+// void NewCatalog::CheckCatalog() {
+//     for (auto &[db_name, db_meta] : this->databases_) {
+//         for (auto &base_entry : db_meta->entry_list()) {
+//             if (base_entry->entry_type_ == EntryType::kDummy) {
+//                 continue;
+//             }
+//             auto db_entry = static_cast<DBEntry *>(base_entry.get());
+//             for (auto &[table_name, table_meta] : db_entry->tables_) {
+//                 for (auto &base_entry : table_meta->entry_list_) {
+//                     if (base_entry->entry_type_ == EntryType::kDummy) {
+//                         continue;
+//                     }
+//                     auto table_entry = static_cast<TableEntry *>(base_entry.get());
+//                     if (table_entry->table_entry_->db_entry_ != db_entry) {
+//                         //                        int a = 1;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
 
 UniquePtr<NewCatalog> NewCatalog::LoadFromFiles(const Vector<String> &catalog_paths, BufferManager *buffer_mgr) {
     auto catalog1 = MakeUnique<NewCatalog>(nullptr);

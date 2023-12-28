@@ -32,6 +32,8 @@ import profiler;
 import status;
 import default_values;
 import table_detail;
+import table_index_entry;
+import index_def;
 
 export module new_catalog;
 
@@ -124,7 +126,27 @@ public:
 
     Tuple<TableEntry *, Status> GetTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts);
 
-    static Status RemoveTableEntry(TableEntry* table_entry, u64 txn_id, TxnManager* txn_mgr);
+    static Status RemoveTableEntry(TableEntry *table_entry, u64 txn_id, TxnManager *txn_mgr);
+
+    // Index Related methods
+    Tuple<TableEntry *, TableIndexEntry *, Status> CreateIndex(const String &db_name,
+                                                               const String &table_name,
+                                                               const SharedPtr<IndexDef> &index_def,
+                                                               ConflictType conflict_type,
+                                                               u64 txn_id,
+                                                               TxnTimeStamp begin_ts,
+                                                               TxnManager *txn_mgr);
+
+    Tuple<TableIndexEntry *, Status> DropIndex(const String &db_name,
+                                               const String &table_name,
+                                               const String &index_name,
+                                               ConflictType conflict_type,
+                                               u64 txn_id,
+                                               TxnTimeStamp begin_ts,
+                                               TxnManager *txn_mgr);
+
+    static Status RemoveIndexEntry(const String &index_name, TableIndexEntry *table_index_entry, u64 txn_id, TxnManager *txn_mgr);
+
 public:
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);
@@ -166,8 +188,6 @@ public:
     const QueryProfiler *GetProfilerRecord(SizeT index) { return history.GetElement(index); }
 
     const Vector<SharedPtr<QueryProfiler>> GetProfilerRecords() { return history.GetElements(); }
-
-
 
 public:
     SharedPtr<String> current_dir_{nullptr};

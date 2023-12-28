@@ -32,6 +32,7 @@ class DBEntry;
 struct NewCatalog;
 
 export struct TableMeta {
+
 friend class DBEntry;
 friend struct NewCatalog;
 
@@ -39,7 +40,6 @@ public:
     inline explicit TableMeta(const SharedPtr<String> &db_entry_dir, SharedPtr<String> name, DBEntry *db_entry)
         : db_entry_dir_(db_entry_dir), table_name_(Move(name)), db_entry_(db_entry) {}
 
-public:
     static SharedPtr<String> ToString(TableMeta *table_meta);
 
     static Json Serialize(TableMeta *table_meta, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);

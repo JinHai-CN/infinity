@@ -649,15 +649,12 @@ void WalManager::WalCmdDropTableReplay(const WalCmdDropTable &cmd, u64 txn_id, i
 }
 
 void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_id, i64 commit_ts) {
-    auto [table_entry, table_status] = storage_->catalog()->GetTableByName(cmd.db_name_, cmd.table_name_, txn_id, commit_ts);
-    if (!table_status.ok()) {
-        Error<StorageException>("Wal Replay: Get table failed {}", table_status.message());
-    }
-
-    auto [table_index_entry, index_def_entry_status] = table_entry->CreateIndex(cmd.index_def_, ConflictType::kError, txn_id, commit_ts, nullptr);
+    auto [table_entry, table_index_entry, index_def_entry_status] =
+        storage_->catalog()->CreateIndex(cmd.db_name_, cmd.table_name_, cmd.index_def_, ConflictType::kError, txn_id, commit_ts, nullptr);
     if (!index_def_entry_status.ok()) {
         Error<StorageException>("Wal Replay: Create index failed");
     }
+
     auto fake_txn = MakeUnique<Txn>(storage_->txn_manager(), storage_->catalog(), txn_id);
     auto table_store = MakeShared<TxnTableStore>(table_entry, fake_txn.get());
 
@@ -667,16 +664,13 @@ void WalManager::WalCmdCreateIndexReplay(const WalCmdCreateIndex &cmd, u64 txn_i
 }
 
 void WalManager::WalCmdDropIndexReplay(const WalCmdDropIndex &cmd, u64 txn_id, i64 commit_ts) {
-    auto [table_entry, table_status] = storage_->catalog()->GetTableByName(cmd.db_name_, cmd.table_name_, txn_id, commit_ts);
-    if (!table_status.ok()) {
-        Error<StorageException>(Format("Wal Replay: Get table failed {}", table_status.message()));
-    }
-
     auto [table_index_entry, index_status] =
-        table_entry->DropIndex(cmd.index_name_, ConflictType::kIgnore, txn_id, commit_ts, storage_->txn_manager());
+        storage_->catalog()
+            ->DropIndex(cmd.db_name_, cmd.table_name_, cmd.index_name_, ConflictType::kIgnore, txn_id, commit_ts, storage_->txn_manager());
     if (!index_status.ok()) {
         Error<StorageException>("Wal Replay: Drop index failed" + *index_status.msg_);
     }
+
     table_index_entry->Commit(commit_ts);
 }
 
