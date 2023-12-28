@@ -53,8 +53,7 @@ String LogicalUpdate::ToString(i64 &space) const {
         arrow_str = "->  ";
     }
     ss << String(space, ' ') << arrow_str << "UPDATE ";
-    const DBEntry *db_entry = TableEntry::GetDBEntry(table_entry_ptr_);
-    ss << db_entry->db_name() << "." << *table_entry_ptr_->table_collection_name_;
+    ss << *table_entry_ptr_->GetDBName() << "." << *table_entry_ptr_->GetTableName();
     ss << " SET";
     for (SizeT i = 0; i < update_columns_.size(); i++) {
         if (i > 0)

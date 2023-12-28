@@ -621,8 +621,8 @@ void PhysicalImport::SaveSegmentData(TxnTableStore *txn_store, SharedPtr<Segment
         LOG_TRACE(Format("Block {} row count {}", i, block_row_counts[i]));
     }
 
-    const String &db_name = *TableEntry::GetDBName(txn_store->table_entry_);
-    const String &table_name = *txn_store->table_entry_->table_collection_name_;
+    const String &db_name = *txn_store->table_entry_->GetDBName();
+    const String &table_name = *txn_store->table_entry_->table_name_;
     txn_store->txn_->AddWalCmd(MakeShared<WalCmdImport>(db_name,
                                                         table_name,
                                                         *segment_entry->segment_dir_,

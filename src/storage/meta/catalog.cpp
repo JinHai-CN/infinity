@@ -226,9 +226,10 @@ Tuple<TableEntry *, Status> NewCatalog::GetTableByName(const String &db_name, co
 }
 
 Status NewCatalog::RemoveTableEntry(TableEntry* table_entry, u64 txn_id, TxnManager* txn_mgr) {
-    TableMeta *table_meta = TableEntry::GetTableMeta(table_entry);
-    DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
-    db_entry->RemoveTableEntry(*table_meta->table_collection_name_, txn_id, txn_mgr);
+    TableMeta* table_meta = table_entry->GetTableMeta();
+    LOG_TRACE(Format("Remove a table/collection entry: {}", *table_entry->GetTableName()));
+    table_meta->DeleteNewEntry(txn_id, txn_mgr);
+
     return Status::OK();
 }
 
@@ -324,27 +325,27 @@ Json NewCatalog::Serialize(NewCatalog *catalog, TxnTimeStamp max_commit_ts, bool
     return json_res;
 }
 
-void NewCatalog::CheckCatalog() {
-    for (auto &[db_name, db_meta] : this->databases_) {
-        for (auto &base_entry : db_meta->entry_list()) {
-            if (base_entry->entry_type_ == EntryType::kDummy) {
-                continue;
-            }
-            auto db_entry = static_cast<DBEntry *>(base_entry.get());
-            for (auto &[table_name, table_meta] : db_entry->tables_) {
-                for (auto &base_entry : table_meta->entry_list_) {
-                    if (base_entry->entry_type_ == EntryType::kDummy) {
-                        continue;
-                    }
-                    auto table_entry = static_cast<TableEntry *>(base_entry.get());
-                    if (table_entry->table_entry_->db_entry_ != db_entry) {
-                        //                        int a = 1;
-                    }
-                }
-            }
-        }
-    }
-}
+//void NewCatalog::CheckCatalog() {
+//    for (auto &[db_name, db_meta] : this->databases_) {
+//        for (auto &base_entry : db_meta->entry_list()) {
+//            if (base_entry->entry_type_ == EntryType::kDummy) {
+//                continue;
+//            }
+//            auto db_entry = static_cast<DBEntry *>(base_entry.get());
+//            for (auto &[table_name, table_meta] : db_entry->tables_) {
+//                for (auto &base_entry : table_meta->entry_list_) {
+//                    if (base_entry->entry_type_ == EntryType::kDummy) {
+//                        continue;
+//                    }
+//                    auto table_entry = static_cast<TableEntry *>(base_entry.get());
+//                    if (table_entry->table_entry_->db_entry_ != db_entry) {
+//                        //                        int a = 1;
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
 UniquePtr<NewCatalog> NewCatalog::LoadFromFiles(const Vector<String> &catalog_paths, BufferManager *buffer_mgr) {
     auto catalog1 = MakeUnique<NewCatalog>(nullptr);
@@ -361,7 +362,7 @@ UniquePtr<NewCatalog> NewCatalog::LoadFromFiles(const Vector<String> &catalog_pa
         UniquePtr<NewCatalog> catalog2 = NewCatalog::LoadFromFile(catalog_paths[i], buffer_mgr);
         catalog1->MergeFrom(*catalog2);
     }
-    // catalog1->CheckCatalog();
+
     return catalog1;
 }
 

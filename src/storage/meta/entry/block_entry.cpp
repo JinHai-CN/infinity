@@ -207,7 +207,7 @@ void BlockEntry::DeleteData(BlockEntry *block_entry, Txn *txn_ptr, const Vector<
                         block_entry->block_id_));
     }
 
-    String *table_collect_name_ptr = block_entry->segment_entry_->table_entry_->table_collection_name_.get();
+    String *table_collect_name_ptr = block_entry->segment_entry_->table_entry_->table_name_.get();
     u32 segment_id = block_entry->segment_entry_->segment_id_;
     u16 block_id = block_entry->block_id_;
 

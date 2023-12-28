@@ -352,7 +352,7 @@ void PhysicalShow::ExecuteShowTable(QueryContext *query_context, ShowOperatorSta
         ++column_id;
         {
             // Append table name to the 1 column
-            const String *table_name = table_detail.table_collection_name_.get();
+            const String *table_name = table_detail.table_name_.get();
             Value value = Value::MakeVarchar(*table_name);
             ValueExpression value_expr(value);
             value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);

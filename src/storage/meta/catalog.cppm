@@ -158,8 +158,6 @@ public:
 
     void MergeFrom(NewCatalog &other);
 
-    void CheckCatalog();
-
 public:
     // Profile related methods
 

@@ -57,7 +57,7 @@ TableEntry::TableEntry(const SharedPtr<String> &db_entry_dir,
                        u64 txn_id,
                        TxnTimeStamp begin_ts)
     : BaseEntry(EntryType::kTable), table_entry_dir_(MakeShared<String>(Format("{}/{}/txn_{}", *db_entry_dir, *table_collection_name, txn_id))),
-      table_collection_name_(Move(table_collection_name)), columns_(columns), table_entry_type_(table_entry_type), table_entry_(table_meta) {
+      table_name_(Move(table_collection_name)), columns_(columns), table_entry_type_(table_entry_type), table_meta_(table_meta) {
     SizeT column_count = columns.size();
     for (SizeT idx = 0; idx < column_count; ++idx) {
         column_name2column_id_[columns[idx]->name()] = idx;
@@ -344,14 +344,13 @@ SegmentEntry *TableEntry::GetSegmentByID(const TableEntry *table_entry, u32 segm
     }
 }
 
-DBEntry *TableEntry::GetDBEntry(const TableEntry *table_entry) {
-    TableMeta *table_meta = (TableMeta *)table_entry->table_entry_;
-    return (DBEntry *)table_meta->db_entry_;
-}
+//DBEntry *TableEntry::GetDBEntry(const TableEntry *table_entry) {
+//    TableMeta *table_meta = (TableMeta *)table_entry->table_meta_;
+//    return (DBEntry *)table_meta->db_entry_;
+//}
 
-SharedPtr<String> TableEntry::GetDBName(const TableEntry *table_entry) {
-    TableMeta *table_meta = (TableMeta *)table_entry->table_entry_;
-    return table_meta->db_entry_->db_name_ptr();
+const SharedPtr<String>& TableEntry::GetDBName() const {
+    return table_meta_->db_name_ptr();
 }
 
 SharedPtr<BlockIndex> TableEntry::GetBlockIndex(TableEntry *table_entry, u64, TxnTimeStamp begin_ts) {
@@ -376,7 +375,7 @@ Json TableEntry::Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, 
     {
         SharedLock<RWMutex> lck(table_entry->rw_locker_);
         json_res["table_entry_dir"] = *table_entry->table_entry_dir_;
-        json_res["table_name"] = *table_entry->table_collection_name_;
+        json_res["table_name"] = *table_entry->table_name_;
         json_res["table_entry_type"] = table_entry->table_entry_type_;
         json_res["row_count"] = table_entry->row_count_.load();
         json_res["begin_ts"] = table_entry->begin_ts_;
@@ -514,8 +513,8 @@ void TableEntry::MergeFrom(BaseEntry &other) {
         Error<StorageException>("MergeFrom requires the same type of BaseEntry");
     }
     // // No locking here since only the load stage needs MergeFrom.
-    if (*this->table_collection_name_ != *table_entry2->table_collection_name_) {
-        Error<StorageException>("DBEntry::MergeFrom requires table_collection_name_ match");
+    if (*this->table_name_ != *table_entry2->table_name_) {
+        Error<StorageException>("DBEntry::MergeFrom requires table_name_ match");
     }
     if (*this->table_entry_dir_ != *table_entry2->table_entry_dir_) {
         Error<StorageException>("DBEntry::MergeFrom requires table_entry_dir_ match");

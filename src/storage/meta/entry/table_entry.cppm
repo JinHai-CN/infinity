@@ -66,6 +66,13 @@ public:
     void RemoveIndexEntry(const String &index_name, u64 txn_id, TxnManager *txn_mgr);
 
 public:
+    const SharedPtr<String>& GetDBName() const;
+
+    const SharedPtr<String>& GetTableName() const { return table_name_; }
+
+    TableMeta *GetTableMeta() const { return table_meta_; }
+
+public:
     static void Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, BufferManager *buffer_mgr);
 
     static void
@@ -91,11 +98,7 @@ public:
 
     static SegmentEntry *GetSegmentByID(const TableEntry *table_entry, u32 seg_id);
 
-    static DBEntry *GetDBEntry(const TableEntry *table_entry);
-
-    static SharedPtr<String> GetDBName(const TableEntry *table_entry);
-
-    inline static TableMeta *GetTableMeta(const TableEntry *table_entry) { return table_entry->table_entry_; }
+//    static DBEntry *GetDBEntry(const TableEntry *table_entry);
 
     static SharedPtr<BlockIndex> GetBlockIndex(TableEntry *table_entry, u64 txn_id, TxnTimeStamp begin_ts);
 
@@ -122,13 +125,13 @@ public:
 
     SharedPtr<String> table_entry_dir_{};
 
-    SharedPtr<String> table_collection_name_{};
+    SharedPtr<String> table_name_{};
 
     Vector<SharedPtr<ColumnDef>> columns_{};
 
     TableEntryType table_entry_type_{TableEntryType::kTableEntry};
 
-    TableMeta *table_entry_{};
+    TableMeta *table_meta_{};
 
     // From data table
     Atomic<SizeT> row_count_{};

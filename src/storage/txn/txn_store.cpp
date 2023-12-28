@@ -135,8 +135,7 @@ void TxnTableStore::Rollback() {
     if (append_state_.get() != nullptr) {
         // Rollback the data already been appended.
         TableEntry::RollbackAppend(table_entry_, txn_, this);
-        TableMeta *table_meta = (TableMeta *)TableEntry::GetTableMeta(table_entry_);
-        LOG_TRACE(Format("Rollback prepare appended data in table: {}", *table_meta->table_collection_name_));
+        LOG_TRACE(Format("Rollback prepare appended data in table: {}", *table_entry_->GetTableName()));
     }
 
     blocks_.clear();
@@ -147,7 +146,7 @@ void TxnTableStore::PrepareCommit() {
     append_state_ = MakeUnique<AppendState>(this->blocks_);
 
     // Start to append
-    LOG_TRACE(Format("Transaction local storage table: {}, Start to prepare commit", *table_entry_->table_collection_name_));
+    LOG_TRACE(Format("Transaction local storage table: {}, Start to prepare commit", *table_entry_->table_name_));
     Txn *txn_ptr = (Txn *)txn_;
     TableEntry::Append(table_entry_, txn_, this, txn_ptr->GetBufferMgr());
 
@@ -162,7 +161,7 @@ void TxnTableStore::PrepareCommit() {
 
     TableEntry::CommitCreateIndex(table_entry_, txn_indexes_store_);
 
-    LOG_TRACE(Format("Transaction local storage table: {}, Complete commit preparing", *table_entry_->table_collection_name_));
+    LOG_TRACE(Format("Transaction local storage table: {}, Complete commit preparing", *table_entry_->table_name_));
 }
 
 /**

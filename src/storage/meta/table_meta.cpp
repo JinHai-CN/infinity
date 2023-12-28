@@ -214,7 +214,7 @@ Tuple<TableEntry *, Status> TableMeta::DropNewEntry(u64 txn_id,
 
             Vector<SharedPtr<ColumnDef>> dummy_columns;
             UniquePtr<TableEntry> table_entry = MakeUnique<TableEntry>(this->db_entry_dir_,
-                                                                       this->table_collection_name_,
+                                                                       this->table_name_,
                                                                        dummy_columns,
                                                                        TableEntryType::kTableEntry,
                                                                        this,
@@ -315,11 +315,15 @@ Tuple<TableEntry *, Status> TableMeta::GetEntry(u64 txn_id, TxnTimeStamp begin_t
     return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
 }
 
+const SharedPtr<String>& TableMeta::db_name_ptr() const {
+    return db_entry_->db_name_ptr();
+}
+
 SharedPtr<String> TableMeta::ToString(TableMeta *table_meta) {
     SharedLock<RWMutex> r_locker(table_meta->rw_locker_);
     SharedPtr<String> res = MakeShared<String>(Format("TableMeta, db_entry_dir: {}, table name: {}, entry count: ",
                                                       *table_meta->db_entry_dir_,
-                                                      *table_meta->table_collection_name_,
+                                                      *table_meta->table_name_,
                                                       table_meta->entry_list_.size()));
     return res;
 }
@@ -330,7 +334,7 @@ Json TableMeta::Serialize(TableMeta *table_meta, TxnTimeStamp max_commit_ts, boo
     {
         SharedLock<RWMutex> lck(table_meta->rw_locker_);
         json_res["db_entry_dir"] = *table_meta->db_entry_dir_;
-        json_res["table_name"] = *table_meta->table_collection_name_;
+        json_res["table_name"] = *table_meta->table_name_;
         // Need to find the full history of the entry till given timestamp. Note that GetEntry returns at most one valid entry at given timestamp.
         table_candidates.reserve(table_meta->entry_list_.size());
         for (auto &table_entry : table_meta->entry_list_) {
@@ -379,8 +383,8 @@ UniquePtr<TableMeta> TableMeta::Deserialize(const Json &table_meta_json, DBEntry
 
 void TableMeta::MergeFrom(TableMeta &other) {
     // No locking here since only the load stage needs MergeFrom.
-    if (!IsEqual(*this->table_collection_name_, *other.table_collection_name_) || !IsEqual(*this->db_entry_dir_, *other.db_entry_dir_)) {
-        Error<StorageException>("DBEntry::MergeFrom requires table_collection_name_ and db_entry_dir_ match");
+    if (!IsEqual(*this->table_name_, *other.table_name_) || !IsEqual(*this->db_entry_dir_, *other.db_entry_dir_)) {
+        Error<StorageException>("DBEntry::MergeFrom requires table_name_ and db_entry_dir_ match");
     }
     MergeLists(this->entry_list_, other.entry_list_);
 }

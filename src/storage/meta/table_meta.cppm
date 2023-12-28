@@ -29,13 +29,30 @@ export module table_meta;
 namespace infinity {
 
 class DBEntry;
+struct NewCatalog;
 
 export struct TableMeta {
-public:
-    inline explicit TableMeta(const SharedPtr<String> &db_entry_dir, SharedPtr<String> name, DBEntry *db_entry)
-        : db_entry_dir_(db_entry_dir), table_collection_name_(Move(name)), db_entry_(db_entry) {}
+friend class DBEntry;
+friend struct NewCatalog;
 
 public:
+    inline explicit TableMeta(const SharedPtr<String> &db_entry_dir, SharedPtr<String> name, DBEntry *db_entry)
+        : db_entry_dir_(db_entry_dir), table_name_(Move(name)), db_entry_(db_entry) {}
+
+public:
+    static SharedPtr<String> ToString(TableMeta *table_meta);
+
+    static Json Serialize(TableMeta *table_meta, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
+
+    static UniquePtr<TableMeta> Deserialize(const Json &table_meta_json, DBEntry *db_entry, BufferManager *buffer_mgr);
+
+    void MergeFrom(TableMeta &other);
+
+    [[nodiscard]] const SharedPtr<String> &table_name_ptr() const { return table_name_; }
+    [[nodiscard]] const String &table_name() const { return *table_name_; }
+    const SharedPtr<String>& db_name_ptr() const;
+
+private:
     Tuple<TableEntry *, Status> CreateNewEntry(TableEntryType table_entry_type,
                                                const SharedPtr<String> &table_collection_name,
                                                const Vector<SharedPtr<ColumnDef>> &columns,
@@ -50,20 +67,10 @@ public:
 
     Tuple<TableEntry *, Status> GetEntry(u64 txn_id, TxnTimeStamp begin_ts);
 
-    static SharedPtr<String> ToString(TableMeta *table_meta);
-
-    static inline DBEntry *GetDBEntry(TableMeta *table_meta) { return table_meta->db_entry_; }
-
-    static Json Serialize(TableMeta *table_meta, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
-
-    static UniquePtr<TableMeta> Deserialize(const Json &table_meta_json, DBEntry *db_entry, BufferManager *buffer_mgr);
-
-    void MergeFrom(TableMeta &other);
-
-public:
+private:
     RWMutex rw_locker_{};
     SharedPtr<String> db_entry_dir_{};
-    SharedPtr<String> table_collection_name_{};
+    SharedPtr<String> table_name_{};
 
     DBEntry *db_entry_{};
 

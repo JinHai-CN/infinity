@@ -187,12 +187,12 @@ void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *
 
 TxnTableStore *Txn::GetTxnTableStore(TableEntry *table_entry) {
     UniqueLock<Mutex> lk(lock_);
-    auto txn_table_iter = txn_tables_store_.find(*table_entry->table_collection_name_);
+    auto txn_table_iter = txn_tables_store_.find(*table_entry->table_name_);
     if (txn_table_iter != txn_tables_store_.end()) {
         return txn_table_iter->second.get();
     }
-    txn_tables_store_[*table_entry->table_collection_name_] = MakeUnique<TxnTableStore>(table_entry, this);
-    TxnTableStore *txn_table_store = txn_tables_store_[*table_entry->table_collection_name_].get();
+    txn_tables_store_[*table_entry->table_name_] = MakeUnique<TxnTableStore>(table_entry, this);
+    TxnTableStore *txn_table_store = txn_tables_store_[*table_entry->table_name_].get();
     return txn_table_store;
 }
 

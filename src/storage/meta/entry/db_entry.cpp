@@ -161,7 +161,7 @@ Status DBEntry::GetTablesDetail(u64 txn_id, TxnTimeStamp begin_ts, Vector<TableD
     for (TableEntry *table_entry : table_collection_entries) {
         TableDetail table_detail;
         table_detail.db_name_ = this->db_name_;
-        table_detail.table_collection_name_ = table_entry->table_collection_name_;
+        table_detail.table_name_ = table_entry->table_name_;
         table_detail.table_entry_type_ = table_entry->table_entry_type_;
         table_detail.column_count_ = table_entry->columns_.size();
         table_detail.row_count_ = table_entry->row_count_;
@@ -227,7 +227,7 @@ UniquePtr<DBEntry> DBEntry::Deserialize(const Json &db_entry_json, BufferManager
     if (db_entry_json.contains("tables")) {
         for (const auto &table_meta_json : db_entry_json["tables"]) {
             UniquePtr<TableMeta> table_meta = TableMeta::Deserialize(table_meta_json, res.get(), buffer_mgr);
-            res->tables_.emplace(*table_meta->table_collection_name_, Move(table_meta));
+            res->tables_.emplace(*table_meta->table_name_, Move(table_meta));
         }
     }
 
