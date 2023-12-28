@@ -364,7 +364,7 @@ Status Txn::CreateIndex(const String &db_name, const String &table_name, const S
     table_store = txn_tables_store_[table_name].get();
 
     // Create Index Synchronously
-    TableEntry::CreateIndexFile(table_entry, table_store, table_index_entry, begin_ts, GetBufferMgr());
+    NewCatalog::CreateIndexFile(table_entry, table_store, table_index_entry, begin_ts, GetBufferMgr());
 
     wal_entry_->cmds.push_back(MakeShared<WalCmdCreateIndex>(db_name, table_name, index_def));
     return index_status;

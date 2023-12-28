@@ -133,8 +133,7 @@ TableEntry::DropIndex(const String &index_name, ConflictType conflict_type, u64 
     return index_meta->DropTableIndexEntry(conflict_type, txn_id, begin_ts, txn_mgr);
 }
 
-Tuple<TableIndexEntry *, Status>
-TableEntry::GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts) {
+Tuple<TableIndexEntry *, Status> TableEntry::GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts) {
     if (auto iter = table_entry->index_meta_map_.find(index_name); iter != table_entry->index_meta_map_.end()) {
         return iter->second->GetEntry(txn_id, begin_ts);
     }
@@ -211,15 +210,11 @@ void TableEntry::Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, 
     }
 }
 
-void TableEntry::CreateIndexFile(TableEntry *table_entry,
-                                 void *txn_store,
-                                 TableIndexEntry *table_index_entry,
-                                 TxnTimeStamp begin_ts,
-                                 BufferManager *buffer_mgr) {
+void TableEntry::CreateIndexFile(void *txn_store, TableIndexEntry *table_index_entry, TxnTimeStamp begin_ts, BufferManager *buffer_mgr) {
     if (table_index_entry->irs_index_entry_.get() != nullptr) {
         IrsIndexEntry *irs_index_entry = table_index_entry->irs_index_entry_.get();
-        for (const auto &[_segment_id, segment_entry] : table_entry->segment_map_) {
-            irs_index_entry->irs_index_->BatchInsert(table_entry, table_index_entry->index_def_.get(), segment_entry.get(), buffer_mgr);
+        for (const auto &[_segment_id, segment_entry] : this->segment_map_) {
+            irs_index_entry->irs_index_->BatchInsert(this, table_index_entry->index_def_.get(), segment_entry.get(), buffer_mgr);
         }
         irs_index_entry->irs_index_->Commit();
         irs_index_entry->irs_index_->StopSchedule();
@@ -230,8 +225,8 @@ void TableEntry::CreateIndexFile(TableEntry *table_entry,
         BaseEntry *base_entry = base_index_pair.second.get();
         if (base_entry->entry_type_ == EntryType::kColumnIndex) {
             ColumnIndexEntry *column_index_entry = (ColumnIndexEntry *)(base_entry);
-            SharedPtr<ColumnDef> column_def = table_entry->columns_[column_id];
-            for (const auto &[segment_id, segment_entry] : table_entry->segment_map_) {
+            SharedPtr<ColumnDef> column_def = this->columns_[column_id];
+            for (const auto &[segment_id, segment_entry] : this->segment_map_) {
                 SharedPtr<SegmentColumnIndexEntry> segment_column_index_entry =
                     SegmentEntry::CreateIndexFile(segment_entry.get(), column_index_entry, column_def, begin_ts, buffer_mgr, txn_store_ptr);
                 column_index_entry->index_by_segment.emplace(segment_id, segment_column_index_entry);
@@ -240,6 +235,20 @@ void TableEntry::CreateIndexFile(TableEntry *table_entry,
             continue;
         } else {
             Error<StorageException>("Invalid entry type");
+        }
+    }
+}
+
+void TableEntry::CommitCreateIndex(HashMap<String, TxnIndexStore> &txn_indexes_store_) {
+    for (auto &[index_name, txn_index_store] : txn_indexes_store_) {
+        TableIndexEntry *table_index_entry = txn_index_store.table_index_entry_;
+        for (auto &[column_id, segment_index_map] : txn_index_store.index_entry_map_) {
+            for (auto &[segment_id, segment_column_index] : segment_index_map) {
+                TableIndexEntry::CommitCreateIndex(table_index_entry, column_id, segment_id, segment_column_index);
+            }
+        }
+        if (table_index_entry->irs_index_entry_.get() != nullptr) {
+            TableIndexEntry::CommitCreateIndex(table_index_entry, table_index_entry->irs_index_entry_);
         }
     }
 }
@@ -270,20 +279,6 @@ void TableEntry::CommitAppend(TableEntry *table_entry, Txn *txn_ptr, const Appen
         row_count += range.row_count_;
     }
     table_entry->row_count_ += row_count;
-}
-
-void TableEntry::CommitCreateIndex(TableEntry *, HashMap<String, TxnIndexStore> &txn_indexes_store_) {
-    for (auto &[index_name, txn_index_store] : txn_indexes_store_) {
-        TableIndexEntry *table_index_entry = txn_index_store.table_index_entry_;
-        for (auto &[column_id, segment_index_map] : txn_index_store.index_entry_map_) {
-            for (auto &[segment_id, segment_column_index] : segment_index_map) {
-                TableIndexEntry::CommitCreateIndex(table_index_entry, column_id, segment_id, segment_column_index);
-            }
-        }
-        if (table_index_entry->irs_index_entry_.get() != nullptr) {
-            TableIndexEntry::CommitCreateIndex(table_index_entry, table_index_entry->irs_index_entry_);
-        }
-    }
 }
 
 void TableEntry::RollbackAppend(TableEntry *, Txn *, void *) {
@@ -344,14 +339,12 @@ SegmentEntry *TableEntry::GetSegmentByID(const TableEntry *table_entry, u32 segm
     }
 }
 
-//DBEntry *TableEntry::GetDBEntry(const TableEntry *table_entry) {
-//    TableMeta *table_meta = (TableMeta *)table_entry->table_meta_;
-//    return (DBEntry *)table_meta->db_entry_;
-//}
+// DBEntry *TableEntry::GetDBEntry(const TableEntry *table_entry) {
+//     TableMeta *table_meta = (TableMeta *)table_entry->table_meta_;
+//     return (DBEntry *)table_meta->db_entry_;
+// }
 
-const SharedPtr<String>& TableEntry::GetDBName() const {
-    return table_meta_->db_name_ptr();
-}
+const SharedPtr<String> &TableEntry::GetDBName() const { return table_meta_->db_name_ptr(); }
 
 SharedPtr<BlockIndex> TableEntry::GetBlockIndex(TableEntry *table_entry, u64, TxnTimeStamp begin_ts) {
     //    SharedPtr<MultiIndex<u64, u64, SegmentEntry*>> result = MakeShared<MultiIndex<u64, u64, SegmentEntry*>>();

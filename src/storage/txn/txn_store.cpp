@@ -31,6 +31,7 @@ import txn;
 import segment_column_index_entry;
 import table_index_entry;
 import default_values;
+import new_catalog;
 
 module txn_store;
 
@@ -159,7 +160,7 @@ void TxnTableStore::PrepareCommit() {
 
     TableEntry::Delete(table_entry_, txn_, delete_state_);
 
-    TableEntry::CommitCreateIndex(table_entry_, txn_indexes_store_);
+    NewCatalog::CommitCreateIndex(txn_indexes_store_);
 
     LOG_TRACE(Format("Transaction local storage table: {}, Complete commit preparing", *table_entry_->table_name_));
 }

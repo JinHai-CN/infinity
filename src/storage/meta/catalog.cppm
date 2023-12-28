@@ -34,6 +34,7 @@ import default_values;
 import table_detail;
 import table_index_entry;
 import index_def;
+import txn_store;
 
 export module new_catalog;
 
@@ -145,7 +146,12 @@ public:
                                                TxnTimeStamp begin_ts,
                                                TxnManager *txn_mgr);
 
+    static void
+    CreateIndexFile(TableEntry *table_entry, void *txn_store, TableIndexEntry *table_index_entry, TxnTimeStamp begin_ts, BufferManager *buffer_mgr);
+
     static Status RemoveIndexEntry(const String &index_name, TableIndexEntry *table_index_entry, u64 txn_id, TxnManager *txn_mgr);
+
+    static void CommitCreateIndex(HashMap<String, TxnIndexStore> &txn_indexes_store_);
 
 public:
     // Function related methods

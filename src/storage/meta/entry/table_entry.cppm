@@ -43,7 +43,7 @@ class TableMeta;
 struct NewCatalog;
 
 export struct TableEntry : public BaseEntry {
-friend struct NewCatalog;
+    friend struct NewCatalog;
 
 public:
     // for iterator unit test.
@@ -68,24 +68,23 @@ private:
 
     void RemoveIndexEntry(const String &index_name, u64 txn_id, TxnManager *txn_mgr);
 
+    void CreateIndexFile(void *txn_store, TableIndexEntry *table_index_entry, TxnTimeStamp begin_ts, BufferManager *buffer_mgr);
+
+    static void CommitCreateIndex(HashMap<String, TxnIndexStore> &txn_indexes_store_);
+
     TableMeta *GetTableMeta() const { return table_meta_; }
 
 public:
-    const SharedPtr<String>& GetDBName() const;
+    const SharedPtr<String> &GetDBName() const;
 
-    const SharedPtr<String>& GetTableName() const { return table_name_; }
+    const SharedPtr<String> &GetTableName() const { return table_name_; }
 
 public:
     static void Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, BufferManager *buffer_mgr);
 
-    static void
-    CreateIndexFile(TableEntry *table_entry, void *txn_store, TableIndexEntry *table_index_entry, TxnTimeStamp begin_ts, BufferManager *buffer_mgr);
-
     static UniquePtr<String> Delete(TableEntry *table_entry, Txn *txn_ptr, DeleteState &delete_state);
 
     static void CommitAppend(TableEntry *table_entry, Txn *txn_ptr, const AppendState *append_state_ptr);
-
-    static void CommitCreateIndex(TableEntry *table_entry, HashMap<String, TxnIndexStore> &txn_indexes_store_);
 
     static void RollbackAppend(TableEntry *table_entry, Txn *txn_ptr, void *txn_store);
 
@@ -101,7 +100,7 @@ public:
 
     static SegmentEntry *GetSegmentByID(const TableEntry *table_entry, u32 seg_id);
 
-//    static DBEntry *GetDBEntry(const TableEntry *table_entry);
+    //    static DBEntry *GetDBEntry(const TableEntry *table_entry);
 
     static SharedPtr<BlockIndex> GetBlockIndex(TableEntry *table_entry, u64 txn_id, TxnTimeStamp begin_ts);
 
