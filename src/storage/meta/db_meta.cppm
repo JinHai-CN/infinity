@@ -27,12 +27,28 @@ export module db_meta;
 
 namespace infinity {
 
+struct NewCatalog;
+
 export struct DBMeta {
+
+friend struct NewCatalog;
+
 public:
     explicit DBMeta(const SharedPtr<String> &data_dir, SharedPtr<String> name) : db_name_(Move(name)), data_dir_(data_dir) {}
 
-public:
-    // Reserved
+    static SharedPtr<String> ToString(DBMeta *db_meta);
+
+    static Json Serialize(DBMeta *db_meta, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
+
+    static UniquePtr<DBMeta> Deserialize(const Json &db_meta_json, BufferManager *buffer_mgr);
+
+    void MergeFrom(DBMeta &other);
+
+    SharedPtr<String> db_name() const { return db_name_; }
+
+    SharedPtr<String> data_dir() const { return data_dir_; }
+
+private:
     Tuple<DBEntry *, Status>
     CreateNewEntry(u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr, ConflictType conflict_type = ConflictType::kError);
 
@@ -42,23 +58,11 @@ public:
 
     Tuple<DBEntry *, Status> GetEntry(u64 txn_id, TxnTimeStamp begin_ts);
 
-    static SharedPtr<String> ToString(DBMeta *db_meta);
-
-    static Json Serialize(DBMeta *db_meta, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
-
-    static UniquePtr<DBMeta> Deserialize(const Json &db_meta_json, BufferManager *buffer_mgr);
+    // Thread-unsafe
+    List<UniquePtr<BaseEntry>> &entry_list() { return entry_list_; }
 
     // Used in initialization phase
     static void AddEntry(DBMeta *db_meta, UniquePtr<BaseEntry> db_entry);
-
-    void MergeFrom(DBMeta &other);
-
-    SharedPtr<String> db_name() const { return db_name_; }
-
-    SharedPtr<String> data_dir() const { return data_dir_; }
-
-    // Thread-unsafe
-    List<UniquePtr<BaseEntry>> &entry_list() { return entry_list_; }
 
 private:
     SharedPtr<String> db_name_{};
