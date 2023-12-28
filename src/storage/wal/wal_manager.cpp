@@ -621,17 +621,10 @@ void WalManager::WalCmdCreateDatabaseReplay(const WalCmdCreateDatabase &cmd, u64
     db_entry->Commit(commit_ts);
 }
 void WalManager::WalCmdCreateTableReplay(const WalCmdCreateTable &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
-    if (!db_status.ok()) {
-        Error<StorageException>("Wal Replay: Get database failed");
-    }
 
-    auto [table_entry, table_status] = db_entry->CreateTableCollection(TableEntryType::kTableEntry,
-                                                                       cmd.table_def->table_name(),
-                                                                       cmd.table_def->columns(),
-                                                                       txn_id,
-                                                                       commit_ts,
-                                                                       storage_->txn_manager());
+    auto [table_entry, table_status] =
+        storage_->catalog()->CreateTable(cmd.db_name, txn_id, commit_ts, cmd.table_def, ConflictType::kIgnore, storage_->txn_manager());
+
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Create table failed" + *table_status.msg_);
     }

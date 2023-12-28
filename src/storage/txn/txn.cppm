@@ -49,7 +49,7 @@ struct ScanParam {
 };
 
 class TxnManager;
-class NewCatalog;
+struct NewCatalog;
 class TableEntry;
 class DBEntry;
 

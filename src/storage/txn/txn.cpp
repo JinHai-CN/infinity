@@ -283,7 +283,7 @@ Status Txn::GetTables(const String &db_name, Vector<TableDetail> &output_table_a
     return db_entry->GetTablesDetail(txn_id_, txn_context_.GetBeginTS(), output_table_array);
 }
 
-Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType) {
+Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType conflict_type) {
     TxnState txn_state = txn_context_.GetTxnState();
 
     if (txn_state != TxnState::kStarted) {
@@ -292,14 +292,7 @@ Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [db_entry, db_status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
-    if (!db_status.ok()) {
-        // Error
-        return db_status;
-    }
-
-    auto [table_entry, table_status] =
-        db_entry->CreateTableCollection(TableEntryType::kTableEntry, table_def->table_name(), table_def->columns(), txn_id_, begin_ts, txn_mgr_);
+    auto [table_entry, table_status] = catalog_->CreateTable(db_name, txn_id_, begin_ts, table_def, conflict_type, txn_mgr_);
 
     if (table_entry == nullptr) {
         if (table_status.ok()) {

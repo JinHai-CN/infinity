@@ -184,7 +184,7 @@ Tuple<TableEntry *, Status> NewCatalog::CreateTable(const String &db_name,
         return {nullptr, status};
     }
 
-    return db_entry->CreateTableCollection(TableEntryType::kTableEntry, table_def->table_name(), table_def->columns(), txn_id, begin_ts, txn_mgr);
+    return db_entry->CreateTable(TableEntryType::kTableEntry, table_def->table_name(), table_def->columns(), txn_id, begin_ts, txn_mgr);
 }
 
 Tuple<TableEntry *, Status> NewCatalog::DropTableByName(const String &db_name,

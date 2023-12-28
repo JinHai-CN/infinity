@@ -37,12 +37,12 @@ module db_entry;
 
 namespace infinity {
 
-Tuple<TableEntry *, Status> DBEntry::CreateTableCollection(TableEntryType table_entry_type,
-                                                           const SharedPtr<String> &table_collection_name,
-                                                           const Vector<SharedPtr<ColumnDef>> &columns,
-                                                           u64 txn_id,
-                                                           TxnTimeStamp begin_ts,
-                                                           TxnManager *txn_mgr) {
+Tuple<TableEntry *, Status> DBEntry::CreateTable(TableEntryType table_entry_type,
+                                                 const SharedPtr<String> &table_collection_name,
+                                                 const Vector<SharedPtr<ColumnDef>> &columns,
+                                                 u64 txn_id,
+                                                 TxnTimeStamp begin_ts,
+                                                 TxnManager *txn_mgr) {
     const String &table_name = *table_collection_name;
 
     // Check if there is table_meta with the table_name

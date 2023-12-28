@@ -30,7 +30,11 @@ export module db_entry;
 
 namespace infinity {
 
+struct NewCatalog;
+
 export class DBEntry : public BaseEntry {
+    friend struct NewCatalog;
+
 public:
     inline explicit DBEntry(const SharedPtr<String> &data_dir, SharedPtr<String> db_name, u64 txn_id, TxnTimeStamp begin_ts)
         : BaseEntry(EntryType::kDatabase), db_entry_dir_(MakeShared<String>(Format("{}/{}/txn_{}", *data_dir, *db_name, txn_id))),
@@ -39,13 +43,15 @@ public:
         txn_id_ = txn_id;
     }
 
+private:
+    Tuple<TableEntry *, Status> CreateTable(TableEntryType table_entry_type,
+                                            const SharedPtr<String> &table_collection_name,
+                                            const Vector<SharedPtr<ColumnDef>> &columns,
+                                            u64 txn_id,
+                                            TxnTimeStamp begin_ts,
+                                            TxnManager *txn_mgr);
+
 public:
-    Tuple<TableEntry *, Status> CreateTableCollection(TableEntryType table_entry_type,
-                                                      const SharedPtr<String> &table_collection_name,
-                                                      const Vector<SharedPtr<ColumnDef>> &columns,
-                                                      u64 txn_id,
-                                                      TxnTimeStamp begin_ts,
-                                                      TxnManager *txn_mgr);
 
     Tuple<TableEntry *, Status>
     DropTableCollection(const String &table_collection_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
