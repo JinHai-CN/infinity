@@ -318,13 +318,8 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [db_entry, db_status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
-    if (!db_status.ok()) {
-        // Error
-        return db_status;
-    }
+    auto [table_entry, table_status] = catalog_->DropTableByName(db_name, table_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
 
-    auto [table_entry, table_status] = db_entry->DropTableCollection(table_name, conflict_type, txn_id_, begin_ts, txn_mgr_);
     if (table_entry == nullptr) {
         return table_status;
     }

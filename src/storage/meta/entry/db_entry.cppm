@@ -51,10 +51,10 @@ private:
                                             TxnTimeStamp begin_ts,
                                             TxnManager *txn_mgr);
 
-public:
-
     Tuple<TableEntry *, Status>
-    DropTableCollection(const String &table_collection_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
+    DropTable(const String &table_collection_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
+
+public:
 
     Tuple<TableEntry *, Status> GetTableCollection(const String &table_name, u64 txn_id, TxnTimeStamp begin_ts);
 

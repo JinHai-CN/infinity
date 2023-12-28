@@ -77,7 +77,7 @@ Tuple<TableEntry *, Status> DBEntry::CreateTable(TableEntryType table_entry_type
     return table_meta->CreateNewEntry(table_entry_type, table_collection_name, columns, txn_id, begin_ts, txn_mgr);
 }
 
-Tuple<TableEntry *, Status> DBEntry::DropTableCollection(const String &table_collection_name,
+Tuple<TableEntry *, Status> DBEntry::DropTable(const String &table_collection_name,
                                                          ConflictType conflict_type,
                                                          u64 txn_id,
                                                          TxnTimeStamp begin_ts,

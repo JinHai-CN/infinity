@@ -640,12 +640,9 @@ void WalManager::WalCmdDropDatabaseReplay(const WalCmdDropDatabase &cmd, u64 txn
 }
 
 void WalManager::WalCmdDropTableReplay(const WalCmdDropTable &cmd, u64 txn_id, i64 commit_ts) {
-    auto [db_entry, db_status] = storage_->catalog()->GetDatabase(cmd.db_name, txn_id, commit_ts);
-    if (!db_status.ok()) {
-        Error<StorageException>("Wal Replay: Get database failed");
-    }
+    auto [table_entry, table_status] =
+        storage_->catalog()->DropTableByName(cmd.db_name, cmd.table_name, ConflictType::kIgnore, txn_id, commit_ts, storage_->txn_manager());
 
-    auto [table_entry, table_status] = db_entry->DropTableCollection(cmd.table_name, ConflictType::kReplace, txn_id, commit_ts, nullptr);
     if (!table_status.ok()) {
         Error<StorageException>("Wal Replay: Drop table failed");
     }

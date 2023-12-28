@@ -199,7 +199,7 @@ Tuple<TableEntry *, Status> NewCatalog::DropTableByName(const String &db_name,
         LOG_ERROR(Format("Database: {} is invalid.", db_name));
         return {nullptr, status};
     }
-    return db_entry->DropTableCollection(table_name, conflict_type, txn_id, begin_ts, txn_mgr);
+    return db_entry->DropTable(table_name, conflict_type, txn_id, begin_ts, txn_mgr);
 }
 
 Status NewCatalog::GetTables(const String &db_name, Vector<TableDetail> &output_table_array, u64 txn_id, TxnTimeStamp begin_ts) {
