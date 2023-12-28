@@ -415,14 +415,7 @@ Tuple<TableEntry *, Status> Txn::GetTableByName(const String &db_name, const Str
 
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    // Check the db entries
-    auto [db_entry, status] = catalog_->GetDatabase(db_name, this->txn_id_, begin_ts);
-    if (!status.ok()) {
-        // Error
-        return {nullptr, status};
-    }
-
-    return db_entry->GetTableCollection(table_name, txn_id_, begin_ts);
+    return catalog_->GetTableByName(db_name, table_name, txn_id_, begin_ts);
 }
 
 Status Txn::CreateCollection(const String &, const String &, ConflictType, BaseEntry *&) {

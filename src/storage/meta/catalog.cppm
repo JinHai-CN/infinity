@@ -124,6 +124,7 @@ public:
 
     Tuple<TableEntry *, Status> GetTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts);
 
+public:
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);
 
@@ -142,6 +143,8 @@ public:
 
     static void DeleteTableFunction(NewCatalog *catalog, String function_name);
 
+public:
+    // Serialization and Deserialization
     static Json Serialize(NewCatalog *catalog, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
 
     static void Deserialize(const Json &catalog_json, BufferManager *buffer_mgr, UniquePtr<NewCatalog> &catalog);
@@ -154,13 +157,18 @@ public:
 
     void MergeFrom(NewCatalog &other);
 
+    void CheckCatalog();
+
+public:
+    // Profile related methods
+
     void AppendProfilerRecord(SharedPtr<QueryProfiler> profiler) { history.Enqueue(Move(profiler)); }
 
     const QueryProfiler *GetProfilerRecord(SizeT index) { return history.GetElement(index); }
 
     const Vector<SharedPtr<QueryProfiler>> GetProfilerRecords() { return history.GetElements(); }
 
-    void CheckCatalog();
+
 
 public:
     SharedPtr<String> current_dir_{nullptr};
