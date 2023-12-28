@@ -113,10 +113,16 @@ public:
                                             ConflictType conflict_type,
                                             TxnManager *txn_mgr);
 
-    Tuple<TableEntry *, Status>
-    DropTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts, ConflictType conflict_type);
+    Tuple<TableEntry *, Status> DropTableByName(const String &db_name,
+                                                const String &table_name,
+                                                ConflictType conflict_type,
+                                                u64 txn_id,
+                                                TxnTimeStamp begin_ts,
+                                                TxnManager *txn_mgr);
 
     Status GetTables(const String &db_name, Vector<TableDetail> &output_table_array, u64 txn_id, TxnTimeStamp begin_ts);
+
+    Tuple<TableEntry *, Status> GetTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts);
 
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

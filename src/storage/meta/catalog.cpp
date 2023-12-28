@@ -187,10 +187,43 @@ Tuple<TableEntry *, Status> NewCatalog::CreateTable(const String &db_name,
     return db_entry->CreateTableCollection(TableEntryType::kTableEntry, table_def->table_name(), table_def->columns(), txn_id, begin_ts, txn_mgr);
 }
 
-Tuple<TableEntry *, Status>
-NewCatalog::DropTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts, ConflictType conflict_type) {}
+Tuple<TableEntry *, Status> NewCatalog::DropTableByName(const String &db_name,
+                                                        const String &table_name,
+                                                        ConflictType conflict_type,
+                                                        u64 txn_id,
+                                                        TxnTimeStamp begin_ts,
+                                                        TxnManager *txn_mgr) {
+    auto [db_entry, status] = this->GetDatabase(db_name, txn_id, begin_ts);
+    if (!status.ok()) {
+        // Error
+        LOG_ERROR(Format("Database: {} is invalid.", db_name));
+        return {nullptr, status};
+    }
+    return db_entry->DropTableCollection(table_name, conflict_type, txn_id, begin_ts, txn_mgr);
+}
 
-Status NewCatalog::GetTables(const String &db_name, Vector<TableDetail> &output_table_array, u64 txn_id, TxnTimeStamp begin_ts) {}
+Status NewCatalog::GetTables(const String &db_name, Vector<TableDetail> &output_table_array, u64 txn_id, TxnTimeStamp begin_ts) {
+    // Check the db entries
+    auto [db_entry, status] = this->GetDatabase(db_name, txn_id, begin_ts);
+    if (!status.ok()) {
+        // Error
+        LOG_ERROR(Format("Database: {} is invalid.", db_name));
+        return status;
+    }
+    return db_entry->GetTablesDetail(txn_id, begin_ts, output_table_array);
+}
+
+Tuple<TableEntry *, Status> NewCatalog::GetTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts) {
+    // Check the db entries
+    auto [db_entry, status] = this->GetDatabase(db_name, txn_id, begin_ts);
+    if (!status.ok()) {
+        // Error
+        LOG_ERROR(Format("Database: {} is invalid.", db_name));
+        return {nullptr, status};
+    }
+
+    return db_entry->GetTableCollection(table_name, txn_id, begin_ts);
+}
 
 SharedPtr<FunctionSet> NewCatalog::GetFunctionSetByName(NewCatalog *catalog, String function_name) {
     // Transfer the function to upper case.
