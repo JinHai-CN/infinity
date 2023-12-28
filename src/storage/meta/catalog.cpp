@@ -37,7 +37,7 @@ import file_system;
 import table_def;
 import table_entry_type;
 import table_detail;
-
+import table_meta;
 import table_entry;
 
 module new_catalog;
@@ -223,6 +223,13 @@ Tuple<TableEntry *, Status> NewCatalog::GetTableByName(const String &db_name, co
     }
 
     return db_entry->GetTableCollection(table_name, txn_id, begin_ts);
+}
+
+Status NewCatalog::RemoveTableEntry(TableEntry* table_entry, u64 txn_id, TxnManager* txn_mgr) {
+    TableMeta *table_meta = TableEntry::GetTableMeta(table_entry);
+    DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
+    db_entry->RemoveTableEntry(*table_meta->table_collection_name_, txn_id, txn_mgr);
+    return Status::OK();
 }
 
 SharedPtr<FunctionSet> NewCatalog::GetFunctionSetByName(NewCatalog *catalog, String function_name) {

@@ -124,6 +124,7 @@ public:
 
     Tuple<TableEntry *, Status> GetTableByName(const String &db_name, const String &table_name, u64 txn_id, TxnTimeStamp begin_ts);
 
+    static Status RemoveTableEntry(TableEntry* table_entry, u64 txn_id, TxnManager* txn_mgr);
 public:
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

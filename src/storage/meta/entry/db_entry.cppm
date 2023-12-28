@@ -56,13 +56,13 @@ private:
 
     Tuple<TableEntry *, Status> GetTableCollection(const String &table_name, u64 txn_id, TxnTimeStamp begin_ts);
 
-public:
-
     void RemoveTableEntry(const String &table_collection_name, u64 txn_id, TxnManager *txn_mgr);
 
     Vector<TableEntry *> TableCollections(u64 txn_id, TxnTimeStamp begin_ts);
 
     Status GetTablesDetail(u64 txn_id, TxnTimeStamp begin_ts, Vector<TableDetail> &output_table_array);
+
+public:
 
     static SharedPtr<String> ToString(DBEntry *db_entry);
 

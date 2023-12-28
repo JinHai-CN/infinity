@@ -275,12 +275,16 @@ Vector<DatabaseDetail> Txn::ListDatabases() {
 }
 
 Status Txn::GetTables(const String &db_name, Vector<TableDetail> &output_table_array) {
-    auto [db_entry, status] = GetDatabase(db_name);
-    if (!status.ok()) {
-        return status;
+
+    TxnState txn_state = txn_context_.GetTxnState();
+
+    if (txn_state != TxnState::kStarted) {
+        Error<TransactionException>("Transaction isn't started.");
     }
 
-    return db_entry->GetTablesDetail(txn_id_, txn_context_.GetBeginTS(), output_table_array);
+    TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
+
+    return catalog_->GetTables(db_name, output_table_array, txn_id_, begin_ts);
 }
 
 Status Txn::CreateTable(const String &db_name, const SharedPtr<TableDef> &table_def, ConflictType conflict_type) {
@@ -538,9 +542,7 @@ void Txn::Rollback() {
 
     for (const auto &base_entry : txn_tables_) {
         auto *table_entry = (TableEntry *)(base_entry);
-        TableMeta *table_meta = TableEntry::GetTableMeta(table_entry);
-        DBEntry *db_entry = TableEntry::GetDBEntry(table_entry);
-        db_entry->RemoveTableEntry(*table_meta->table_collection_name_, txn_id_, txn_mgr_);
+        NewCatalog::RemoveTableEntry(table_entry, txn_id_, txn_mgr_);
     }
 
     for (const auto &[index_name, table_index_entry] : txn_indexes_) {
