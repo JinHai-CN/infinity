@@ -90,7 +90,7 @@ public:
 
     Status GetCollectionByName(const String &db_name, const String &table_name, BaseEntry *&collection_entry);
 
-    Status GetTableEntry(const String &db_name, const String &table_name, TableEntry *&table_entry);
+    Tuple<TableEntry*, Status> GetTableEntry(const String &db_name, const String &table_name);
 
     // Index OPs
     Status CreateIndex(const String &db_name, const String &table_name, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type);

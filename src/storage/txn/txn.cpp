@@ -55,37 +55,34 @@ namespace infinity {
 Txn::Txn(TxnManager *txn_mgr, NewCatalog *catalog, u32 txn_id)
     : txn_mgr_(txn_mgr), catalog_(catalog), txn_id_(txn_id), wal_entry_(MakeShared<WalEntry>()) {}
 
-Status Txn::GetTableEntry(const String &db_name, const String &table_name, TableEntry *&table_entry) {
+Tuple<TableEntry*, Status> Txn::GetTableEntry(const String &db_name, const String &table_name) {
     if (db_name_.empty()) {
         db_name_ = db_name;
     } else {
         if (!IsEqual(db_name_, db_name)) {
             UniquePtr<String> err_msg = MakeUnique<String>(Format("Attempt to get table {} from another database {}", db_name, table_name));
             LOG_ERROR(*err_msg);
-            return Status(ErrorCode::kNotFound, Move(err_msg));
+            return {nullptr, Status(ErrorCode::kNotFound, Move(err_msg))};
         }
     }
 
     auto table_iter = txn_table_entries_.find(table_name);
     if (table_iter == txn_table_entries_.end()) {
         // not found the table in cached entries
-        auto [base_table_entry, status] = this->GetTableByName(db_name, table_name);
+        auto [table_entry, status] = this->GetTableByName(db_name, table_name);
         if (!status.ok()) {
-            return status;
+            return {nullptr, status};
         }
 
-        table_entry = base_table_entry;
         txn_table_entries_[table_name] = reinterpret_cast<BaseEntry *>(table_entry);
+        return {table_entry, status};
     } else {
-        table_entry = (TableEntry *)table_iter->second;
+        return {(TableEntry *)table_iter->second, Status::OK()};
     }
-
-    return Status::OK();
 }
 
 Status Txn::Append(const String &db_name, const String &table_name, const SharedPtr<DataBlock> &input_block) {
-    TableEntry *table_entry{nullptr};
-    Status status = GetTableEntry(db_name, table_name, table_entry);
+    auto [table_entry, status] = GetTableEntry(db_name, table_name);
     if (!status.ok()) {
         return status;
     }
@@ -105,8 +102,7 @@ Status Txn::Append(const String &db_name, const String &table_name, const Shared
 }
 
 Status Txn::Delete(const String &db_name, const String &table_name, const Vector<RowID> &row_ids) {
-    TableEntry *table_entry{nullptr};
-    Status status = GetTableEntry(db_name, table_name, table_entry);
+    auto [table_entry, status] = GetTableEntry(db_name, table_name);
     if (!status.ok()) {
         return status;
     }
@@ -146,8 +142,7 @@ void Txn::GetMetaTableState(MetaTableState *meta_table_state, const String &db_n
         }
     }
 
-    TableEntry *table_entry{nullptr};
-    Status status = GetTableEntry(db_name, table_name, table_entry);
+    auto [table_entry, status] = GetTableEntry(db_name, table_name);
     if (!status.ok()) {
         Error<TransactionException>(status.message());
     }
