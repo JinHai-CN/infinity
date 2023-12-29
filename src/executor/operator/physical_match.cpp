@@ -101,7 +101,7 @@ bool PhysicalMatch::Execute(QueryContext *query_context, OperatorState *operator
     SharedPtr<IRSDataStore> &dataStore = irs_index_entry->irs_index_;
     if (dataStore == nullptr) {
         throw ExecutorException(
-            Format("IrsIndexEntry::irs_index_ is nullptr for table {}", *base_table_ref_->table_entry_ptr_->table_name_));
+            Format("IrsIndexEntry::irs_index_ is nullptr for table {}", *base_table_ref_->table_entry_ptr_->GetTableName()));
     }
     rc = dataStore->Search(flt.get(), search_ops.options_, result);
     if (rc != 0) {
@@ -178,7 +178,7 @@ String PhysicalMatch::ToString(i64 &space) const {
     } else {
         arrow_str = "PhysicalMatch ";
     }
-    String res = Format("{} Table: {}, {}", arrow_str, *(base_table_ref_->table_entry_ptr_->table_name_), match_expr_->ToString());
+    String res = Format("{} Table: {}, {}", arrow_str, *(base_table_ref_->table_entry_ptr_->GetTableName()), match_expr_->ToString());
     return res;
 }
 

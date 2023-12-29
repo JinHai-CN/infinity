@@ -121,7 +121,7 @@ UniquePtr<SegmentColumnIndexEntry> SegmentColumnIndexEntry::Deserialize(const Js
     SegmentEntry *segment_entry = TableEntry::GetSegmentByID(table_entry, segment_id);
     u64 column_id = column_index_entry->column_id_;
     UniquePtr<CreateIndexParam> create_index_param =
-        SegmentEntry::GetCreateIndexParam(segment_entry, column_index_entry->index_base_.get(), table_entry->columns_[column_id].get());
+        SegmentEntry::GetCreateIndexParam(segment_entry, column_index_entry->index_base_.get(), table_entry->GetColumnDefByID(column_id));
     // TODO: need to get create index param;
     //    UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry, index_base, column_def.get());
     auto segment_column_index_entry = LoadIndexEntry(column_index_entry, segment_id, buffer_mgr, create_index_param.get());

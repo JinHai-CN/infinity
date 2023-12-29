@@ -387,7 +387,7 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
         Error<PlannerException>(status.message());
     }
 
-    if (table_entry->table_entry_type_ == TableEntryType::kCollectionEntry) {
+    if (table_entry->EntryType() == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
     }
 
@@ -396,12 +396,12 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
     SharedPtr<Vector<String>> names_ptr = MakeShared<Vector<String>>();
     Vector<SizeT> columns;
 
-    SizeT column_count = table_entry->columns_.size();
+    SizeT column_count = table_entry->ColumnCount();
     types_ptr->reserve(column_count);
     names_ptr->reserve(column_count);
     columns.reserve(column_count);
     for (SizeT idx = 0; idx < column_count; ++idx) {
-        const ColumnDef *column_def = table_entry->columns_[idx].get();
+        const ColumnDef *column_def = table_entry->GetColumnDefByID(idx);
         types_ptr->emplace_back(column_def->column_type_);
         names_ptr->emplace_back(column_def->name_);
         columns.emplace_back(idx);
@@ -710,14 +710,14 @@ void QueryBinder::GenerateColumns(const SharedPtr<Binding> &binding, const Strin
             break;
         }
         case BindingType::kTable: {
-            SizeT column_count = binding->table_collection_entry_ptr_->columns_.size();
+            SizeT column_count = binding->table_collection_entry_ptr_->ColumnCount();
 
             // Reserve more data in select list
             output_select_list.reserve(output_select_list.size() + column_count);
 
             // Build select list
             for (SizeT idx = 0; idx < column_count; ++idx) {
-                String column_name = binding->table_collection_entry_ptr_->columns_[idx]->name_;
+                String column_name = binding->table_collection_entry_ptr_->GetColumnDefByID(idx)->name_;
                 auto *column_expr = new ColumnExpr();
                 column_expr->names_.emplace_back(table_name);
                 column_expr->names_.emplace_back(column_name);

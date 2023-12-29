@@ -196,7 +196,7 @@ void PhysicalKnnScan::PlanWithIndex(QueryContext *query_context) { // TODO: retu
 
     TableEntry *table_entry = base_table_ref_->table_entry_ptr_;
     HashMap<u32, Vector<SegmentColumnIndexEntry *>> index_entry_map;
-    for (auto &[index_name, table_index_meta] : table_entry->index_meta_map_) {
+    for (auto &[index_name, table_index_meta] : table_entry->index_meta_map()) {
         auto [table_index_entry, status] = table_index_meta->GetEntry(txn_id, begin_ts);
         if (!status.ok()) {
             // FIXME: not found index means exception??

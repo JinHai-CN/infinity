@@ -609,7 +609,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
             Vector<ColumnID> column_ids{0, 1, 2};
             auto [table_entry, status] = txn->GetTableEntry("default", "tbl1");
             EXPECT_NE(table_entry, nullptr);
-            auto segment_entry = table_entry->segment_map_[0].get();
+            auto segment_entry = table_entry->segment_map()[0].get();
             EXPECT_EQ(segment_entry->segment_id_, 0);
             auto block_id = segment_entry->block_entries_[0]->block_id_;
             EXPECT_EQ(block_id, 0);

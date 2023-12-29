@@ -698,9 +698,7 @@ void WalManager::WalCmdImportReplay(const WalCmdImport &cmd, u64 txn_id, i64 com
         segment_entry->row_count_ += cmd.row_counts_[id];
     }
 
-    table_entry->segment_map_.emplace(cmd.segment_id, Move(segment_entry));
-    // ATTENTION: focusing on the segment id
-    table_entry->next_segment_id_++;
+    NewCatalog::ImportSegment(table_entry, cmd.segment_id, segment_entry);
 }
 void WalManager::WalCmdDeleteReplay(const WalCmdDelete &cmd, u64 txn_id, i64 commit_ts) {
     auto [table_entry, table_status] = storage_->catalog()->GetTableByName(cmd.db_name, cmd.table_name, txn_id, commit_ts);

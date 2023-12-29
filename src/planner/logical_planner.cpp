@@ -164,7 +164,7 @@ Status LogicalPlanner::BuildInsertValue(const InsertStatement *statement, Shared
         Error<PlannerException>(status.message());
     }
 
-    if (table_entry->table_entry_type_ == TableEntryType::kCollectionEntry) {
+    if (table_entry->EntryType() == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
     }
 
@@ -200,7 +200,7 @@ Status LogicalPlanner::BuildInsertValue(const InsertStatement *statement, Shared
             //        Value null_value = Value::MakeNullData();
             //        SharedPtr<BaseExpression> null_value_expr = MakeShared<ValueExpression>(null_value);
 
-            SizeT table_column_count = table_entry->columns_.size();
+            SizeT table_column_count = table_entry->ColumnCount();
 
             // Create value list with table column size and null value
             Vector<SharedPtr<BaseExpression>> rewrite_value_list(table_column_count, nullptr);
@@ -209,7 +209,7 @@ Status LogicalPlanner::BuildInsertValue(const InsertStatement *statement, Shared
             for (SizeT column_idx = 0; column_idx < column_count; ++column_idx) {
                 const auto &column_name = statement->columns_->at(column_idx);
                 SizeT table_column_id = table_entry->GetColumnIdByName(column_name);
-                const SharedPtr<DataType> &table_column_type = table_entry->columns_[table_column_id]->column_type_;
+                const SharedPtr<DataType> &table_column_type = table_entry->GetColumnDefByID(table_column_id)->column_type_;
                 DataType value_type = value_list[column_idx]->Type();
                 if (value_type == *table_column_type) {
                     rewrite_value_list[table_column_id] = value_list[column_idx];
@@ -230,7 +230,7 @@ Status LogicalPlanner::BuildInsertValue(const InsertStatement *statement, Shared
 
             value_list = rewrite_value_list;
         } else {
-            SizeT table_column_count = table_entry->columns_.size();
+            SizeT table_column_count = table_entry->ColumnCount();
             if (value_list.size() != table_column_count) {
                 Error<PlannerException>(Format("INSERT: Table column count ({}) and "
                                                "input value count mismatch ({})",
@@ -242,7 +242,7 @@ Status LogicalPlanner::BuildInsertValue(const InsertStatement *statement, Shared
             Vector<SharedPtr<BaseExpression>> rewrite_value_list(table_column_count, nullptr);
 
             for (SizeT column_idx = 0; column_idx < table_column_count; ++column_idx) {
-                const SharedPtr<DataType> &table_column_type = table_entry->columns_[column_idx]->column_type_;
+                const SharedPtr<DataType> &table_column_type = table_entry->GetColumnDefByID(column_idx)->column_type_;
                 DataType value_type = value_list[column_idx]->Type();
                 if (*table_column_type == value_type) {
                     rewrite_value_list[column_idx] = value_list[column_idx];

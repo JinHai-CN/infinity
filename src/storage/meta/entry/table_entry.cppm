@@ -87,17 +87,29 @@ private:
     static Status RollbackDelete(TableEntry *table_entry, u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr);
 
     static Status ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment);
+
+    static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
+
+    static inline u32 GetMaxSegmentID(const TableEntry *table_entry) { return table_entry->next_segment_id_; }
+
 public:
     const SharedPtr<String> &GetDBName() const;
 
     const SharedPtr<String> &GetTableName() const { return table_name_; }
 
 public:
+    inline const ColumnDef *GetColumnDefByID(u64 column_id) const { return columns_[column_id].get(); }
 
+    inline SizeT ColumnCount() const { return columns_.size(); }
 
-//    static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
+    const SharedPtr<String> &TableEntryDir() const { return table_entry_dir_; }
 
-    static inline u32 GetMaxSegmentID(const TableEntry *table_entry) { return table_entry->next_segment_id_; }
+    inline SizeT RowCount() const { return row_count_; }
+
+    inline TableEntryType EntryType() const { return table_entry_type_; }
+    //    static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
+
+    //    static inline u32 GetMaxSegmentID(const TableEntry *table_entry) { return table_entry->next_segment_id_; }
 
     static SegmentEntry *GetSegmentByID(const TableEntry *table_entry, u32 seg_id);
 
@@ -118,10 +130,12 @@ public:
 public:
     u64 GetColumnIdByName(const String &column_name);
 
-private:
+    Map<u32, SharedPtr<SegmentEntry>>& segment_map() { return segment_map_; }
+
+    HashMap<String, UniquePtr<TableIndexMeta>>& index_meta_map() { return index_meta_map_; }
+protected:
     HashMap<String, u64> column_name2column_id_;
 
-public:
     RWMutex rw_locker_{};
 
     SharedPtr<String> table_entry_dir_{};

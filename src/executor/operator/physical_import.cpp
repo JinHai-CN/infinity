@@ -93,10 +93,10 @@ bool PhysicalImport::Execute(QueryContext *query_context, OperatorState *operato
 }
 
 void PhysicalImport::ImportFVECS(QueryContext *query_context, ImportOperatorState *import_op_state) {
-    if (table_entry_->columns_.size() != 1) {
+    if (table_entry_->ColumnCount() != 1) {
         Error<ExecutorException>("FVECS file must have only one column.");
     }
-    auto &column_type = table_entry_->columns_[0]->column_type_;
+    auto &column_type = table_entry_->GetColumnDefByID(0)->column_type_;
     if (column_type->type() != kEmbedding) {
         Error<ExecutorException>("FVECS file must have only one embedding column.");
     }
@@ -227,7 +227,7 @@ void PhysicalImport::ImportCSV(QueryContext *query_context, ImportOperatorState 
             Error<ExecutorException>(err_msg);
         }
     }
-    table_entry_->row_count_ += parser_context->row_count_;
+    NewCatalog::IncreaseTableRowCount(table_entry_, parser_context->row_count_);
 
     auto result_msg = MakeUnique<String>(Format("IMPORT {} Rows", parser_context->row_count_));
     import_op_state->result_msg_ = Move(result_msg);
@@ -283,13 +283,13 @@ void PhysicalImport::ImportJSONL(QueryContext *query_context, ImportOperatorStat
         JSONLRowHandler(line_json, block_entry);
         ++block_entry->row_count_;
         ++segment_entry->row_count_;
-        ++table_entry_->row_count_;
+        NewCatalog::IncreaseTableRowCount(table_entry_, 1);
     }
     if (segment_entry->row_count_ > 0) {
         SaveSegmentData(txn_store, segment_entry);
     }
 
-    auto result_msg = MakeUnique<String>(Format("IMPORT {} Rows", table_entry_->row_count_));
+    auto result_msg = MakeUnique<String>(Format("IMPORT {} Rows", table_entry_->RowCount()));
     import_op_state->result_msg_ = Move(result_msg);
 }
 
@@ -300,7 +300,7 @@ void PhysicalImport::CSVHeaderHandler(void *context) {
     ZsvParser &parser = parser_context->parser_;
     SizeT csv_column_count = parser.CellCount();
 
-    SizeT table_column_count = parser_context->table_entry_->columns_.size();
+    SizeT table_column_count = parser_context->table_entry_->ColumnCount();
     if (csv_column_count != table_column_count) {
         parser_context->err_msg_ = MakeShared<String>(Format("Unmatched column count ({} != {})", csv_column_count, table_column_count));
 
@@ -311,7 +311,7 @@ void PhysicalImport::CSVHeaderHandler(void *context) {
     // Not check the header column name
     for (SizeT idx = 0; idx < csv_column_count; ++idx) {
         auto *csv_col_name = reinterpret_cast<const char *>(parser.GetCellStr(idx));
-        auto *table_col_name = parser_context->table_entry_->columns_[idx]->name().c_str();
+        const char *table_col_name = parser_context->table_entry_->GetColumnDefByID(idx)->name().c_str();
         if (!strcmp(csv_col_name, table_col_name)) {
             parser_context->err_msg_ = MakeShared<String>(Format("Unmatched column name({} != {})", csv_col_name, table_col_name));
 
@@ -516,10 +516,10 @@ void AppendEmbeddingJsonl(BlockColumnEntry *block_column_entry, const Vector<T> 
 }
 
 void PhysicalImport::JSONLRowHandler(const Json &line_json, BlockEntry *block_entry) {
-    SizeT column_n = table_entry_->columns_.size();
+    SizeT column_n = table_entry_->ColumnCount();
     SizeT row_cnt = block_entry->row_count_;
     for (SizeT i = 0; i < column_n; ++i) {
-        ColumnDef *column_def = table_entry_->columns_[i].get();
+        const ColumnDef *column_def = table_entry_->GetColumnDefByID(i);
         auto block_column_entry = block_entry->columns_[i].get();
 
         auto column_type = block_column_entry->column_type_.get();
@@ -622,7 +622,7 @@ void PhysicalImport::SaveSegmentData(TxnTableStore *txn_store, SharedPtr<Segment
     }
 
     const String &db_name = *txn_store->table_entry_->GetDBName();
-    const String &table_name = *txn_store->table_entry_->table_name_;
+    const String &table_name = *txn_store->table_entry_->GetTableName();
     txn_store->txn_->AddWalCmd(MakeShared<WalCmdImport>(db_name,
                                                         table_name,
                                                         *segment_entry->segment_dir_,

@@ -625,16 +625,19 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
 
     output_block_ptr->Init(column_types);
 
-    for (auto &column : table_entry->columns_) {
-        SizeT column_id = 0;
+    SizeT column_count = table_entry->ColumnCount();
+    for(SizeT input_column_id = 0; input_column_id < column_count; ++ input_column_id) {
+        const ColumnDef* column = table_entry->GetColumnDefByID(input_column_id);
+
+        SizeT output_column_idx = 0;
         {
             // Append column name to the first column
             Value value = Value::MakeVarchar(column->name());
             ValueExpression value_expr(value);
-            value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
+            value_expr.AppendToChunk(output_block_ptr->column_vectors[output_column_idx]);
         }
 
-        ++column_id;
+        ++output_column_idx;
         {
             // Append column type to the second column, if the column type is embedded type, append the embedded type
             String column_type;
@@ -648,10 +651,10 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
             }
             Value value = Value::MakeVarchar(column_type);
             ValueExpression value_expr(value);
-            value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
+            value_expr.AppendToChunk(output_block_ptr->column_vectors[output_column_idx]);
         }
 
-        ++column_id;
+        ++output_column_idx;
         {
             // Append column constraint to the third column
             String column_constraint;
@@ -661,7 +664,7 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
 
             Value value = Value::MakeVarchar(column_constraint);
             ValueExpression value_expr(value);
-            value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
+            value_expr.AppendToChunk(output_block_ptr->column_vectors[output_column_idx]);
         }
         output_block_ptr->Finalize();
     }
@@ -710,9 +713,9 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
     output_block_ptr->Init(column_types);
 
     if (segment_id_.has_value() && block_id_.has_value()) {
-        auto iter = table_entry->segment_map_.find(*segment_id_);
+        auto iter = table_entry->segment_map().find(*segment_id_);
 
-        if (iter != table_entry->segment_map_.end() && iter->second->block_entries_.size() > *block_id_) {
+        if (iter != table_entry->segment_map().end() && iter->second->block_entries_.size() > *block_id_) {
             auto block = iter->second->block_entries_[*block_id_];
             auto version_path = block->VersionFilePath();
 
@@ -727,9 +730,9 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
             }
         }
     } else if (segment_id_.has_value()) {
-        auto iter = table_entry->segment_map_.find(*segment_id_);
+        auto iter = table_entry->segment_map().find(*segment_id_);
 
-        if (iter != table_entry->segment_map_.end()) {
+        if (iter != table_entry->segment_map().end()) {
             for (auto &entry : iter->second->block_entries_) {
                 auto dir_path = entry->DirPath();
 
@@ -737,7 +740,7 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
             }
         }
     } else {
-        for (auto &[_, segment] : table_entry->segment_map_) {
+        for (auto &[_, segment] : table_entry->segment_map()) {
             auto dir_path = segment->DirPath();
 
             chuck_filling(LocalFileSystem::GetFolderSizeByPath, dir_path);
@@ -1308,7 +1311,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
     Vector<SharedPtr<DataType>> column_types{varchar_type, varchar_type, bigint_type, varchar_type, varchar_type, varchar_type, varchar_type};
     output_block_ptr->Init(column_types);
 
-    for (const auto &[index_name, index_def_meta] : table_entry->index_meta_map_) {
+    for (const auto &[index_name, index_def_meta] : table_entry->index_meta_map()) {
         auto [table_index_entry, status] = index_def_meta->GetEntry(txn->TxnID(), txn->BeginTS());
         if (!status.ok()) {
             // Index isn't found.
@@ -1366,7 +1369,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
             ++column_id;
             {
                 // Append Index segment
-                SizeT segment_count = table_entry->segment_map_.size();
+                SizeT segment_count = table_entry->segment_map().size();
                 SizeT index_segment_count = column_index_entry->index_by_segment.size();
                 String result_value = Format("{}/{}", index_segment_count, segment_count);
                 Value value = Value::MakeVarchar(result_value);

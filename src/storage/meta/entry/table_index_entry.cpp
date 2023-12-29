@@ -85,7 +85,7 @@ TableIndexEntry::TableIndexEntry(TableIndexMeta *table_index_meta, u64 txn_id, T
 UniquePtr<TableIndexEntry>
 TableIndexEntry::NewTableIndexEntry(const SharedPtr<IndexDef> &index_def, TableIndexMeta *table_index_meta, u64 txn_id, TxnTimeStamp begin_ts) {
     SharedPtr<String> index_dir =
-        DetermineIndexDir(*TableIndexMeta::GetTableEntry(table_index_meta)->table_entry_dir_, *index_def->index_name_);
+        DetermineIndexDir(*TableIndexMeta::GetTableEntry(table_index_meta)->TableEntryDir(), *index_def->index_name_);
     return MakeUnique<TableIndexEntry>(index_def, table_index_meta, index_dir, txn_id, begin_ts);
 }
 

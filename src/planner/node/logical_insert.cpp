@@ -38,7 +38,7 @@ String LogicalInsert::ToString(i64 &space) const {
         space -= 4;
         arrow_str = "->  ";
     }
-    ss << String(space, ' ') << arrow_str << "Insert Table: " << *table_entry_->table_name_;
+    ss << String(space, ' ') << arrow_str << "Insert Table: " << *table_entry_->GetTableName();
     space += arrow_str.size();
 
     return ss.str();

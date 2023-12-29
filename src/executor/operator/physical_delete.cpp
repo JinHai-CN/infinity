@@ -44,7 +44,7 @@ bool PhysicalDelete::Execute(QueryContext *query_context, OperatorState *operato
         DataBlock *input_data_block_ptr = prev_op_state->data_block_array_[block_idx].get();
         auto txn = query_context->GetTxn();
         const String& db_name = *table_entry_ptr_->GetDBName();
-        auto table_name = table_entry_ptr_->table_name_;
+        auto table_name = table_entry_ptr_->GetTableName();
         Vector<RowID> row_ids;
         for (SizeT i = 0; i < input_data_block_ptr->column_count(); i++) {
             SharedPtr<ColumnVector> column_vector = input_data_block_ptr->column_vectors[i];

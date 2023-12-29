@@ -606,7 +606,7 @@ void ExplainLogicalPlan::Explain(const LogicalInsert *insert_node, SharedPtr<Vec
 
     // Table name
     {
-        String table_name_str = Format("{} - table name: {}", String(intent_size, ' '), *insert_node->table_entry()->table_name_);
+        String table_name_str = Format("{} - table name: {}", String(intent_size, ' '), *insert_node->table_entry()->GetTableName());
         result->emplace_back(MakeShared<String>(table_name_str));
     }
 
@@ -740,7 +740,7 @@ void ExplainLogicalPlan::Explain(const LogicalTableScan *table_scan_node, Shared
 
     table_name += *table_scan_node->table_collection_ptr()->GetDBName();
     table_name += ".";
-    table_name += *table_scan_node->table_collection_ptr()->table_name_;
+    table_name += *table_scan_node->table_collection_ptr()->GetTableName();
     table_name += ")";
     result->emplace_back(MakeShared<String>(table_name));
 
@@ -786,7 +786,7 @@ void ExplainLogicalPlan::Explain(const LogicalKnnScan *knn_scan_node, SharedPtr<
 
     table_name += *knn_scan_node->table_collection_ptr()->GetDBName();
     table_name += ".";
-    table_name += *knn_scan_node->table_collection_ptr()->table_name_;
+    table_name += *knn_scan_node->table_collection_ptr()->GetTableName();
     table_name += ")";
     result->emplace_back(MakeShared<String>(table_name));
 
@@ -1468,7 +1468,7 @@ void ExplainLogicalPlan::Explain(const LogicalImport *import_node, SharedPtr<Vec
 
     {
         SharedPtr<String> table_name =
-            MakeShared<String>(Format("{} - table name: {}", String(intent_size, ' '), *import_node->table_entry()->table_name_));
+            MakeShared<String>(Format("{} - table name: {}", String(intent_size, ' '), *import_node->table_entry()->GetTableName()));
         result->emplace_back(table_name);
     }
 

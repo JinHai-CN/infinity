@@ -587,7 +587,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalInsert *insert_node, SharedPtr<V
 
     // Table name
     {
-        String table_name_str = String(intent_size, ' ') + " - table name: " + *insert_node->table_entry()->table_name_;
+        String table_name_str = String(intent_size, ' ') + " - table name: " + *insert_node->table_entry()->GetTableName();
         result->emplace_back(MakeShared<String>(table_name_str));
     }
 
@@ -699,7 +699,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalTableScan *table_scan_node, Shar
     // Table alias and name
     String table_name = String(intent_size, ' ') + " - table name: " + table_scan_node->table_alias() + "(";
     table_name += *table_scan_node->TableEntry()->GetDBName() + ".";
-    table_name += *table_scan_node->TableEntry()->table_name_ + ")";
+    table_name += *table_scan_node->TableEntry()->GetTableName() + ")";
     result->emplace_back(MakeShared<String>(table_name));
 
     // Table index
@@ -735,7 +735,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalKnnScan *knn_scan_node, SharedPt
     String table_name = String(intent_size, ' ') + " - table name: " + knn_scan_node->TableAlias() + "(";
 
     table_name += *knn_scan_node->table_collection_ptr()->GetDBName() + ".";
-    table_name += *knn_scan_node->table_collection_ptr()->table_name_ + ")";
+    table_name += *knn_scan_node->table_collection_ptr()->GetTableName() + ")";
     result->emplace_back(MakeShared<String>(table_name));
 
     // Table index
@@ -1218,7 +1218,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalDelete *delete_node, SharedPtr<V
     }
 
     TableEntry *table_entry = delete_node->table_entry_ptr_;
-    header += *table_entry->GetDBName() + "." + *table_entry->table_name_;
+    header += *table_entry->GetDBName() + "." + *table_entry->GetTableName();
     result->emplace_back(MakeShared<String>(header));
 }
 
@@ -1231,7 +1231,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalUpdate *update_node, SharedPtr<V
     }
 
     TableEntry *table_entry = update_node->table_entry_ptr_;
-    header += *table_entry->GetDBName() + "." + *table_entry->table_name_;
+    header += *table_entry->GetDBName() + "." + *table_entry->GetTableName();
     result->emplace_back(MakeShared<String>(header));
 }
 
@@ -1254,7 +1254,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalImport *import_node, SharedPtr<V
     }
 
     {
-        SharedPtr<String> table_name = MakeShared<String>(String(intent_size, ' ') + " - table name: " + *import_node->table_entry()->table_name_);
+        SharedPtr<String> table_name = MakeShared<String>(String(intent_size, ' ') + " - table name: " + *import_node->table_entry()->GetTableName());
         result->emplace_back(table_name);
     }
 
@@ -1664,7 +1664,7 @@ void ExplainPhysicalPlan::Explain(const PhysicalMatch *match_node, SharedPtr<Vec
     String table_name = String(intent_size, ' ') + " - table name: " + match_node->TableAlias() + "(";
 
     table_name += *match_node->table_collection_ptr()->GetDBName() + ".";
-    table_name += *match_node->table_collection_ptr()->table_name_ + ")";
+    table_name += *match_node->table_collection_ptr()->GetTableName() + ")";
     result->emplace_back(MakeShared<String>(table_name));
 
     // Table index

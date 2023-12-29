@@ -28,7 +28,6 @@ import block_iter;
 import segment_entry;
 import segment_iter;
 import table_entry;
-import table_iter;
 
 using namespace infinity;
 
@@ -293,17 +292,4 @@ TEST_F(IteratorTest, table_iter_test) {
     segments.emplace(1, segment2);
 
     MockTableEntry entry(segments, unsealed_segment.get());
-
-    //------------------------------------------
-
-    TableIter iter = TableIter::Make(&entry, std::make_shared<std::vector<size_t>>(std::vector<size_t>{0, 1}));
-    for (size_t i = 0; i < row_cnt; ++i) {
-        auto ret = iter.Next();
-        ASSERT_TRUE(ret.has_value());
-        auto a = *reinterpret_cast<const int *>(ret.value()[0]);
-        auto b = *reinterpret_cast<const double *>(ret.value()[1]);
-        ASSERT_EQ(a, i);
-        ASSERT_EQ(b, (double)i + 0.5);
-    }
-    ASSERT_FALSE(iter.Next().has_value());
 }

@@ -210,7 +210,7 @@ void BlockEntry::DeleteData(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp co
 
     block_entry->using_txn_id_ = txn_id;
 
-    String *table_collect_name_ptr = block_entry->segment_entry_->table_entry_->table_name_.get();
+    String *table_collect_name_ptr = block_entry->segment_entry_->table_entry_->GetTableName().get();
     u32 segment_id = block_entry->segment_entry_->segment_id_;
     u16 block_id = block_entry->block_id_;
 

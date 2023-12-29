@@ -170,7 +170,14 @@ public:
 
     static Status ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment);
 
-    inline static u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
+    static u32 GetNextSegmentID(TableEntry *table_entry);
+
+    static u32 GetMaxSegmentID(const TableEntry *table_entry);
+
+    static void ImportSegment(TableEntry* table_entry, u32 segment_id, SharedPtr<SegmentEntry>& segment_entry);
+
+    static void IncreaseTableRowCount(TableEntry* table_entry, u64 increased_row_count);
+
 public:
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

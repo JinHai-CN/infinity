@@ -373,7 +373,7 @@ Json TableEntry::Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, 
     {
         SharedLock<RWMutex> lck(table_entry->rw_locker_);
         json_res["table_entry_dir"] = *table_entry->table_entry_dir_;
-        json_res["table_name"] = *table_entry->table_name_;
+        json_res["table_name"] = *table_entry->GetTableName();
         json_res["table_entry_type"] = table_entry->table_entry_type_;
         json_res["row_count"] = table_entry->row_count_.load();
         json_res["begin_ts"] = table_entry->begin_ts_;

@@ -138,7 +138,7 @@ const SharedPtr<String> &DataTable::SchemaName() const { return definition_ptr_-
 
 SizeT DataTable::GetColumnIdByName(const String &column_name) { return definition_ptr_->GetColIdByName(column_name); }
 
-String &DataTable::GetColumnNameById(SizeT idx) const { return definition_ptr_->columns()[idx]->name(); }
+const String &DataTable::GetColumnNameById(SizeT idx) const { return definition_ptr_->columns()[idx]->name(); }
 
 SharedPtr<DataType> DataTable::GetColumnTypeById(SizeT idx) const { return definition_ptr_->columns()[idx]->type(); }
 

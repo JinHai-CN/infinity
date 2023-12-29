@@ -59,7 +59,7 @@ String LogicalUpdate::ToString(i64 &space) const {
         if (i > 0)
             ss << ", ";
         ss << " ";
-        ss << table_entry_ptr_->columns_[update_columns_[i].first]->name_;
+        ss << table_entry_ptr_->GetColumnDefByID(update_columns_[i].first)->name_;
         ss << " = " << update_columns_[i].second->Name();
     }
     return ss.str();

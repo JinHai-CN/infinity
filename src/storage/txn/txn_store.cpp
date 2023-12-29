@@ -38,7 +38,7 @@ module txn_store;
 namespace infinity {
 
 UniquePtr<String> TxnTableStore::Append(const SharedPtr<DataBlock> &input_block) {
-    SizeT column_count = table_entry_->columns_.size();
+    SizeT column_count = table_entry_->ColumnCount();
     if (input_block->column_count() != column_count) {
         String err_msg = Format("Attempt to insert different column count data block into transaction table store");
         LOG_ERROR(err_msg);
@@ -47,7 +47,7 @@ UniquePtr<String> TxnTableStore::Append(const SharedPtr<DataBlock> &input_block)
 
     Vector<SharedPtr<DataType>> column_types;
     for (SizeT col_id = 0; col_id < column_count; ++col_id) {
-        column_types.emplace_back(table_entry_->columns_[col_id]->type());
+        column_types.emplace_back(table_entry_->GetColumnDefByID(col_id)->type());
         if (*column_types.back() != *input_block->column_vectors[col_id]->data_type()) {
             String err_msg = Format("Attempt to insert different type data into transaction table store");
             LOG_ERROR(err_msg);
@@ -148,7 +148,7 @@ void TxnTableStore::PrepareCommit() {
     append_state_ = MakeUnique<AppendState>(this->blocks_);
 
     // Start to append
-    LOG_TRACE(Format("Transaction local storage table: {}, Start to prepare commit", *table_entry_->table_name_));
+    LOG_TRACE(Format("Transaction local storage table: {}, Start to prepare commit", *table_entry_->GetTableName()));
     Txn *txn_ptr = (Txn *)txn_;
     NewCatalog::Append(table_entry_, txn_->TxnID(), this, txn_ptr->GetBufferMgr());
 
@@ -162,7 +162,7 @@ void TxnTableStore::PrepareCommit() {
     NewCatalog::Delete(table_entry_, txn_->TxnID(), txn_->CommitTS(), delete_state_);
     NewCatalog::CommitCreateIndex(txn_indexes_store_);
 
-    LOG_TRACE(Format("Transaction local storage table: {}, Complete commit preparing", *table_entry_->table_name_));
+    LOG_TRACE(Format("Transaction local storage table: {}, Complete commit preparing", *table_entry_->GetTableName()));
 }
 
 /**

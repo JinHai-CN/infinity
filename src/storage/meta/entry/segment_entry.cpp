@@ -73,9 +73,9 @@ SharedPtr<SegmentEntry> SegmentEntry::MakeNewSegmentEntry(const TableEntry *tabl
     new_entry->max_row_ts_ = 0;
 
     const auto *table_ptr = (const TableEntry *)table_entry;
-    new_entry->column_count_ = table_ptr->columns_.size();
+    new_entry->column_count_ = table_ptr->ColumnCount();
 
-    new_entry->segment_dir_ = SegmentEntry::DetermineSegmentDir(*table_entry->table_entry_dir_, segment_id);
+    new_entry->segment_dir_ = SegmentEntry::DetermineSegmentDir(*table_entry->TableEntryDir(), segment_id);
     if (new_entry->block_entries_.empty()) {
         new_entry->block_entries_.emplace_back(
             MakeUnique<BlockEntry>(new_entry.get(), new_entry->block_entries_.size(), 0, new_entry->column_count_, buffer_mgr));
@@ -93,7 +93,7 @@ SegmentEntry::MakeReplaySegmentEntry(const TableEntry *table_entry, u32 segment_
     new_entry->max_row_ts_ = commit_ts;
 
     const auto *table_ptr = (const TableEntry *)table_entry;
-    new_entry->column_count_ = table_ptr->columns_.size();
+    new_entry->column_count_ = table_ptr->ColumnCount();
     new_entry->segment_dir_ = Move(segment_dir);
     return new_entry;
 }

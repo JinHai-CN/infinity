@@ -318,6 +318,20 @@ Status NewCatalog::ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts
     return TableEntry::ImportSegment(table_entry, commit_ts, segment);
 }
 
+u32 NewCatalog::GetNextSegmentID(TableEntry *table_entry) { return TableEntry::GetNextSegmentID(table_entry); }
+
+u32 NewCatalog::GetMaxSegmentID(const TableEntry *table_entry) { return TableEntry::GetMaxSegmentID(table_entry); }
+
+void NewCatalog::ImportSegment(TableEntry* table_entry, u32 segment_id, SharedPtr<SegmentEntry>& segment_entry) {
+    table_entry->segment_map_.emplace(segment_id, Move(segment_entry));
+    // ATTENTION: focusing on the segment id
+    table_entry->next_segment_id_++;
+}
+
+void NewCatalog::IncreaseTableRowCount(TableEntry* table_entry, u64 increased_row_count) {
+    table_entry->row_count_ += increased_row_count;
+}
+
 SharedPtr<FunctionSet> NewCatalog::GetFunctionSetByName(NewCatalog *catalog, String function_name) {
     // Transfer the function to upper case.
     StringToLower(function_name);

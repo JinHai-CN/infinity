@@ -522,7 +522,7 @@ Optional<SharedPtr<BaseExpression>> ExpressionBinder::TryBuildSpecialFuncExpr(co
                                                                                table_name,
                                                                                bind_context_ptr->table_name2table_index_[table_name],
                                                                                column_name,
-                                                                               table_entry->columns_.size() + special_function->extra_idx(),
+                                                                               table_entry->ColumnCount() + special_function->extra_idx(),
                                                                                depth,
                                                                                special_function->special_type());
         return bound_column_expr;

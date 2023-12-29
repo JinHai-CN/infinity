@@ -151,7 +151,7 @@ void Txn::GetMetaTableState(MetaTableState *meta_table_state, const String &db_n
 }
 
 void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_entry, const Vector<ColumnID> &columns) {
-    u64 max_segment_id = TableEntry::GetMaxSegmentID(table_entry);
+    u64 max_segment_id = NewCatalog::GetMaxSegmentID(table_entry);
     for (u64 segment_id = 0; segment_id < max_segment_id; ++segment_id) {
         SegmentEntry *segment_entry_ptr = TableEntry::GetSegmentByID(table_entry, segment_id);
 
@@ -182,12 +182,12 @@ void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *
 
 TxnTableStore *Txn::GetTxnTableStore(TableEntry *table_entry) {
     UniqueLock<Mutex> lk(lock_);
-    auto txn_table_iter = txn_tables_store_.find(*table_entry->table_name_);
+    auto txn_table_iter = txn_tables_store_.find(*table_entry->GetTableName());
     if (txn_table_iter != txn_tables_store_.end()) {
         return txn_table_iter->second.get();
     }
-    txn_tables_store_[*table_entry->table_name_] = MakeUnique<TxnTableStore>(table_entry, this);
-    TxnTableStore *txn_table_store = txn_tables_store_[*table_entry->table_name_].get();
+    txn_tables_store_[*table_entry->GetTableName()] = MakeUnique<TxnTableStore>(table_entry, this);
+    TxnTableStore *txn_table_store = txn_tables_store_[*table_entry->GetTableName()].get();
     return txn_table_store;
 }
 
