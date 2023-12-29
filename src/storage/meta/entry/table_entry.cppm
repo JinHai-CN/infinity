@@ -95,25 +95,23 @@ public:
 public:
 
 
-    static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
+//    static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
 
     static inline u32 GetMaxSegmentID(const TableEntry *table_entry) { return table_entry->next_segment_id_; }
 
     static SegmentEntry *GetSegmentByID(const TableEntry *table_entry, u32 seg_id);
 
-    //    static DBEntry *GetDBEntry(const TableEntry *table_entry);
-
     static SharedPtr<BlockIndex> GetBlockIndex(TableEntry *table_entry, u64 txn_id, TxnTimeStamp begin_ts);
-
-    static Json Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
-
-    static UniquePtr<TableEntry> Deserialize(const Json &table_entry_json, TableMeta *table_meta, BufferManager *buffer_mgr);
 
     static void GetFullTextAnalyzers(TableEntry *table_entry,
                                      u64 txn_id,
                                      TxnTimeStamp begin_ts,
                                      SharedPtr<IrsIndexEntry> &irs_index_entry,
                                      Map<String, String> &column2analyzer);
+
+    static Json Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
+
+    static UniquePtr<TableEntry> Deserialize(const Json &table_entry_json, TableMeta *table_meta, BufferManager *buffer_mgr);
 
     virtual void MergeFrom(BaseEntry &other);
 

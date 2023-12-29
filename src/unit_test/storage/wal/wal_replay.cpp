@@ -38,6 +38,7 @@ import base_entry;
 import column_vector;
 import physical_import;
 import txn;
+import new_catalog;
 
 class WalReplayTest : public BaseTest {
     void SetUp() override { system("rm -rf /tmp/infinity"); }
@@ -518,7 +519,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
 
             auto [table_entry, status] = txn4->GetTableEntry("default", "tbl1");
             EXPECT_NE(table_entry, nullptr);
-            u64 segment_id = TableEntry::GetNextSegmentID(table_entry);
+            u64 segment_id = NewCatalog::GetNextSegmentID(table_entry);
             EXPECT_EQ(segment_id, 0);
             auto segment_entry = SegmentEntry::MakeNewSegmentEntry(table_entry, segment_id, buffer_manager);
             EXPECT_EQ(segment_entry->segment_id_, 0);

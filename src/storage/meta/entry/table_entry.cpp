@@ -184,6 +184,7 @@ void TableEntry::GetFullTextAnalyzers(TableEntry *table_entry,
 void TableEntry::Append(TableEntry *table_entry, u64 txn_id, void *txn_store, BufferManager *buffer_mgr) {
     if (table_entry->deleted_) {
         Error<StorageException>("table is deleted");
+        return;
     }
     TxnTableStore *txn_store_ptr = (TxnTableStore *)txn_store;
     AppendState *append_state_ptr = txn_store_ptr->append_state_.get();
@@ -197,11 +198,11 @@ void TableEntry::Append(TableEntry *table_entry, u64 txn_id, void *txn_store, Bu
             UniqueLock<RWMutex> rw_locker(table_entry->rw_locker_); // prevent another read conflict with this append operation
             if (table_entry->unsealed_segment_ == nullptr || SegmentEntry::Room(table_entry->unsealed_segment_) <= 0) {
                 // unsealed_segment_ is unpopulated or full
-                SharedPtr<SegmentEntry> new_segment =
-                    SegmentEntry::MakeNewSegmentEntry(table_entry, TableEntry::GetNextSegmentID(table_entry), buffer_mgr);
-                table_entry->segment_map_.emplace(new_segment->segment_id_, new_segment);
+                u32 new_segment_id = table_entry->next_segment_id_++;
+                SharedPtr<SegmentEntry> new_segment = SegmentEntry::MakeNewSegmentEntry(table_entry, new_segment_id, buffer_mgr);
+                table_entry->segment_map_.emplace(new_segment_id, new_segment);
                 table_entry->unsealed_segment_ = new_segment.get();
-                LOG_TRACE(Format("Created a new segment {}", new_segment->segment_id_));
+                LOG_TRACE(Format("Created a new segment {}", new_segment_id));
             }
         }
         // Append data from app_state_ptr to the buffer in segment. If append all data, then set finish.
