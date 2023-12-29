@@ -260,7 +260,7 @@ Status TableEntry::Delete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp comm
         if (segment_entry == nullptr) {
             UniquePtr<String> err_msg = MakeUnique<String>(Format("Going to delete data in non-exist segment: {}", segment_id));
             Error<ExecutorException>(*err_msg);
-            return Status(ErrorCode::kDuplicate, Move(err_msg));
+            return Status(ErrorCode::kNotFound, Move(err_msg));
         }
         const HashMap<u16, Vector<RowID>> &block_row_hashmap = to_delete_seg_rows.second;
         SegmentEntry::DeleteData(segment_entry, txn_id, commit_ts, block_row_hashmap);
@@ -309,11 +309,13 @@ Status TableEntry::RollbackDelete(TableEntry *, u64 txn_id, DeleteState &, Buffe
     return Status::OK();
 }
 
-UniquePtr<String> TableEntry::ImportSegment(TableEntry *table_entry, Txn *txn_ptr, SharedPtr<SegmentEntry> segment) {
+Status TableEntry::ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment) {
     if (table_entry->deleted_) {
-        Error<StorageException>("table is deleted");
+        UniquePtr<String> err_msg = MakeUnique<String>(Format("Table {} is deleted.", *table_entry->GetTableName()));
+        Error<ExecutorException>(*err_msg);
+        return Status(ErrorCode::kNotFound, Move(err_msg));
     }
-    TxnTimeStamp commit_ts = txn_ptr->CommitTS();
+
     segment->min_row_ts_ = commit_ts;
     segment->max_row_ts_ = commit_ts;
 
@@ -329,7 +331,7 @@ UniquePtr<String> TableEntry::ImportSegment(TableEntry *table_entry, Txn *txn_pt
     UniqueLock<RWMutex> rw_locker(table_entry->rw_locker_);
     table_entry->row_count_ += row_count;
     table_entry->segment_map_.emplace(segment->segment_id_, Move(segment));
-    return nullptr;
+    return Status::OK();
 }
 
 SegmentEntry *TableEntry::GetSegmentByID(const TableEntry *table_entry, u32 segment_id) {

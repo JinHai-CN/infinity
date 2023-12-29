@@ -74,7 +74,7 @@ Status Txn::GetTableEntry(const String &db_name, const String &table_name, Table
             return status;
         }
 
-        table_entry = (TableEntry *)base_table_entry;
+        table_entry = base_table_entry;
         txn_table_entries_[table_name] = reinterpret_cast<BaseEntry *>(table_entry);
     } else {
         table_entry = (TableEntry *)table_iter->second;

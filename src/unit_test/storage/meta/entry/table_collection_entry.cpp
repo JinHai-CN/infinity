@@ -156,9 +156,9 @@ TEST_F(TableEntryTest, test2) {
         new_txn->Begin();
 
         // Txn2: Get db1, OK
-        auto [base_table_entry, s2] = new_txn->GetTableByName("db1", "tbl1");
+        auto [table_entry, s2] = new_txn->GetTableByName("db1", "tbl1");
         EXPECT_TRUE(s2.ok());
-        EXPECT_NE(base_table_entry, nullptr);
+        EXPECT_NE(table_entry, nullptr);
 
         // Prepare the input data block
         Vector<SharedPtr<DataType>> column_types;

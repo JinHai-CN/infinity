@@ -44,6 +44,7 @@ import index_def;
 import table_index_meta;
 import txn_store;
 import data_access_state;
+import segment_entry;
 
 module new_catalog;
 
@@ -311,6 +312,10 @@ void NewCatalog::CommitDelete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp 
 
 Status NewCatalog::RollbackDelete(TableEntry *table_entry, u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr) {
     return TableEntry::RollbackDelete(table_entry, txn_id, append_state, buffer_mgr);
+}
+
+Status NewCatalog::ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment) {
+    return TableEntry::ImportSegment(table_entry, commit_ts, segment);
 }
 
 SharedPtr<FunctionSet> NewCatalog::GetFunctionSetByName(NewCatalog *catalog, String function_name) {

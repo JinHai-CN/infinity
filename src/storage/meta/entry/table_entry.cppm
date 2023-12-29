@@ -86,13 +86,14 @@ private:
 
     static Status RollbackDelete(TableEntry *table_entry, u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr);
 
+    static Status ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment);
 public:
     const SharedPtr<String> &GetDBName() const;
 
     const SharedPtr<String> &GetTableName() const { return table_name_; }
 
 public:
-    static UniquePtr<String> ImportSegment(TableEntry *table_entry, Txn *txn_ptr, SharedPtr<SegmentEntry> segment);
+
 
     static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
 

@@ -382,11 +382,11 @@ SharedPtr<TableRef> QueryBinder::BuildBaseTable(QueryContext *query_context, con
         schema_name = from_table->db_name_;
     }
 
-    auto [base_table_entry, status] = query_context->GetTxn()->GetTableByName(schema_name, from_table->table_name_);
+    auto [table_entry, status] = query_context->GetTxn()->GetTableByName(schema_name, from_table->table_name_);
     if (!status.ok()) {
         Error<PlannerException>(status.message());
     }
-    TableEntry *table_entry = static_cast<TableEntry *>(base_table_entry);
+
     if (table_entry->table_entry_type_ == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
     }

@@ -156,7 +156,7 @@ void TxnTableStore::PrepareCommit() {
     for (SizeT seg_idx = 0; seg_idx < segment_count; ++seg_idx) {
         const auto &uncommitted = uncommitted_segments_[seg_idx];
         // Segments in `uncommitted_segments_` are already persisted. Import them to memory catalog.
-        TableEntry::ImportSegment(table_entry_, txn_, uncommitted);
+        NewCatalog::ImportSegment(table_entry_, txn_->CommitTS(), uncommitted);
     }
 
     NewCatalog::Delete(table_entry_, txn_->TxnID(), txn_->CommitTS(), delete_state_);

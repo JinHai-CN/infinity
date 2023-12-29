@@ -36,6 +36,7 @@ import table_index_entry;
 import index_def;
 import txn_store;
 import data_access_state;
+import segment_entry;
 
 export module new_catalog;
 
@@ -167,6 +168,7 @@ public:
 
     static Status RollbackDelete(TableEntry *table_entry, u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr);
 
+    static Status ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment);
 public:
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

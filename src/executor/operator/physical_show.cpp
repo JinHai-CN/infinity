@@ -598,14 +598,12 @@ void PhysicalShow::ExecuteShowProfiles(QueryContext *query_context, ShowOperator
 void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorState *show_operator_state) {
     auto txn = query_context->GetTxn();
 
-    auto [base_table_entry, status] = txn->GetTableByName(db_name_, object_name_);
+    auto [table_entry, status] = txn->GetTableByName(db_name_, object_name_);
     if (!status.ok()) {
         show_operator_state->error_message_ = Move(status.msg_);
         Error<ExecutorException>(Format("{} isn't found", object_name_));
         return;
     }
-
-    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
 
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
 
@@ -674,14 +672,13 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
 void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperatorState *show_operator_state) {
     auto txn = query_context->GetTxn();
 
-    auto [base_table_entry, status] = txn->GetTableByName(db_name_, object_name_);
+    auto [table_entry, status] = txn->GetTableByName(db_name_, object_name_);
     if (!status.ok()) {
         show_operator_state->error_message_ = Move(status.msg_);
         Error<ExecutorException>(Format("{} isn't found", object_name_));
         return;
     }
 
-    auto table_entry = dynamic_cast<TableEntry *>(base_table_entry);
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
 
     Vector<SharedPtr<ColumnDef>> column_defs = {
@@ -1288,14 +1285,12 @@ void PhysicalShow::ExecuteShowConfigs(QueryContext *query_context, ShowOperatorS
 void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorState *show_operator_state) {
     auto txn = query_context->GetTxn();
 
-    auto [base_table_entry, table_status] = txn->GetTableByName(db_name_, object_name_);
+    auto [table_entry, table_status] = txn->GetTableByName(db_name_, object_name_);
     if (!table_status.ok()) {
         show_operator_state->error_message_ = Move(table_status.msg_);
         //        Error<ExecutorException>(table_status.message());
         return;
     }
-
-    auto table_entry = static_cast<TableEntry *>(base_table_entry);
 
     auto varchar_type = MakeShared<DataType>(LogicalType::kVarchar);
     auto bigint_type = MakeShared<DataType>(LogicalType::kBigInt);

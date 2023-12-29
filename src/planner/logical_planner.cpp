@@ -159,12 +159,10 @@ Status LogicalPlanner::BuildInsertValue(const InsertStatement *statement, Shared
     }
     // Check schema and table in the catalog
     Txn *txn = query_context_ptr_->GetTxn();
-    auto [base_table_entry, status] = txn->GetTableByName(schema_name, table_name);
+    auto [table_entry, status] = txn->GetTableByName(schema_name, table_name);
     if (!status.ok()) {
         Error<PlannerException>(status.message());
     }
-
-    TableEntry *table_entry = static_cast<TableEntry *>(base_table_entry);
 
     if (table_entry->table_entry_type_ == TableEntryType::kCollectionEntry) {
         Error<PlannerException>("Currently, collection isn't supported.");
@@ -639,7 +637,7 @@ Status LogicalPlanner::BuildExport(const CopyStatement *statement, SharedPtr<Bin
     // Check the table existence
     Txn *txn = query_context_ptr_->GetTxn();
 
-    auto [base_entry, status] = txn->GetTableByName(statement->schema_name_, statement->table_name_);
+    auto [table_entry, status] = txn->GetTableByName(statement->schema_name_, statement->table_name_);
     if (!status.ok()) {
         Error<PlannerException>(status.message());
     }
@@ -667,11 +665,10 @@ Status LogicalPlanner::BuildExport(const CopyStatement *statement, SharedPtr<Bin
 Status LogicalPlanner::BuildImport(const CopyStatement *statement, SharedPtr<BindContext> &bind_context_ptr) {
     // Check the table existence
     Txn *txn = query_context_ptr_->GetTxn();
-    auto [base_entry, status] = txn->GetTableByName(statement->schema_name_, statement->table_name_);
+    auto [table_entry, status] = txn->GetTableByName(statement->schema_name_, statement->table_name_);
     if (!status.ok()) {
         Error<PlannerException>(status.message());
     }
-    auto table_entry = dynamic_cast<TableEntry *>(base_entry);
 
     // Check the file existence
     LocalFileSystem fs;
@@ -730,7 +727,7 @@ Status LogicalPlanner::BuildCommand(const CommandStatement *statement, SharedPtr
         }
         case CommandType::kCheckTable: {
             CheckTable *check_table = (CheckTable *)(command_statement->command_info_.get());
-            auto [base_entry, status] = txn->GetTableByName(query_context_ptr_->schema_name(), check_table->table_name());
+            auto [table_entry, status] = txn->GetTableByName(query_context_ptr_->schema_name(), check_table->table_name());
             if (status.ok()) {
                 SharedPtr<LogicalNode> logical_command =
                     MakeShared<LogicalCommand>(bind_context_ptr->GetNewLogicalNodeId(), command_statement->command_info_);
