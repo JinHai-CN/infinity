@@ -103,7 +103,7 @@ int SegmentEntry::Room(SegmentEntry *segment_entry) {
     return segment_entry->row_capacity_ - segment_entry->row_count_;
 }
 
-u64 SegmentEntry::AppendData(SegmentEntry *segment_entry, Txn *txn_ptr, AppendState *append_state_ptr, BufferManager *buffer_mgr) {
+u64 SegmentEntry::AppendData(SegmentEntry *segment_entry, u64 txn_id, AppendState *append_state_ptr, BufferManager *buffer_mgr) {
     UniqueLock<RWMutex> lck(segment_entry->rw_locker_);
     if (segment_entry->row_capacity_ - segment_entry->row_count_ <= 0)
         return 0;
@@ -129,7 +129,7 @@ u64 SegmentEntry::AppendData(SegmentEntry *segment_entry, Txn *txn_ptr, AppendSt
             u16 range_block_start_row = last_block_entry->row_count_;
 
             u16 actual_appended =
-                BlockEntry::AppendData(last_block_entry, txn_ptr, input_block, append_state_ptr->current_block_offset_, to_append_rows, buffer_mgr);
+                BlockEntry::AppendData(last_block_entry, txn_id, input_block, append_state_ptr->current_block_offset_, to_append_rows, buffer_mgr);
             if (to_append_rows < actual_appended) {
                 Error<StorageException>(Format("Attempt to append rows: {}, but rows: {} are appended", to_append_rows, actual_appended));
             }
@@ -149,7 +149,7 @@ u64 SegmentEntry::AppendData(SegmentEntry *segment_entry, Txn *txn_ptr, AppendSt
     return total_copied;
 }
 
-void SegmentEntry::DeleteData(SegmentEntry *segment_entry, Txn *txn_ptr, const HashMap<u16, Vector<RowID>> &block_row_hashmap) {
+void SegmentEntry::DeleteData(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, const HashMap<u16, Vector<RowID>> &block_row_hashmap) {
     UniqueLock<RWMutex> lck(segment_entry->rw_locker_);
 
     for (const auto &row_hash_map : block_row_hashmap) {
@@ -160,7 +160,7 @@ void SegmentEntry::DeleteData(SegmentEntry *segment_entry, Txn *txn_ptr, const H
         }
 
         const Vector<RowID> &rows = row_hash_map.second;
-        BlockEntry::DeleteData(block_entry, txn_ptr, rows);
+        BlockEntry::DeleteData(block_entry, txn_id, commit_ts, rows);
     }
 }
 
@@ -326,8 +326,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
     return segment_column_index_entry;
 }
 
-void SegmentEntry::CommitAppend(SegmentEntry *segment_entry, Txn *txn_ptr, u16 block_id, u16, u16) {
-    TxnTimeStamp commit_ts = txn_ptr->CommitTS();
+void SegmentEntry::CommitAppend(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, u16 block_id, u16, u16) {
     SharedPtr<BlockEntry> block_entry;
     {
         UniqueLock<RWMutex> lck(segment_entry->rw_locker_);
@@ -337,11 +336,10 @@ void SegmentEntry::CommitAppend(SegmentEntry *segment_entry, Txn *txn_ptr, u16 b
         segment_entry->max_row_ts_ = Max(segment_entry->max_row_ts_, commit_ts);
         block_entry = segment_entry->block_entries_[block_id];
     }
-    BlockEntry::CommitAppend(block_entry.get(), txn_ptr);
+    BlockEntry::CommitAppend(block_entry.get(), txn_id, commit_ts);
 }
 
-void SegmentEntry::CommitDelete(SegmentEntry *segment_entry, Txn *txn_ptr, const HashMap<u16, Vector<RowID>> &block_row_hashmap) {
-    TxnTimeStamp commit_ts = txn_ptr->CommitTS();
+void SegmentEntry::CommitDelete(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, const HashMap<u16, Vector<RowID>> &block_row_hashmap) {
     UniqueLock<RWMutex> lck(segment_entry->rw_locker_);
 
     for (const auto &row_hash_map : block_row_hashmap) {
@@ -352,7 +350,7 @@ void SegmentEntry::CommitDelete(SegmentEntry *segment_entry, Txn *txn_ptr, const
             Error<StorageException>(Format("The segment doesn't contain the given block: {}.", block_id));
         }
 
-        BlockEntry::CommitDelete(block_entry, txn_ptr);
+        BlockEntry::CommitDelete(block_entry, txn_id, commit_ts);
         segment_entry->max_row_ts_ = Max(segment_entry->max_row_ts_, commit_ts);
     }
 }

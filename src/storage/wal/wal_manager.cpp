@@ -712,8 +712,8 @@ void WalManager::WalCmdDeleteReplay(const WalCmdDelete &cmd, u64 txn_id, i64 com
     auto table_store = MakeShared<TxnTableStore>(table_entry, fake_txn.get());
     table_store->Delete(cmd.row_ids);
     fake_txn->FakeCommit(commit_ts);
-    TableEntry::Delete(table_store->table_entry_, table_store->txn_, table_store->delete_state_);
-    TableEntry::CommitDelete(table_store->table_entry_, table_store->txn_, table_store->delete_state_);
+    NewCatalog::Delete(table_store->table_entry_, table_store->txn_->TxnID(), table_store->txn_->CommitTS(), table_store->delete_state_);
+    NewCatalog::CommitDelete(table_store->table_entry_, table_store->txn_->TxnID(), table_store->txn_->CommitTS(), table_store->delete_state_);
 }
 
 void WalManager::WalCmdAppendReplay(const WalCmdAppend &cmd, u64 txn_id, i64 commit_ts) {
@@ -731,8 +731,8 @@ void WalManager::WalCmdAppendReplay(const WalCmdAppend &cmd, u64 txn_id, i64 com
     table_store->append_state_ = Move(append_state);
 
     fake_txn->FakeCommit(commit_ts);
-    TableEntry::Append(table_store->table_entry_, table_store->txn_, table_store.get(), storage_->buffer_manager());
-    TableEntry::CommitAppend(table_store->table_entry_, table_store->txn_, table_store->append_state_.get());
+    NewCatalog::Append(table_store->table_entry_, table_store->txn_->TxnID(), table_store.get(), storage_->buffer_manager());
+    NewCatalog::CommitAppend(table_store->table_entry_, table_store->txn_->TxnID(), table_store->txn_->CommitTS(), table_store->append_state_.get());
 }
 
 } // namespace infinity

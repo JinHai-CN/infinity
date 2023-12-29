@@ -87,7 +87,8 @@ UniquePtr<String> TxnTableStore::Import(const SharedPtr<SegmentEntry> &segment) 
     return nullptr;
 }
 
-UniquePtr<String> TxnTableStore::CreateIndexFile(TableIndexEntry *table_index_entry, u64 column_id, u32 segment_id, SharedPtr<SegmentColumnIndexEntry> index) {
+UniquePtr<String>
+TxnTableStore::CreateIndexFile(TableIndexEntry *table_index_entry, u64 column_id, u32 segment_id, SharedPtr<SegmentColumnIndexEntry> index) {
     const String &index_name = *table_index_entry->index_def_->index_name_;
     if (auto column_index_iter = txn_indexes_store_.find(index_name); column_index_iter != txn_indexes_store_.end()) {
         TxnIndexStore *txn_index_store = &(column_index_iter->second);
@@ -135,7 +136,7 @@ void TxnTableStore::Scan(SharedPtr<DataBlock> &) {}
 void TxnTableStore::Rollback() {
     if (append_state_.get() != nullptr) {
         // Rollback the data already been appended.
-        TableEntry::RollbackAppend(table_entry_, txn_, this);
+        NewCatalog::RollbackAppend(table_entry_, txn_->TxnID(), txn_->CommitTS(), this);
         LOG_TRACE(Format("Rollback prepare appended data in table: {}", *table_entry_->GetTableName()));
     }
 
@@ -149,7 +150,7 @@ void TxnTableStore::PrepareCommit() {
     // Start to append
     LOG_TRACE(Format("Transaction local storage table: {}, Start to prepare commit", *table_entry_->table_name_));
     Txn *txn_ptr = (Txn *)txn_;
-    TableEntry::Append(table_entry_, txn_, this, txn_ptr->GetBufferMgr());
+    NewCatalog::Append(table_entry_, txn_->TxnID(), this, txn_ptr->GetBufferMgr());
 
     SizeT segment_count = uncommitted_segments_.size();
     for (SizeT seg_idx = 0; seg_idx < segment_count; ++seg_idx) {
@@ -158,8 +159,7 @@ void TxnTableStore::PrepareCommit() {
         TableEntry::ImportSegment(table_entry_, txn_, uncommitted);
     }
 
-    TableEntry::Delete(table_entry_, txn_, delete_state_);
-
+    NewCatalog::Delete(table_entry_, txn_->TxnID(), txn_->CommitTS(), delete_state_);
     NewCatalog::CommitCreateIndex(txn_indexes_store_);
 
     LOG_TRACE(Format("Transaction local storage table: {}, Complete commit preparing", *table_entry_->table_name_));
@@ -169,8 +169,8 @@ void TxnTableStore::PrepareCommit() {
  * @brief Call for really commit the data to disk.
  */
 void TxnTableStore::Commit() const {
-    TableEntry::CommitAppend(table_entry_, txn_, append_state_.get());
-    TableEntry::CommitDelete(table_entry_, txn_, delete_state_);
+    NewCatalog::CommitAppend(table_entry_, txn_->TxnID(), txn_->CommitTS(), append_state_.get());
+    NewCatalog::CommitDelete(table_entry_, txn_->TxnID(), txn_->CommitTS(), delete_state_);
 }
 
 } // namespace infinity

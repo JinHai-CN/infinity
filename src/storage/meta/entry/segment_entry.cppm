@@ -64,9 +64,9 @@ public:
     static SharedPtr<SegmentEntry>
     MakeReplaySegmentEntry(const TableEntry *table_entry, u32 segment_id, SharedPtr<String> segment_dir, TxnTimeStamp commit_ts);
 
-    static u64 AppendData(SegmentEntry *segment_entry, Txn *txn_ptr, AppendState *append_state_ptr, BufferManager *buffer_mgr);
+    static u64 AppendData(SegmentEntry *segment_entry, u64 txn_id, AppendState *append_state_ptr, BufferManager *buffer_mgr);
 
-    static void DeleteData(SegmentEntry *segment_entry, Txn *txn_ptr, const HashMap<u16, Vector<RowID>> &block_row_hashmap);
+    static void DeleteData(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, const HashMap<u16, Vector<RowID>> &block_row_hashmap);
 
     static SharedPtr<SegmentColumnIndexEntry> CreateIndexFile(SegmentEntry *segment_entry,
                                                               ColumnIndexEntry *column_index_entry,
@@ -75,9 +75,9 @@ public:
                                                               BufferManager *buffer_mgr,
                                                               TxnTableStore *txn_store);
 
-    static void CommitAppend(SegmentEntry *segment_entry, Txn *txn_ptr, u16 block_id, u16 start_pos, u16 row_count);
+    static void CommitAppend(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, u16 block_id, u16 start_pos, u16 row_count);
 
-    static void CommitDelete(SegmentEntry *segment_entry, Txn *txn_ptr, const HashMap<u16, Vector<RowID>> &block_row_hashmap);
+    static void CommitDelete(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, const HashMap<u16, Vector<RowID>> &block_row_hashmap);
 
     static u16 GetMaxBlockID(const SegmentEntry *segment_entry);
 
@@ -98,7 +98,7 @@ private:
 
 public:
     static UniquePtr<CreateIndexParam>
-    GetCreateIndexParam(const SegmentEntry *segment_entry, const IndexBase* index_base, const ColumnDef* column_def);
+    GetCreateIndexParam(const SegmentEntry *segment_entry, const IndexBase *index_base, const ColumnDef *column_def);
 };
 
 } // namespace infinity

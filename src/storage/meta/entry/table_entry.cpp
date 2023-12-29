@@ -181,7 +181,7 @@ void TableEntry::GetFullTextAnalyzers(TableEntry *table_entry,
     }
 }
 
-void TableEntry::Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, BufferManager *buffer_mgr) {
+void TableEntry::Append(TableEntry *table_entry, u64 txn_id, void *txn_store, BufferManager *buffer_mgr) {
     if (table_entry->deleted_) {
         Error<StorageException>("table is deleted");
     }
@@ -205,7 +205,7 @@ void TableEntry::Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, 
             }
         }
         // Append data from app_state_ptr to the buffer in segment. If append all data, then set finish.
-        u64 actual_appended = SegmentEntry::AppendData(table_entry->unsealed_segment_, txn_ptr, append_state_ptr, buffer_mgr);
+        u64 actual_appended = SegmentEntry::AppendData(table_entry->unsealed_segment_, txn_id, append_state_ptr, buffer_mgr);
         LOG_TRACE(Format("Segment {} is appended with {} rows", table_entry->unsealed_segment_->segment_id_, actual_appended));
     }
 }
@@ -253,20 +253,22 @@ void TableEntry::CommitCreateIndex(HashMap<String, TxnIndexStore> &txn_indexes_s
     }
 }
 
-UniquePtr<String> TableEntry::Delete(TableEntry *table_entry, Txn *txn_ptr, DeleteState &delete_state) {
+Status TableEntry::Delete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, DeleteState &delete_state) {
     for (const auto &to_delete_seg_rows : delete_state.rows_) {
         u32 segment_id = to_delete_seg_rows.first;
         SegmentEntry *segment_entry = TableEntry::GetSegmentByID(table_entry, segment_id);
         if (segment_entry == nullptr) {
-            Error<ExecutorException>(Format("Going to delete data in non-exist segment: {}", segment_id));
+            UniquePtr<String> err_msg = MakeUnique<String>(Format("Going to delete data in non-exist segment: {}", segment_id));
+            Error<ExecutorException>(*err_msg);
+            return Status(ErrorCode::kDuplicate, Move(err_msg));
         }
         const HashMap<u16, Vector<RowID>> &block_row_hashmap = to_delete_seg_rows.second;
-        SegmentEntry::DeleteData(segment_entry, txn_ptr, block_row_hashmap);
+        SegmentEntry::DeleteData(segment_entry, txn_id, commit_ts, block_row_hashmap);
     }
-    return nullptr;
+    return Status::OK();
 }
 
-void TableEntry::CommitAppend(TableEntry *table_entry, Txn *txn_ptr, const AppendState *append_state_ptr) {
+void TableEntry::CommitAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const AppendState *append_state_ptr) {
     SizeT row_count = 0;
     for (const auto &range : append_state_ptr->append_ranges_) {
         LOG_TRACE(Format("Commit, segment: {}, block: {} start offset: {}, count: {}",
@@ -275,19 +277,19 @@ void TableEntry::CommitAppend(TableEntry *table_entry, Txn *txn_ptr, const Appen
                          range.start_offset_,
                          range.row_count_));
         SegmentEntry *segment_ptr = table_entry->segment_map_[range.segment_id_].get();
-        SegmentEntry::CommitAppend(segment_ptr, txn_ptr, range.block_id_, range.start_offset_, range.row_count_);
+        SegmentEntry::CommitAppend(segment_ptr, txn_id, commit_ts, range.block_id_, range.start_offset_, range.row_count_);
         row_count += range.row_count_;
     }
     table_entry->row_count_ += row_count;
 }
 
-void TableEntry::RollbackAppend(TableEntry *, Txn *, void *) {
+void TableEntry::RollbackAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, void *txn_store) {
     //    auto *txn_store_ptr = (TxnTableStore *)txn_store;
     //    AppendState *append_state_ptr = txn_store_ptr->append_state_.get();
     Error<NotImplementException>("TableEntry::RollbackAppend");
 }
 
-void TableEntry::CommitDelete(TableEntry *table_entry, Txn *txn_ptr, const DeleteState &delete_state) {
+void TableEntry::CommitDelete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const DeleteState &delete_state) {
     SizeT row_count = 0;
     for (const auto &to_delete_seg_rows : delete_state.rows_) {
         u32 segment_id = to_delete_seg_rows.first;
@@ -296,15 +298,15 @@ void TableEntry::CommitDelete(TableEntry *table_entry, Txn *txn_ptr, const Delet
             Error<ExecutorException>(Format("Going to commit delete data in non-exist segment: {}", segment_id));
         }
         const HashMap<u16, Vector<RowID>> &block_row_hashmap = to_delete_seg_rows.second;
-        SegmentEntry::CommitDelete(segment, txn_ptr, block_row_hashmap);
+        SegmentEntry::CommitDelete(segment, txn_id, commit_ts, block_row_hashmap);
         row_count += block_row_hashmap.size();
     }
     table_entry->row_count_ += row_count;
 }
 
-UniquePtr<String> TableEntry::RollbackDelete(TableEntry *, Txn *, DeleteState &, BufferManager *) {
+Status TableEntry::RollbackDelete(TableEntry *, u64 txn_id, DeleteState &, BufferManager *) {
     Error<NotImplementException>("TableEntry::RollbackDelete");
-    return nullptr;
+    return Status::OK();
 }
 
 UniquePtr<String> TableEntry::ImportSegment(TableEntry *table_entry, Txn *txn_ptr, SharedPtr<SegmentEntry> segment) {

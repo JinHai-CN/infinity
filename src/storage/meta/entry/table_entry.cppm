@@ -74,24 +74,24 @@ private:
 
     TableMeta *GetTableMeta() const { return table_meta_; }
 
+    static void Append(TableEntry *table_entry, u64 txn_id, void *txn_store, BufferManager *buffer_mgr);
+
+    static void CommitAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const AppendState *append_state_ptr);
+
+    static void RollbackAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, void *txn_store);
+
+    static Status Delete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, DeleteState &delete_state);
+
+    static void CommitDelete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const DeleteState &append_state);
+
+    static Status RollbackDelete(TableEntry *table_entry, u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr);
+
 public:
     const SharedPtr<String> &GetDBName() const;
 
     const SharedPtr<String> &GetTableName() const { return table_name_; }
 
 public:
-    static void Append(TableEntry *table_entry, Txn *txn_ptr, void *txn_store, BufferManager *buffer_mgr);
-
-    static UniquePtr<String> Delete(TableEntry *table_entry, Txn *txn_ptr, DeleteState &delete_state);
-
-    static void CommitAppend(TableEntry *table_entry, Txn *txn_ptr, const AppendState *append_state_ptr);
-
-    static void RollbackAppend(TableEntry *table_entry, Txn *txn_ptr, void *txn_store);
-
-    static void CommitDelete(TableEntry *table_entry, Txn *txn_ptr, const DeleteState &append_state);
-
-    static UniquePtr<String> RollbackDelete(TableEntry *table_entry, Txn *txn_ptr, DeleteState &append_state, BufferManager *buffer_mgr);
-
     static UniquePtr<String> ImportSegment(TableEntry *table_entry, Txn *txn_ptr, SharedPtr<SegmentEntry> segment);
 
     static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }

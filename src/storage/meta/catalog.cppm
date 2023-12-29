@@ -35,6 +35,7 @@ import table_detail;
 import table_index_entry;
 import index_def;
 import txn_store;
+import data_access_state;
 
 export module new_catalog;
 
@@ -152,6 +153,19 @@ public:
     static Status RemoveIndexEntry(const String &index_name, TableIndexEntry *table_index_entry, u64 txn_id, TxnManager *txn_mgr);
 
     static void CommitCreateIndex(HashMap<String, TxnIndexStore> &txn_indexes_store_);
+
+    // Append related functions
+    static void Append(TableEntry *table_entry, u64 txn_id, void *txn_store, BufferManager *buffer_mgr);
+
+    static void CommitAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const AppendState *append_state_ptr);
+
+    static void RollbackAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, void *txn_store);
+
+    static Status Delete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, DeleteState &delete_state);
+
+    static void CommitDelete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const DeleteState &append_state);
+
+    static Status RollbackDelete(TableEntry *table_entry, u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr);
 
 public:
     // Function related methods

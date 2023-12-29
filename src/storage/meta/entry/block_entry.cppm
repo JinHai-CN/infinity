@@ -33,7 +33,7 @@ class DataBlock;
 
 #pragma pack(4)
 struct CreateField {
-//    CreateField(TxnTimeStamp create_ts, i32 row_count) : create_ts_(create_ts), row_count_(row_count) {}
+    //    CreateField(TxnTimeStamp create_ts, i32 row_count) : create_ts_(create_ts), row_count_(row_count) {}
 
     TxnTimeStamp create_ts_{};
     i32 row_count_{};
@@ -94,7 +94,7 @@ public:
     TxnTimeStamp max_row_ts_{0};    // Indicate the max commit_ts which create/update/delete data inside this BlockEntry
     TxnTimeStamp checkpoint_ts_{0}; // replay not set
 
-    Txn *txn_ptr_{nullptr};
+    u64 using_txn_id_{0}; // Temporarily used to lock the modification to block entry.
     BufferManager *buffer_{nullptr};
 
     // checkpoint state
@@ -105,17 +105,17 @@ public:
     static Pair<u16, u16> VisibleRange(BlockEntry *block_entry, TxnTimeStamp begin_ts, u16 block_offset_begin = 0);
 
     static u16 AppendData(BlockEntry *block_entry,
-                          Txn *txn_ptr,
+                          u64 txn_id,
                           DataBlock *input_data_block,
                           u16 input_block_offset,
                           u16 append_rows,
                           BufferManager *buffer_mgr);
 
-    static void DeleteData(BlockEntry *block_entry, Txn *txn_ptr, const Vector<RowID> &rows);
+    static void DeleteData(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts, const Vector<RowID> &rows);
 
-    static void CommitAppend(BlockEntry *block_entry, Txn *txn_ptr);
+    static void CommitAppend(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts);
 
-    static void CommitDelete(BlockEntry *block_entry, Txn *txn_ptr);
+    static void CommitDelete(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts);
 
     static void Flush(BlockEntry *block_entry, TxnTimeStamp checkpoint_ts);
 
