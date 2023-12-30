@@ -291,31 +291,31 @@ Status NewCatalog::RemoveIndexEntry(const String &index_name, TableIndexEntry *t
 void NewCatalog::CommitCreateIndex(HashMap<String, TxnIndexStore> &txn_indexes_store_) { return TableEntry::CommitCreateIndex(txn_indexes_store_); }
 
 void NewCatalog::Append(TableEntry *table_entry, u64 txn_id, void *txn_store, BufferManager *buffer_mgr) {
-    return TableEntry::Append(table_entry, txn_id, txn_store, buffer_mgr);
+    return table_entry->Append(txn_id, txn_store, buffer_mgr);
 }
 
 void NewCatalog::CommitAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const AppendState *append_state_ptr) {
-    return TableEntry::CommitAppend(table_entry, txn_id, commit_ts, append_state_ptr);
+    return table_entry->CommitAppend(txn_id, commit_ts, append_state_ptr);
 }
 
 void NewCatalog::RollbackAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, void *txn_store) {
-    return TableEntry::RollbackAppend(table_entry, txn_id, commit_ts, txn_store);
+    return table_entry->RollbackAppend(txn_id, commit_ts, txn_store);
 }
 
 Status NewCatalog::Delete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, DeleteState &delete_state) {
-    return TableEntry::Delete(table_entry, txn_id, commit_ts, delete_state);
+    return table_entry->Delete(txn_id, commit_ts, delete_state);
 }
 
 void NewCatalog::CommitDelete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const DeleteState &append_state) {
-    return TableEntry::CommitDelete(table_entry, txn_id, commit_ts, append_state);
+    return table_entry->CommitDelete(txn_id, commit_ts, append_state);
 }
 
 Status NewCatalog::RollbackDelete(TableEntry *table_entry, u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr) {
-    return TableEntry::RollbackDelete(table_entry, txn_id, append_state, buffer_mgr);
+    return table_entry->RollbackDelete(txn_id, append_state, buffer_mgr);
 }
 
 Status NewCatalog::ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment) {
-    return TableEntry::ImportSegment(table_entry, commit_ts, segment);
+    return table_entry->ImportSegment(commit_ts, segment);
 }
 
 u32 NewCatalog::GetNextSegmentID(TableEntry *table_entry) { return TableEntry::GetNextSegmentID(table_entry); }

@@ -74,19 +74,19 @@ private:
 
     TableMeta *GetTableMeta() const { return table_meta_; }
 
-    static void Append(TableEntry *table_entry, u64 txn_id, void *txn_store, BufferManager *buffer_mgr);
+    void Append(u64 txn_id, void *txn_store, BufferManager *buffer_mgr);
 
-    static void CommitAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const AppendState *append_state_ptr);
+    void CommitAppend(u64 txn_id, TxnTimeStamp commit_ts, const AppendState *append_state_ptr);
 
-    static void RollbackAppend(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, void *txn_store);
+    void RollbackAppend(u64 txn_id, TxnTimeStamp commit_ts, void *txn_store);
 
-    static Status Delete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, DeleteState &delete_state);
+    Status Delete(u64 txn_id, TxnTimeStamp commit_ts, DeleteState &delete_state);
 
-    static void CommitDelete(TableEntry *table_entry, u64 txn_id, TxnTimeStamp commit_ts, const DeleteState &append_state);
+    void CommitDelete(u64 txn_id, TxnTimeStamp commit_ts, const DeleteState &append_state);
 
-    static Status RollbackDelete(TableEntry *table_entry, u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr);
+    Status RollbackDelete(u64 txn_id, DeleteState &append_state, BufferManager *buffer_mgr);
 
-    static Status ImportSegment(TableEntry *table_entry, TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment);
+    Status ImportSegment(TxnTimeStamp commit_ts, SharedPtr<SegmentEntry> segment);
 
     static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
 
