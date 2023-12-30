@@ -121,65 +121,6 @@ Status Txn::Delete(const String &db_name, const String &table_name, const Vector
     return Status::OK();
 }
 
-void Txn::GetMetaTableState(MetaTableState *meta_table_state, const String &db_name, const String &table_name, const Vector<ColumnID> &columns) {
-    auto txn_table_iter = txn_tables_store_.find(table_name);
-    if (txn_table_iter != txn_tables_store_.end()) {
-        Vector<SharedPtr<DataBlock>> &local_blocks = txn_table_iter->second->blocks_;
-        meta_table_state->local_blocks_.reserve(local_blocks.size());
-        SizeT block_count = local_blocks.size();
-        for (SizeT idx = 0; idx < block_count; ++idx) {
-            const auto &data_block = local_blocks[idx];
-            MetaLocalDataState data_block_state;
-            data_block_state.data_block_ = data_block.get();
-            SizeT column_count = columns.size();
-            for (SizeT col_idx = 0; col_idx < column_count; ++col_idx) {
-                const auto &column_id = columns[col_idx];
-                MetaColumnVectorState column_vector_state;
-                column_vector_state.column_vector_ = data_block->column_vectors[column_id].get();
-                data_block_state.column_vector_map_[column_id] = column_vector_state;
-            }
-            meta_table_state->local_blocks_.emplace_back(data_block_state);
-        }
-    }
-
-    auto [table_entry, status] = GetTableEntry(db_name, table_name);
-    if (!status.ok()) {
-        Error<TransactionException>(status.message());
-    }
-
-    return GetMetaTableState(meta_table_state, table_entry, columns);
-}
-
-void Txn::GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_entry, const Vector<ColumnID> &columns) {
-    u64 max_segment_id = NewCatalog::GetMaxSegmentID(table_entry);
-    for (u64 segment_id = 0; segment_id < max_segment_id; ++segment_id) {
-        SegmentEntry *segment_entry_ptr = TableEntry::GetSegmentByID(table_entry, segment_id);
-
-        MetaSegmentState segment_state;
-        segment_state.segment_entry_ = segment_entry_ptr;
-
-        u16 max_block_id = SegmentEntry::GetMaxBlockID(segment_entry_ptr);
-        for (u16 block_id = 0; block_id < max_block_id; ++block_id) {
-            BlockEntry *block_entry_ptr = SegmentEntry::GetBlockEntryByID(segment_entry_ptr, block_id);
-
-            MetaBlockState block_state;
-            block_state.block_entry_ = block_entry_ptr;
-
-            SizeT column_count = columns.size();
-            for (SizeT col_idx = 0; col_idx < column_count; ++col_idx) {
-                const auto &column_id = columns[col_idx];
-                MetaBlockColumnState column_data_state;
-                column_data_state.block_column_ = BlockEntry::GetColumnDataByID(block_entry_ptr, column_id);
-                block_state.column_data_map_[column_id] = column_data_state;
-            }
-
-            segment_state.block_map_[block_id] = block_state;
-        }
-
-        meta_table_state->segment_map_[segment_id] = segment_state;
-    }
-}
-
 TxnTableStore *Txn::GetTxnTableStore(TableEntry *table_entry) {
     UniqueLock<Mutex> lk(lock_);
     auto txn_table_iter = txn_tables_store_.find(*table_entry->GetTableName());

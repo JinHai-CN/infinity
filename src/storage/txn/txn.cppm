@@ -112,11 +112,6 @@ public:
 
     Status Delete(const String &db_name, const String &table_name, const Vector<RowID> &row_ids);
 
-    // TODO: Why need them
-    void GetMetaTableState(MetaTableState *meta_table_state, const String &db_name, const String &table_name, const Vector<ColumnID> &columns);
-
-    void GetMetaTableState(MetaTableState *meta_table_state, const TableEntry *table_entry, const Vector<ColumnID> &columns);
-
     // Getter
     BufferManager *GetBufferMgr() const;
 
