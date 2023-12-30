@@ -197,7 +197,7 @@ void TableEntry::Append(u64 txn_id, void *txn_store, BufferManager *buffer_mgr) 
     while (!append_state_ptr->Finished()) {
         {
             UniqueLock<RWMutex> rw_locker(this->rw_locker_); // prevent another read conflict with this append operation
-            if (this->unsealed_segment_ == nullptr || SegmentEntry::Room(this->unsealed_segment_) <= 0) {
+            if (this->unsealed_segment_ == nullptr || unsealed_segment_->Room() <= 0) {
                 // unsealed_segment_ is unpopulated or full
                 u32 new_segment_id = this->next_segment_id_++;
                 SharedPtr<SegmentEntry> new_segment = SegmentEntry::MakeNewSegmentEntry(this, new_segment_id, buffer_mgr);
@@ -351,10 +351,11 @@ const BlockEntry *TableEntry::GetBlockEntryByID(u32 seg_id, u16 block_id) const 
         throw ExecutorException(Format("Cannot find segment, segment id: {}", seg_id));
     }
 
-    BlockEntry *block_entry = SegmentEntry::GetBlockEntryByID(segment_entry, block_id);
+    BlockEntry *block_entry = segment_entry->GetBlockEntryByID(block_id);
     if (block_entry == nullptr) {
         throw ExecutorException(Format("Cannot find block, segment id: {}, block id: {}", seg_id, block_id));
     }
+    return block_entry;
 }
 
 Pair<SizeT, Status> TableEntry::GetSegmentRowCountBySegmentID(u32 seg_id) {

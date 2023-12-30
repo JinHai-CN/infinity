@@ -98,9 +98,9 @@ SegmentEntry::MakeReplaySegmentEntry(const TableEntry *table_entry, u32 segment_
     return new_entry;
 }
 
-int SegmentEntry::Room(SegmentEntry *segment_entry) {
-    SharedLock<RWMutex> lck(segment_entry->rw_locker_);
-    return segment_entry->row_capacity_ - segment_entry->row_count_;
+int SegmentEntry::Room() {
+    SharedLock<RWMutex> lck(rw_locker_);
+    return this->row_capacity_ - this->row_count_;
 }
 
 u64 SegmentEntry::AppendData(SegmentEntry *segment_entry, u64 txn_id, AppendState *append_state_ptr, BufferManager *buffer_mgr) {
@@ -154,7 +154,7 @@ void SegmentEntry::DeleteData(SegmentEntry *segment_entry, u64 txn_id, TxnTimeSt
 
     for (const auto &row_hash_map : block_row_hashmap) {
         u16 block_id = row_hash_map.first;
-        BlockEntry *block_entry = SegmentEntry::GetBlockEntryByID(segment_entry, block_id);
+        BlockEntry *block_entry = segment_entry->GetBlockEntryByID(block_id);
         if (block_entry == nullptr) {
             Error<StorageException>(Format("The segment doesn't contain the given block: {}.", block_id));
         }
@@ -339,13 +339,16 @@ void SegmentEntry::CommitAppend(SegmentEntry *segment_entry, u64 txn_id, TxnTime
     BlockEntry::CommitAppend(block_entry.get(), txn_id, commit_ts);
 }
 
-void SegmentEntry::CommitDelete(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, const HashMap<u16, Vector<RowID>> &block_row_hashmap) {
+void SegmentEntry::CommitDelete(SegmentEntry *segment_entry,
+                                u64 txn_id,
+                                TxnTimeStamp commit_ts,
+                                const HashMap<u16, Vector<RowID>> &block_row_hashmap) {
     UniqueLock<RWMutex> lck(segment_entry->rw_locker_);
 
     for (const auto &row_hash_map : block_row_hashmap) {
         u16 block_id = row_hash_map.first;
         // TODO: block_id is u16, GetBlockEntryByID need to be modified accordingly.
-        BlockEntry *block_entry = SegmentEntry::GetBlockEntryByID(segment_entry, block_id);
+        BlockEntry *block_entry = segment_entry->GetBlockEntryByID(block_id);
         if (block_entry == nullptr) {
             Error<StorageException>(Format("The segment doesn't contain the given block: {}.", block_id));
         }
@@ -355,11 +358,9 @@ void SegmentEntry::CommitDelete(SegmentEntry *segment_entry, u64 txn_id, TxnTime
     }
 }
 
-u16 SegmentEntry::GetMaxBlockID(const SegmentEntry *segment_entry) { return segment_entry->block_entries_.size(); }
-
-BlockEntry *SegmentEntry::GetBlockEntryByID(const SegmentEntry *segment_entry, u16 block_id) {
-    if (block_id < segment_entry->block_entries_.size()) {
-        return segment_entry->block_entries_[block_id].get();
+BlockEntry *SegmentEntry::GetBlockEntryByID(u16 block_id) const {
+    if (block_id < block_entries_.size()) {
+        return block_entries_[block_id].get();
     } else {
         return nullptr;
     }
@@ -496,8 +497,7 @@ void SegmentEntry::MergeFrom(BaseEntry &other) {
     // }
 }
 
-UniquePtr<CreateIndexParam>
-SegmentEntry::GetCreateIndexParam(SizeT seg_row_count, const IndexBase *index_base, const ColumnDef *column_def) {
+UniquePtr<CreateIndexParam> SegmentEntry::GetCreateIndexParam(SizeT seg_row_count, const IndexBase *index_base, const ColumnDef *column_def) {
     switch (index_base->index_type_) {
         case IndexType::kIVFFlat: {
             return MakeUnique<CreateAnnIVFFlatParam>(index_base, column_def, seg_row_count);

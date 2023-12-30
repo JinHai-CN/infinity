@@ -340,7 +340,7 @@ Vector<UniquePtr<BlockColumnEntry>>& NewCatalog::GetBlockEntries(TableEntry* tab
         throw ExecutorException(Format("Cannot find segment, segment id: {}", segment_id));
     }
 
-    BlockEntry *block_entry = SegmentEntry::GetBlockEntryByID(segment_entry, block_id);
+    BlockEntry *block_entry = segment_entry->GetBlockEntryByID(block_id);
     if (block_entry == nullptr) {
         throw ExecutorException(Format("Cannot find block, segment id: {}, block id: {}", segment_id, block_id));
     }

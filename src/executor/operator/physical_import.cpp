@@ -152,7 +152,7 @@ void PhysicalImport::ImportFVECS(QueryContext *query_context, ImportOperatorStat
             break;
         }
 
-        if (SegmentEntry::Room(segment_entry.get()) <= 0) {
+        if (segment_entry->Room() <= 0) {
             SaveSegmentData(txn_store, segment_entry);
 
             segment_id = NewCatalog::GetNextSegmentID(table_entry_);
@@ -262,7 +262,7 @@ void PhysicalImport::ImportJSONL(QueryContext *query_context, ImportOperatorStat
         start_pos = end_pos + 1;
         Json line_json = Json::parse(json_sv);
 
-        if (SegmentEntry::Room(segment_entry.get()) <= 0) {
+        if (segment_entry->Room() <= 0) {
             LOG_INFO(Format("Segment {} saved", segment_entry->segment_id()));
             SaveSegmentData(txn_store, segment_entry);
             u64 segment_id = NewCatalog::GetNextSegmentID(table_entry_);
@@ -381,7 +381,7 @@ void PhysicalImport::CSVRowHandler(void *context) {
 
     auto segment_entry = parser_context->segment_entry_;
     // we have already used all space of the segment
-    if (SegmentEntry::Room(segment_entry.get()) <= 0) {
+    if (segment_entry->Room() <= 0) {
         SaveSegmentData(txn_store, segment_entry);
         u64 segment_id = NewCatalog::GetNextSegmentID(parser_context->table_entry_);
         parser_context->segment_entry_ = SegmentEntry::MakeNewSegmentEntry(table_entry, segment_id, txn->GetBufferMgr());
