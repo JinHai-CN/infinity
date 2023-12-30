@@ -27,6 +27,7 @@ import data_access_state;
 import txn_manager;
 import segment_column_index_entry;
 import segment_entry;
+import block_entry;
 import table_index_meta;
 import txn;
 import status;
@@ -92,6 +93,10 @@ private:
 
     static inline u32 GetMaxSegmentID(const TableEntry *table_entry) { return table_entry->next_segment_id_; }
 
+    static SegmentEntry *GetSegmentByID(const TableEntry *table_entry, u32 seg_id);
+
+    const BlockEntry *GetBlockEntryByID(u32 seg_id, u16 block_id) const;
+
 public:
     const SharedPtr<String> &GetDBName() const;
 
@@ -107,11 +112,11 @@ public:
     inline SizeT RowCount() const { return row_count_; }
 
     inline TableEntryType EntryType() const { return table_entry_type_; }
+
+    Pair<SizeT, Status> GetSegmentRowCountBySegmentID(u32 seg_id);
     //    static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
 
     //    static inline u32 GetMaxSegmentID(const TableEntry *table_entry) { return table_entry->next_segment_id_; }
-
-    static SegmentEntry *GetSegmentByID(const TableEntry *table_entry, u32 seg_id);
 
     static SharedPtr<BlockIndex> GetBlockIndex(TableEntry *table_entry, u64 txn_id, TxnTimeStamp begin_ts);
 

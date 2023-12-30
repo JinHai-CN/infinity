@@ -190,7 +190,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
     //    SharedPtr<IndexDef> index_def = index_def_entry->index_def_;
     IndexBase *index_base = column_index_entry->index_base_.get();
     //    UniquePtr<CreateIndexParam> create_index_param = MakeUnique<CreateIndexParam>(index_base, column_def.get());
-    UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry, index_base, column_def.get());
+    UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry->row_count_, index_base, column_def.get());
     SharedPtr<SegmentColumnIndexEntry> segment_column_index_entry =
         SegmentColumnIndexEntry::NewIndexEntry(column_index_entry, segment_entry->segment_id_, create_ts, buffer_mgr, create_index_param.get());
     switch (index_base->index_type_) {
@@ -497,13 +497,13 @@ void SegmentEntry::MergeFrom(BaseEntry &other) {
 }
 
 UniquePtr<CreateIndexParam>
-SegmentEntry::GetCreateIndexParam(const SegmentEntry *segment_entry, const IndexBase *index_base, const ColumnDef *column_def) {
+SegmentEntry::GetCreateIndexParam(SizeT seg_row_count, const IndexBase *index_base, const ColumnDef *column_def) {
     switch (index_base->index_type_) {
         case IndexType::kIVFFlat: {
-            return MakeUnique<CreateAnnIVFFlatParam>(index_base, column_def, segment_entry->row_count_);
+            return MakeUnique<CreateAnnIVFFlatParam>(index_base, column_def, seg_row_count);
         }
         case IndexType::kHnsw: {
-            SizeT max_element = segment_entry->row_count_;
+            SizeT max_element = seg_row_count;
             return MakeUnique<CreateHnswParam>(index_base, column_def, max_element);
         }
         case IndexType::kIRSFullText: {

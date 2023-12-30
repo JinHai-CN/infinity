@@ -48,6 +48,7 @@ import block_entry;
 import column_buffer;
 import block_column_entry;
 import load_meta;
+import new_catalog;
 
 module physical_match;
 
@@ -123,18 +124,13 @@ bool PhysicalMatch::Execute(QueryContext *query_context, OperatorState *operator
         u32 segment_offset = row_id.segment_offset_;
         u16 block_id = segment_offset / DEFAULT_BLOCK_CAPACITY;
         u16 block_offset = segment_offset % DEFAULT_BLOCK_CAPACITY;
-        SegmentEntry *segment_entry = TableEntry::GetSegmentByID(base_table_ref_->table_entry_ptr_, segment_id);
-        if (segment_entry == nullptr) {
-            throw ExecutorException(Format("Cannot find segment, segment id: {}", segment_id));
-        }
-        BlockEntry *block_entry = SegmentEntry::GetBlockEntryByID(segment_entry, block_id);
-        if (block_entry == nullptr) {
-            throw ExecutorException(Format("Cannot find block, segment id: {}, block id: {}", segment_id, block_id));
-        }
+
+        Vector<UniquePtr<BlockColumnEntry>>& columns = NewCatalog::GetBlockEntries(base_table_ref_->table_entry_ptr_, segment_id, block_id);
+
         SizeT column_id = 0;
         for (; column_id < column_n; ++column_id) {
-            UniquePtr<BlockColumnEntry> &column = block_entry->columns_[column_ids[column_id]];
-            ColumnBuffer column_buffer = BlockColumnEntry::GetColumnData(column.get(), query_context->storage()->buffer_manager());
+            BlockColumnEntry* block_column_ptr = columns[column_ids[column_id]].get();
+            ColumnBuffer column_buffer = BlockColumnEntry::GetColumnData(block_column_ptr, query_context->storage()->buffer_manager());
             output_data_block->column_vectors[column_id]->AppendWith(column_buffer, block_offset, 1);
         }
 

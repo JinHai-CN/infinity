@@ -37,6 +37,7 @@ import index_def;
 import txn_store;
 import data_access_state;
 import segment_entry;
+import block_column_entry;
 
 export module new_catalog;
 
@@ -178,6 +179,7 @@ public:
 
     static void IncreaseTableRowCount(TableEntry* table_entry, u64 increased_row_count);
 
+    static Vector<UniquePtr<BlockColumnEntry>>& GetBlockEntries(TableEntry* table_entry, u32 segment_id, u16 block_id);
 public:
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

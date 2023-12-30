@@ -31,6 +31,7 @@ import hnsw_file_worker;
 import column_index_entry;
 import table_entry;
 import segment_entry;
+import status;
 
 module segment_column_index_entry;
 
@@ -118,10 +119,15 @@ UniquePtr<SegmentColumnIndexEntry> SegmentColumnIndexEntry::Deserialize(const Js
                                                                         BufferManager *buffer_mgr,
                                                                         TableEntry *table_entry) {
     u32 segment_id = index_entry_json["segment_id"];
-    SegmentEntry *segment_entry = TableEntry::GetSegmentByID(table_entry, segment_id);
+    auto [segment_row_count, status] = table_entry->GetSegmentRowCountBySegmentID(segment_id);
+
+    if(!status.ok()) {
+        Error<StorageException>(status.message());
+        return nullptr;
+    }
     u64 column_id = column_index_entry->column_id_;
     UniquePtr<CreateIndexParam> create_index_param =
-        SegmentEntry::GetCreateIndexParam(segment_entry, column_index_entry->index_base_.get(), table_entry->GetColumnDefByID(column_id));
+        SegmentEntry::GetCreateIndexParam(segment_row_count, column_index_entry->index_base_.get(), table_entry->GetColumnDefByID(column_id));
     // TODO: need to get create index param;
     //    UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry, index_base, column_def.get());
     auto segment_column_index_entry = LoadIndexEntry(column_index_entry, segment_id, buffer_mgr, create_index_param.get());

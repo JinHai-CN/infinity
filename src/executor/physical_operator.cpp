@@ -29,6 +29,7 @@ import parser;
 import base_table_ref;
 import third_party;
 import infinity_exception;
+import new_catalog;
 
 #include <algorithm>
 
@@ -74,18 +75,12 @@ void PhysicalOperator::InputLoad(QueryContext *query_context, OperatorState *ope
             u16 block_id = segment_offset / DEFAULT_BLOCK_CAPACITY;
             u16 block_offset = segment_offset % DEFAULT_BLOCK_CAPACITY;
 
-            SegmentEntry *segment_entry = TableEntry::GetSegmentByID(table_ref->table_entry_ptr_, segment_id);
-            if (segment_entry == nullptr) {
-                throw ExecutorException(Format("Cannot find segment, segment id: {}", segment_id));
-            }
-            BlockEntry *block_entry = SegmentEntry::GetBlockEntryByID(segment_entry, block_id);
-            if (block_entry == nullptr) {
-                throw ExecutorException(Format("Cannot find block, segment id: {}, block id: {}", segment_id, block_id));
-            }
+            Vector<UniquePtr<BlockColumnEntry>>& columns = NewCatalog::GetBlockEntries(table_ref->table_entry_ptr_, segment_id, block_id);
+
             for (SizeT k = 0; k < load_column_count; ++k) {
                 auto binding = load_metas[k].binding_;
-                UniquePtr<BlockColumnEntry> &column = block_entry->columns_[binding.column_idx];
-                ColumnBuffer column_buffer = BlockColumnEntry::GetColumnData(column.get(), query_context->storage()->buffer_manager());
+                BlockColumnEntry* block_column_ptr = columns[binding.column_idx].get();
+                ColumnBuffer column_buffer = BlockColumnEntry::GetColumnData(block_column_ptr, query_context->storage()->buffer_manager());
                 input_block->column_vectors[load_metas[k].index_]->AppendWith(column_buffer, block_offset, 1);
             }
         }

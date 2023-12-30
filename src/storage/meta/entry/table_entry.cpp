@@ -44,6 +44,7 @@ import column_index_entry;
 import irs_index_entry;
 import index_base;
 import index_full_text;
+import block_entry;
 
 module table_entry;
 
@@ -341,6 +342,29 @@ SegmentEntry *TableEntry::GetSegmentByID(const TableEntry *table_entry, u32 segm
         return iter->second.get();
     } else {
         return nullptr;
+    }
+}
+
+const BlockEntry *TableEntry::GetBlockEntryByID(u32 seg_id, u16 block_id) const {
+    SegmentEntry *segment_entry = TableEntry::GetSegmentByID(this, seg_id);
+    if (segment_entry == nullptr) {
+        throw ExecutorException(Format("Cannot find segment, segment id: {}", seg_id));
+    }
+
+    BlockEntry *block_entry = SegmentEntry::GetBlockEntryByID(segment_entry, block_id);
+    if (block_entry == nullptr) {
+        throw ExecutorException(Format("Cannot find block, segment id: {}, block id: {}", seg_id, block_id));
+    }
+}
+
+Pair<SizeT, Status> TableEntry::GetSegmentRowCountBySegmentID(u32 seg_id) {
+    auto iter = this->segment_map_.find(seg_id);
+    if (iter != this->segment_map_.end()) {
+        return {iter->second->row_count(), Status::OK()};
+    } else {
+        UniquePtr<String> err_msg = MakeUnique<String>(Format("No segment id: {}.", seg_id));
+        LOG_ERROR(*err_msg);
+        return {0, Status(ErrorCode::kNotFound, Move(err_msg))};
     }
 }
 

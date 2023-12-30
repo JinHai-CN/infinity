@@ -39,6 +39,10 @@ class TableEntry;
 export struct SegmentEntry;
 
 struct SegmentEntry : public BaseEntry {
+    friend struct TableEntry;
+
+public:
+    SizeT row_count() const { return row_count_; }
 public:
     explicit SegmentEntry(const TableEntry *table_entry);
 
@@ -58,12 +62,7 @@ public:
 
     Vector<SharedPtr<BlockEntry>> block_entries_{};
 
-public:
-    static SharedPtr<SegmentEntry> MakeNewSegmentEntry(const TableEntry *table_entry, u32 segment_id, BufferManager *buffer_mgr);
-
-    static SharedPtr<SegmentEntry>
-    MakeReplaySegmentEntry(const TableEntry *table_entry, u32 segment_id, SharedPtr<String> segment_dir, TxnTimeStamp commit_ts);
-
+protected:
     static u64 AppendData(SegmentEntry *segment_entry, u64 txn_id, AppendState *append_state_ptr, BufferManager *buffer_mgr);
 
     static void DeleteData(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, const HashMap<u16, Vector<RowID>> &block_row_hashmap);
@@ -78,6 +77,12 @@ public:
     static void CommitAppend(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, u16 block_id, u16 start_pos, u16 row_count);
 
     static void CommitDelete(SegmentEntry *segment_entry, u64 txn_id, TxnTimeStamp commit_ts, const HashMap<u16, Vector<RowID>> &block_row_hashmap);
+
+public:
+    static SharedPtr<SegmentEntry> MakeNewSegmentEntry(const TableEntry *table_entry, u32 segment_id, BufferManager *buffer_mgr);
+
+    static SharedPtr<SegmentEntry>
+    MakeReplaySegmentEntry(const TableEntry *table_entry, u32 segment_id, SharedPtr<String> segment_dir, TxnTimeStamp commit_ts);
 
     static u16 GetMaxBlockID(const SegmentEntry *segment_entry);
 
@@ -98,7 +103,7 @@ private:
 
 public:
     static UniquePtr<CreateIndexParam>
-    GetCreateIndexParam(const SegmentEntry *segment_entry, const IndexBase *index_base, const ColumnDef *column_def);
+    GetCreateIndexParam(SizeT seg_row_count, const IndexBase *index_base, const ColumnDef *column_def);
 };
 
 } // namespace infinity
