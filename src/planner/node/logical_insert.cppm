@@ -25,7 +25,7 @@ export module logical_insert;
 
 namespace infinity {
 
-class TableEntry;
+struct TableEntry;
 
 export class LogicalInsert : public LogicalNode {
 public:

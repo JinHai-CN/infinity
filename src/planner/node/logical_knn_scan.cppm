@@ -27,7 +27,7 @@ namespace infinity {
 class BaseExpression;
 class KnnExpression;
 class BaseTableRef;
-class TableEntry;
+struct TableEntry;
 
 export class LogicalKnnScan : public LogicalNode {
 public:

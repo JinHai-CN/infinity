@@ -25,7 +25,7 @@ export module logical_table_scan;
 namespace infinity {
 
 class BaseTableRef;
-class TableEntry;
+struct TableEntry;
 
 export class LogicalTableScan : public LogicalNode {
 public:

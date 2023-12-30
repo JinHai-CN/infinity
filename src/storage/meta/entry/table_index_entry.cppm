@@ -28,7 +28,7 @@ namespace infinity {
 
 class TableIndexMeta;
 class BufferManager;
-class TableEntry;
+struct TableEntry;
 
 export class TableIndexEntry : public BaseEntry {
 

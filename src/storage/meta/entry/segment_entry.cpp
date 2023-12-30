@@ -55,7 +55,7 @@ import dist_func_ip;
 import hnsw_alg;
 import lvq_store;
 import plain_store;
-
+import block_column_entry;
 import segment_iter;
 
 module segment_entry;
@@ -125,8 +125,8 @@ u64 SegmentEntry::AppendData(SegmentEntry *segment_entry, u64 txn_id, AppendStat
             }
 
             u32 range_segment_id = segment_entry->segment_id_;
-            u16 range_block_id = last_block_entry->block_id_;
-            u16 range_block_start_row = last_block_entry->row_count_;
+            u16 range_block_id = last_block_entry->block_id();
+            u16 range_block_start_row = last_block_entry->row_count();
 
             u16 actual_appended =
                 BlockEntry::AppendData(last_block_entry, txn_id, input_block, append_state_ptr->current_block_offset_, to_append_rows, buffer_mgr);
@@ -210,10 +210,10 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
                     Vector<f32> segment_column_data;
                     segment_column_data.reserve(segment_entry->row_count_ * dimension);
                     for (const auto &block_entry : segment_entry->block_entries_) {
-                        auto block_column_entry = block_entry->columns_[column_id].get();
+                        BlockColumnEntry* block_column_entry = block_entry->GetColumnBlockEntry(column_id);
                         BufferHandle block_column_buffer_handle = block_column_entry->buffer_->Load();
                         auto block_column_data_ptr = reinterpret_cast<const float *>(block_column_buffer_handle.GetData());
-                        SizeT block_row_cnt = block_entry->row_count_;
+                        SizeT block_row_cnt = block_entry->row_count();
                         segment_column_data.insert(segment_column_data.end(),
                                                    block_column_data_ptr,
                                                    block_column_data_ptr + block_row_cnt * dimension);
@@ -242,7 +242,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
                 u32 segment_offset = 0;
                 Vector<u64> row_ids;
                 for (const auto &block_entry : segment_entry->block_entries_) {
-                    SizeT block_row_cnt = block_entry->row_count_;
+                    SizeT block_row_cnt = block_entry->row_count();
 
                     for (SizeT block_offset = 0; block_offset < block_row_cnt; ++block_offset) {
                         RowID row_id(segment_entry->segment_id_, segment_offset + block_offset);
@@ -380,22 +380,22 @@ Json SegmentEntry::Serialize(SegmentEntry *segment_entry, TxnTimeStamp max_commi
         json_res["deleted"] = segment_entry->deleted_;
         json_res["row_count"] = segment_entry->row_count_;
         for (auto &block_entry : segment_entry->block_entries_) {
-            if (is_full_checkpoint || max_commit_ts > block_entry->checkpoint_ts_) {
+            if (is_full_checkpoint || max_commit_ts > block_entry->checkpoint_ts()) {
                 block_entries.push_back((BlockEntry *)block_entry.get());
             }
         }
     }
     for (BlockEntry *block_entry : block_entries) {
         LOG_TRACE(Format("Before Flush: block_entry checkpoint ts: {}, min_row_ts: {}, max_row_ts: {} || max_commit_ts: {}",
-                         block_entry->checkpoint_ts_,
-                         block_entry->min_row_ts_,
-                         block_entry->max_row_ts_,
+                         block_entry->checkpoint_ts(),
+                         block_entry->min_row_ts(),
+                         block_entry->max_row_ts(),
                          max_commit_ts));
         BlockEntry::Flush(block_entry, max_commit_ts);
         LOG_TRACE(Format("Finish Flush: block_entry checkpoint ts: {}, min_row_ts: {}, max_row_ts: {} || max_commit_ts: {}",
-                         block_entry->checkpoint_ts_,
-                         block_entry->min_row_ts_,
-                         block_entry->max_row_ts_,
+                         block_entry->checkpoint_ts(),
+                         block_entry->min_row_ts(),
+                         block_entry->max_row_ts(),
                          max_commit_ts));
         // WARNING: this operation may influence data visibility
         //        if (!is_full_checkpoint && block_entry->checkpoint_ts_ != max_commit_ts) {
@@ -424,8 +424,8 @@ SharedPtr<SegmentEntry> SegmentEntry::Deserialize(const Json &segment_entry_json
         for (const auto &block_json : segment_entry_json["block_entries"]) {
             UniquePtr<BlockEntry> block_entry = BlockEntry::Deserialize(block_json, segment_entry.get(), buffer_mgr);
             auto block_entries_size = segment_entry->block_entries_.size();
-            segment_entry->block_entries_.resize(Max(block_entries_size, static_cast<SizeT>(block_entry->block_id_ + 1)));
-            segment_entry->block_entries_[block_entry->block_id_] = Move(block_entry);
+            segment_entry->block_entries_.resize(Max(block_entries_size, static_cast<SizeT>(block_entry->block_id() + 1)));
+            segment_entry->block_entries_[block_entry->block_id()] = Move(block_entry);
         }
     }
     LOG_TRACE(Format("Segment: {}, Block count: {}", segment_entry->segment_id_, segment_entry->block_entries_.size()));

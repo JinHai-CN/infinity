@@ -20,8 +20,8 @@ export module meta_state;
 
 namespace infinity {
 
-class SegmentEntry;
-class BlockEntry;
+struct SegmentEntry;
+struct BlockEntry;
 class BlockColumnEntry;
 class DataBlock;
 class ColumnVector;

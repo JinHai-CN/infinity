@@ -26,12 +26,12 @@ export module segment_column_index_entry;
 
 namespace infinity {
 
-class TableEntry;
+struct TableEntry;
 class ColumnIndexEntry;
 class FaissIndexPtr;
 class BufferManager;
 class IndexDef;
-class SegmentEntry;
+struct SegmentEntry;
 
 export class SegmentColumnIndexEntry : public BaseEntry {
 private:

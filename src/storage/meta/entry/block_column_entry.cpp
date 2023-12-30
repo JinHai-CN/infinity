@@ -42,14 +42,14 @@ namespace infinity {
 
 UniquePtr<BlockColumnEntry>
 BlockColumnEntry::MakeNewBlockColumnEntry(const BlockEntry *block_entry, u64 column_id, BufferManager *buffer_manager, bool is_replay) {
-    UniquePtr<BlockColumnEntry> block_column_entry = MakeUnique<BlockColumnEntry>(block_entry, column_id, block_entry->base_dir_);
+    UniquePtr<BlockColumnEntry> block_column_entry = MakeUnique<BlockColumnEntry>(block_entry, column_id, block_entry->base_dir());
 
     block_column_entry->file_name_ = MakeShared<String>(ToStr(column_id) + ".col");
 
     block_column_entry->column_type_ = block_entry->GetColumnType(column_id);
     DataType *column_type = block_column_entry->column_type_.get();
 
-    SizeT row_capacity = block_entry->row_capacity_;
+    SizeT row_capacity = block_entry->row_capacity();
     SizeT total_data_size = row_capacity * column_type->Size();
 
     auto file_worker = MakeUnique<DataFileWorker>(block_column_entry->base_dir_, block_column_entry->file_name_, total_data_size);

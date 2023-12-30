@@ -626,8 +626,8 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
     output_block_ptr->Init(column_types);
 
     SizeT column_count = table_entry->ColumnCount();
-    for(SizeT input_column_id = 0; input_column_id < column_count; ++ input_column_id) {
-        const ColumnDef* column = table_entry->GetColumnDefByID(input_column_id);
+    for (SizeT input_column_id = 0; input_column_id < column_count; ++input_column_id) {
+        const ColumnDef *column = table_entry->GetColumnDefByID(input_column_id);
 
         SizeT output_column_idx = 0;
         {
@@ -715,25 +715,27 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
     if (segment_id_.has_value() && block_id_.has_value()) {
         auto iter = table_entry->segment_map().find(*segment_id_);
 
-        const auto& block_entries = iter->second->block_entries();
+        const auto &block_entries = iter->second->block_entries();
 
         if (iter != table_entry->segment_map().end() && block_entries.size() > *block_id_) {
             auto block = block_entries[*block_id_];
             auto version_path = block->VersionFilePath();
 
             chuck_filling(LocalFileSystem::GetFileSizeByPath, version_path);
-            for (auto &column : block->columns_) {
-                auto col_file_path = column->FilePath();
+            SizeT column_count = table_entry->ColumnCount();
+            for (SizeT column_id = 0; column_id < column_count; ++column_id) {
+                auto block_column_entry = block->GetColumnBlockEntry(column_id);
+                auto col_file_path = block_column_entry->FilePath();
 
                 chuck_filling(LocalFileSystem::GetFileSizeByPath, col_file_path);
-                for (auto &outline : column->OutlinePaths()) {
+                for (auto &outline : block_column_entry->OutlinePaths()) {
                     chuck_filling(LocalFileSystem::GetFileSizeByPath, outline);
                 }
             }
         }
     } else if (segment_id_.has_value()) {
         auto iter = table_entry->segment_map().find(*segment_id_);
-        const auto& block_entries = iter->second->block_entries();
+        const auto &block_entries = iter->second->block_entries();
 
         if (iter != table_entry->segment_map().end()) {
             for (auto &entry : block_entries) {
@@ -1323,8 +1325,8 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
 
         for (const auto &column_index_entry_pair : table_index_entry->column_index_map_) {
             u64 index_column_id = column_index_entry_pair.first;
-            ColumnIndexEntry* column_index_entry = column_index_entry_pair.second.get();
-            const IndexBase* index_base = column_index_entry->index_base_.get();
+            ColumnIndexEntry *column_index_entry = column_index_entry_pair.second.get();
+            const IndexBase *index_base = column_index_entry->index_base_.get();
             SizeT column_id = 0;
             {
                 // Append index name to the first column

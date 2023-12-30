@@ -549,7 +549,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
             }
 
             {
-                auto block_column_entry1 = last_block_entry->columns_[0].get();
+                auto block_column_entry1 = last_block_entry->GetColumnBlockEntry(0);
                 auto column_type1 = block_column_entry1->column_type_.get();
                 EXPECT_EQ(column_type1->type(), LogicalType::kTinyInt);
                 SizeT data_type_size = columns_vector[0]->data_type_size_;
@@ -559,7 +559,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
                 BlockColumnEntry::AppendRaw(block_column_entry1, 0, src_ptr, data_size, nullptr);
             }
             {
-                auto block_column_entry2 = last_block_entry->columns_[1].get();
+                auto block_column_entry2 = last_block_entry->GetColumnBlockEntry(1);
                 auto column_type2 = block_column_entry2->column_type_.get();
                 EXPECT_EQ(column_type2->type(), LogicalType::kBigInt);
                 SizeT data_type_size = columns_vector[1]->data_type_size_;
@@ -569,7 +569,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
                 BlockColumnEntry::AppendRaw(block_column_entry2, 0, src_ptr, data_size, nullptr);
             }
             {
-                auto block_column_entry3 = last_block_entry->columns_[2].get();
+                auto block_column_entry3 = last_block_entry->GetColumnBlockEntry(2);
                 auto column_type3 = block_column_entry3->column_type_.get();
                 EXPECT_EQ(column_type3->type(), LogicalType::kDouble);
                 SizeT data_type_size = columns_vector[2]->data_type_size_;
@@ -579,7 +579,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
                 BlockColumnEntry::AppendRaw(block_column_entry3, 0, src_ptr, data_size, nullptr);
             }
 
-            last_block_entry->row_count_ = 1;
+            last_block_entry->IncreaseRowCount(1);
             segment_entry->IncreaseRowCount(1);
 
             auto txn_store = txn4->GetTxnTableStore(table_entry);
@@ -611,14 +611,14 @@ TEST_F(WalReplayTest, WalReplayImport) {
             EXPECT_NE(table_entry, nullptr);
             auto segment_entry = table_entry->segment_map()[0].get();
             EXPECT_EQ(segment_entry->segment_id(), 0);
-            auto block_id = segment_entry->block_entries()[0]->block_id_;
+            auto block_id = segment_entry->block_entries()[0]->block_id();
             EXPECT_EQ(block_id, 0);
             auto block_entry = segment_entry->block_entries()[0].get();
-            EXPECT_EQ(block_entry->row_count_, 1);
+            EXPECT_EQ(block_entry->row_count(), 1);
 
-            BlockColumnEntry *column0 = block_entry->columns_[0].get();
-            BlockColumnEntry *column1 = block_entry->columns_[1].get();
-            BlockColumnEntry *column2 = block_entry->columns_[2].get();
+            BlockColumnEntry *column0 = block_entry->GetColumnBlockEntry(0);
+            BlockColumnEntry *column1 = block_entry->GetColumnBlockEntry(1);
+            BlockColumnEntry *column2 = block_entry->GetColumnBlockEntry(2);
 
             ColumnBuffer col0_obj = BlockColumnEntry::GetColumnData(column0, buffer_manager);
             col0_obj.GetAll();

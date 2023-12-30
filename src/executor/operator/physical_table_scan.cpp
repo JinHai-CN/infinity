@@ -153,7 +153,7 @@ void PhysicalTableScan::ExecuteInternal(QueryContext *query_context,
                     output_ptr->column_vectors[output_column_id++]->AppendWith(RowID(segment_id, segment_offset), write_size);
                 } else {
                     ColumnBuffer column_buffer =
-                        BlockColumnEntry::GetColumnData(current_block_entry->columns_[column_id].get(), query_context->storage()->buffer_manager());
+                        BlockColumnEntry::GetColumnData(current_block_entry->GetColumnBlockEntry(column_id), query_context->storage()->buffer_manager());
                     output_ptr->column_vectors[output_column_id++]->AppendWith(column_buffer, read_offset, write_size);
                 }
             }

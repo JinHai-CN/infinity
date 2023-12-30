@@ -322,13 +322,13 @@ void IRSDataStore::BatchInsert(TableEntry *table_entry, IndexDef *index_def, Seg
     const auto& block_entries = segment_entry->block_entries();
     for (const auto &block_entry : block_entries) {
         auto ctx = index_writer_->GetBatch();
-        for (SizeT i = 0; i < block_entry->row_count_; ++i) {
-            auto doc = ctx.Insert(RowID2DocID(segment_id, block_entry->block_id_, i));
+        for (SizeT i = 0; i < block_entry->row_count(); ++i) {
+            auto doc = ctx.Insert(RowID2DocID(segment_id, block_entry->block_id(), i));
 
             for (SizeT col = 0; col < index_def->index_array_.size(); ++col) {
                 auto index_base = reinterpret_cast<IndexFullText *>(index_def->index_array_[col].get());
                 u64 column_id = table_entry->GetColumnIdByName(index_base->column_name());
-                auto block_column_entry = block_entry->columns_[column_id].get();
+                auto block_column_entry = block_entry->GetColumnBlockEntry(column_id);
                 BufferHandle buffer_handle = block_column_entry->buffer_->Load();
                 switch (block_column_entry->column_type_->type()) {
                     case kTinyInt: {

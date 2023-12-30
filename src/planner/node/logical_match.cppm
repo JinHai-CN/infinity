@@ -26,7 +26,7 @@ namespace infinity {
 
 class MatchExpression;
 class BaseTableRef;
-class TableEntry;
+struct TableEntry;
 
 export class LogicalMatch : public LogicalNode {
 public:

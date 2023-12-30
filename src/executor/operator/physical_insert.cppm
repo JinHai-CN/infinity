@@ -27,7 +27,7 @@ export module physical_insert;
 
 namespace infinity {
 
-class TableEntry;
+struct TableEntry;
 
 export class PhysicalInsert : public PhysicalOperator {
 public:

@@ -27,7 +27,7 @@ export module column_index_entry;
 namespace infinity {
 
 class BufferManager;
-class TableEntry;
+struct TableEntry;
 class TableIndexEntry;
 
 export struct ColumnIndexEntry : public BaseEntry {

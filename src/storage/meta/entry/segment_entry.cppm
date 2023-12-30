@@ -35,7 +35,7 @@ export module segment_entry;
 
 namespace infinity {
 
-class TableEntry;
+struct TableEntry;
 
 export struct SegmentEntry;
 

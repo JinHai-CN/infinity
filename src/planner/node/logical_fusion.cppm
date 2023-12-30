@@ -27,7 +27,7 @@ namespace infinity {
 class FusionExpression;
 class MatchExpression;
 class BaseTableRef;
-class TableEntry;
+struct TableEntry;
 
 export class LogicalFusion : public LogicalNode {
 public:

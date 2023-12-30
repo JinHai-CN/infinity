@@ -334,19 +334,6 @@ void NewCatalog::IncreaseTableRowCount(TableEntry* table_entry, u64 increased_ro
     table_entry->row_count_ += increased_row_count;
 }
 
-Vector<UniquePtr<BlockColumnEntry>>& NewCatalog::GetBlockEntries(TableEntry* table_entry, u32 segment_id, u16 block_id) {
-    SegmentEntry *segment_entry = TableEntry::GetSegmentByID(table_entry, segment_id);
-    if (segment_entry == nullptr) {
-        throw ExecutorException(Format("Cannot find segment, segment id: {}", segment_id));
-    }
-
-    BlockEntry *block_entry = segment_entry->GetBlockEntryByID(block_id);
-    if (block_entry == nullptr) {
-        throw ExecutorException(Format("Cannot find block, segment id: {}, block id: {}", segment_id, block_id));
-    }
-    return block_entry->columns_;
-}
-
 SharedPtr<FunctionSet> NewCatalog::GetFunctionSetByName(NewCatalog *catalog, String function_name) {
     // Transfer the function to upper case.
     StringToLower(function_name);

@@ -29,8 +29,8 @@ export module table_index_meta;
 namespace infinity {
 
 class BufferManager;
-class TableEntry;
-class SegmentEntry;
+struct TableEntry;
+struct SegmentEntry;
 
 export class TableIndexMeta {
 public:

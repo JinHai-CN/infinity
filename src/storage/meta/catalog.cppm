@@ -178,8 +178,6 @@ public:
     static void ImportSegment(TableEntry* table_entry, u32 segment_id, SharedPtr<SegmentEntry>& segment_entry);
 
     static void IncreaseTableRowCount(TableEntry* table_entry, u64 increased_row_count);
-
-    static Vector<UniquePtr<BlockColumnEntry>>& GetBlockEntries(TableEntry* table_entry, u32 segment_id, u16 block_id);
 public:
     // Function related methods
     static SharedPtr<FunctionSet> GetFunctionSetByName(NewCatalog *catalog, String function_name);

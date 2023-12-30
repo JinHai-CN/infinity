@@ -30,7 +30,7 @@ export module block_column_entry;
 
 namespace infinity {
 
-class BlockEntry;
+struct BlockEntry;
 
 export struct BlockColumnEntry : public BaseEntry {
 public:

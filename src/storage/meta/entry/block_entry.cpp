@@ -429,4 +429,8 @@ const SharedPtr<DataType> BlockEntry::GetColumnType(u64 column_id) const {
     return this->segment_entry_->GetTableEntry()->GetColumnDefByID(column_id)->type();
 }
 
+u32 BlockEntry::segment_id() const {
+    return segment_entry_->segment_id();
+}
+
 } // namespace infinity

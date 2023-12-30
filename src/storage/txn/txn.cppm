@@ -50,7 +50,7 @@ struct ScanParam {
 
 class TxnManager;
 struct NewCatalog;
-class TableEntry;
+struct TableEntry;
 class DBEntry;
 
 export class Txn {

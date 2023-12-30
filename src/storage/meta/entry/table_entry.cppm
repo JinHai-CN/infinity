@@ -95,14 +95,15 @@ private:
 
     static SegmentEntry *GetSegmentByID(const TableEntry *table_entry, u32 seg_id);
 
-    const BlockEntry *GetBlockEntryByID(u32 seg_id, u16 block_id) const;
-
 public:
+    // Getter
+
     const SharedPtr<String> &GetDBName() const;
 
-    const SharedPtr<String> &GetTableName() const { return table_name_; }
+    inline const SharedPtr<String> &GetTableName() const { return table_name_; }
 
-public:
+    const BlockEntry *GetBlockEntryByID(u32 seg_id, u16 block_id) const;
+
     inline const ColumnDef *GetColumnDefByID(u64 column_id) const { return columns_[column_id].get(); }
 
     inline SizeT ColumnCount() const { return columns_.size(); }
@@ -114,9 +115,7 @@ public:
     inline TableEntryType EntryType() const { return table_entry_type_; }
 
     Pair<SizeT, Status> GetSegmentRowCountBySegmentID(u32 seg_id);
-    //    static inline u32 GetNextSegmentID(TableEntry *table_entry) { return table_entry->next_segment_id_++; }
-
-    //    static inline u32 GetMaxSegmentID(const TableEntry *table_entry) { return table_entry->next_segment_id_; }
+public:
 
     static SharedPtr<BlockIndex> GetBlockIndex(TableEntry *table_entry, u64 txn_id, TxnTimeStamp begin_ts);
 

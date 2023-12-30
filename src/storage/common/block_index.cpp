@@ -27,7 +27,7 @@ void BlockIndex::Insert(SegmentEntry *segment_entry, TxnTimeStamp timestamp) {
     if (timestamp >= segment_entry->min_row_ts()) {
         u32 segment_id = segment_entry->segment_id();
         segments_.emplace_back(segment_entry);
-        const auto& block_entries = segment_entry->block_entries();
+        const auto &block_entries = segment_entry->block_entries();
         segment_index_.emplace(segment_id, segment_entry);
         if (block_entries.empty()) {
             return;
@@ -36,9 +36,9 @@ void BlockIndex::Insert(SegmentEntry *segment_entry, TxnTimeStamp timestamp) {
         SizeT block_count = block_entries.size();
         for (SizeT idx = 0; idx < block_count; ++idx) {
             const auto &block_entry = block_entries[idx];
-            if (timestamp >= block_entry->min_row_ts_) {
-                segment_block_index_[segment_id].emplace(block_entry->block_id_, block_entry.get());
-                global_blocks_.emplace_back(GlobalBlockID{segment_id, block_entry->block_id_});
+            if (timestamp >= block_entry->min_row_ts()) {
+                segment_block_index_[segment_id].emplace(block_entry->block_id(), block_entry.get());
+                global_blocks_.emplace_back(GlobalBlockID{segment_id, block_entry->block_id()});
             }
         }
     }

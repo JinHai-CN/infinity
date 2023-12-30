@@ -26,8 +26,8 @@ export module txn_store;
 namespace infinity {
 
 class Txn;
-class TableEntry;
-class SegmentEntry;
+struct TableEntry;
+struct SegmentEntry;
 class DataBlock;
 class SegmentColumnIndexEntry;
 

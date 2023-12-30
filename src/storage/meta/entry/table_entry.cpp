@@ -326,8 +326,8 @@ Status TableEntry::ImportSegment(TxnTimeStamp commit_ts, SharedPtr<SegmentEntry>
         block_entry->min_row_ts_ = commit_ts;
         block_entry->max_row_ts_ = commit_ts;
         // ATTENTION: Do not modify the block_entry checkpoint_ts_
-        row_count += block_entry->row_count_;
-        block_entry->block_version_->created_.emplace_back(commit_ts, block_entry->row_count_);
+        row_count += block_entry->row_count();
+        block_entry->block_version_->created_.emplace_back(commit_ts, block_entry->row_count());
     }
 
     UniqueLock<RWMutex> rw_locker(this->rw_locker_);

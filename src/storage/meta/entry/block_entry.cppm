@@ -28,7 +28,8 @@ namespace infinity {
 
 class BufferManager;
 class Txn;
-class SegmentEntry;
+struct TableEntry;
+struct SegmentEntry;
 class DataBlock;
 
 #pragma pack(4)
@@ -60,6 +61,8 @@ export struct BlockVersion {
 };
 
 export struct BlockEntry : public BaseEntry {
+    friend struct TableEntry;
+
 public:
     // for iterator unit test
     explicit BlockEntry() : BaseEntry(EntryType::kBlock){};
@@ -76,40 +79,12 @@ public:
                         i16 min_row_ts_,
                         i16 max_row_ts_);
 
-    RWMutex rw_locker_{};
-
-    const SegmentEntry *segment_entry_{};
-
-    SharedPtr<String> base_dir_{};
-
-    u16 block_id_{};
-    u16 row_count_{};
-    u16 row_capacity_{};
-
-    Vector<UniquePtr<BlockColumnEntry>> columns_;
-
-    UniquePtr<BlockVersion> block_version_{};
-
-    TxnTimeStamp min_row_ts_{0};    // Indicate the commit_ts which create this BlockEntry
-    TxnTimeStamp max_row_ts_{0};    // Indicate the max commit_ts which create/update/delete data inside this BlockEntry
-    TxnTimeStamp checkpoint_ts_{0}; // replay not set
-
-    u64 using_txn_id_{0}; // Temporarily used to lock the modification to block entry.
-    BufferManager *buffer_{nullptr};
-
-    // checkpoint state
-    u16 checkpoint_row_count_{0};
-
 public:
     // Get visible range of the BlockEntry since the given row number for a txn
     static Pair<u16, u16> VisibleRange(BlockEntry *block_entry, TxnTimeStamp begin_ts, u16 block_offset_begin = 0);
 
-    static u16 AppendData(BlockEntry *block_entry,
-                          u64 txn_id,
-                          DataBlock *input_data_block,
-                          u16 input_block_offset,
-                          u16 append_rows,
-                          BufferManager *buffer_mgr);
+    static u16
+    AppendData(BlockEntry *block_entry, u64 txn_id, DataBlock *input_data_block, u16 input_block_offset, u16 append_rows, BufferManager *buffer_mgr);
 
     static void DeleteData(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts, const Vector<RowID> &rows);
 
@@ -141,5 +116,54 @@ public:
 
 private:
     static SharedPtr<String> DetermineDir(const String &parent_dir, u64 block_id);
+
+public:
+    // Getter
+    inline SizeT row_count() const { return row_count_; }
+
+    inline SizeT row_capacity() const { return row_capacity_; }
+
+    inline TxnTimeStamp min_row_ts() const { return min_row_ts_; }
+
+    inline TxnTimeStamp max_row_ts() const { return max_row_ts_; }
+
+    inline TxnTimeStamp checkpoint_ts() const { return checkpoint_ts_; }
+
+    inline u16 block_id() const { return block_id_; }
+
+    u32 segment_id() const;
+
+    const SharedPtr<String> &base_dir() const { return base_dir_; }
+
+    BlockColumnEntry *GetColumnBlockEntry(SizeT column_id) const { return columns_[column_id].get(); }
+
+public:
+    // Setter
+    inline void IncreaseRowCount(SizeT increased_row_count) { row_count_ += increased_row_count; }
+
+protected:
+    RWMutex rw_locker_{};
+
+    const SegmentEntry *segment_entry_{};
+
+    SharedPtr<String> base_dir_{};
+
+    u16 block_id_{};
+    u16 row_count_{};
+    u16 row_capacity_{};
+
+    Vector<UniquePtr<BlockColumnEntry>> columns_;
+
+    UniquePtr<BlockVersion> block_version_{};
+
+    TxnTimeStamp min_row_ts_{0};    // Indicate the commit_ts which create this BlockEntry
+    TxnTimeStamp max_row_ts_{0};    // Indicate the max commit_ts which create/update/delete data inside this BlockEntry
+    TxnTimeStamp checkpoint_ts_{0}; // replay not set
+
+    u64 using_txn_id_{0}; // Temporarily used to lock the modification to block entry.
+    BufferManager *buffer_{nullptr};
+
+    // checkpoint state
+    u16 checkpoint_row_count_{0};
 };
 } // namespace infinity

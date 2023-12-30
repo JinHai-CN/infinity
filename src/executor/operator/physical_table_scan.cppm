@@ -33,7 +33,7 @@ namespace infinity {
 
 // class TableScanFunction;
 // class BaseTableRef;
-// class TableEntry;
+// struct TableEntry;
 // class BlockIndex;
 
 export class PhysicalTableScan : public PhysicalOperator {

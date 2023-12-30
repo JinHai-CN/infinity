@@ -25,7 +25,7 @@ namespace infinity {
 
 class TableIndexEntry;
 class BufferManager;
-class TableEntry;
+struct TableEntry;
 class IRSDataStore;
 class IndexFullText;
 

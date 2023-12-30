@@ -34,9 +34,9 @@ export module physical_import;
 
 namespace infinity {
 
-// class TableEntry;
+// struct TableEntry;
 // class Txn;
-// class SegmentEntry;
+// struct SegmentEntry;
 // class ImportInputState;
 // class ImportOutputState;
 
