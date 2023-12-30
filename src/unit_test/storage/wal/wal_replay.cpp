@@ -522,8 +522,8 @@ TEST_F(WalReplayTest, WalReplayImport) {
             u64 segment_id = NewCatalog::GetNextSegmentID(table_entry);
             EXPECT_EQ(segment_id, 0);
             auto segment_entry = SegmentEntry::MakeNewSegmentEntry(table_entry, segment_id, buffer_manager);
-            EXPECT_EQ(segment_entry->segment_id_, 0);
-            auto last_block_entry = segment_entry->block_entries_.back().get();
+            EXPECT_EQ(segment_entry->segment_id(), 0);
+            auto last_block_entry = segment_entry->GetLastEntry();
 
             Vector<SharedPtr<ColumnVector>> columns_vector;
             {
@@ -580,7 +580,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
             }
 
             last_block_entry->row_count_ = 1;
-            segment_entry->row_count_ = 1;
+            segment_entry->IncreaseRowCount(1);
 
             auto txn_store = txn4->GetTxnTableStore(table_entry);
             PhysicalImport::SaveSegmentData(txn_store, segment_entry);
@@ -610,10 +610,10 @@ TEST_F(WalReplayTest, WalReplayImport) {
             auto [table_entry, status] = txn->GetTableEntry("default", "tbl1");
             EXPECT_NE(table_entry, nullptr);
             auto segment_entry = table_entry->segment_map()[0].get();
-            EXPECT_EQ(segment_entry->segment_id_, 0);
-            auto block_id = segment_entry->block_entries_[0]->block_id_;
+            EXPECT_EQ(segment_entry->segment_id(), 0);
+            auto block_id = segment_entry->block_entries()[0]->block_id_;
             EXPECT_EQ(block_id, 0);
-            auto block_entry = segment_entry->block_entries_[0].get();
+            auto block_entry = segment_entry->block_entries()[0].get();
             EXPECT_EQ(block_entry->row_count_, 1);
 
             BlockColumnEntry *column0 = block_entry->columns_[0].get();

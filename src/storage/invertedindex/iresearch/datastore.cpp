@@ -297,7 +297,7 @@ void IRSDataStore::BatchInsert(TableEntry *table_entry, IndexDef *index_def, Seg
     static Features text_features{TEXT_FEATURES.data(), TEXT_FEATURES.size()};
     static Features numeric_features{NUMERIC_FEATURES.data(), NUMERIC_FEATURES.size()};
     bool schedule = false;
-    auto segment_id = segment_entry->segment_id_;
+    auto segment_id = segment_entry->segment_id();
     Vector<UniquePtr<IRSAnalyzer>> analyzers;
     for (const auto &ibase : index_def->index_array_) {
         auto index_base = reinterpret_cast<IndexFullText *>(ibase.get());
@@ -319,7 +319,8 @@ void IRSDataStore::BatchInsert(TableEntry *table_entry, IndexDef *index_def, Seg
         }
     }
 
-    for (const auto &block_entry : segment_entry->block_entries_) {
+    const auto& block_entries = segment_entry->block_entries();
+    for (const auto &block_entry : block_entries) {
         auto ctx = index_writer_->GetBatch();
         for (SizeT i = 0; i < block_entry->row_count_; ++i) {
             auto doc = ctx.Insert(RowID2DocID(segment_id, block_entry->block_id_, i));

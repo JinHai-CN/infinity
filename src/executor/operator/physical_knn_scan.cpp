@@ -79,7 +79,7 @@ void ReadDataBlock(DataBlock *output,
                    const BlockEntry *current_block_entry,
                    const Vector<SizeT> &column_ids) {
     auto block_id = current_block_entry->block_id_;
-    auto segment_id = current_block_entry->segment_entry_->segment_id_;
+    auto segment_id = current_block_entry->segment_entry_->segment_id();
     for (SizeT output_column_id = 0; auto column_id : column_ids) {
         if (column_id == COLUMN_IDENTIFIER_ROW_ID) {
             u32 segment_offset = block_id * DEFAULT_BLOCK_CAPACITY;
@@ -220,10 +220,11 @@ void PhysicalKnnScan::PlanWithIndex(QueryContext *query_context) { // TODO: retu
     // Generate task set: index segment and no index block
     BlockIndex *block_index = base_table_ref_->block_index_.get();
     for (SegmentEntry *segment_entry : block_index->segments_) {
-        if (auto iter = index_entry_map.find(segment_entry->segment_id_); iter != index_entry_map.end()) {
+        if (auto iter = index_entry_map.find(segment_entry->segment_id()); iter != index_entry_map.end()) {
             index_entries_->emplace_back(iter->second[0]);
         } else {
-            for (auto &block_entry : segment_entry->block_entries_) {
+            const auto& block_entries = segment_entry->block_entries();
+            for (auto &block_entry : block_entries) {
                 BlockColumnEntry *block_column_entry = block_entry->columns_[knn_column_id].get();
                 block_column_entries_->emplace_back(block_column_entry);
             }
@@ -281,7 +282,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
                            knn_scan_shared_data->dimension_,
                            dist_func->dist_func_,
                            row_count,
-                           block_entry->segment_entry_->segment_id_,
+                           block_entry->segment_entry_->segment_id(),
                            block_entry->block_id_,
                            bitmask);
     } else if (u64 index_idx = knn_scan_shared_data->current_index_idx_++; index_idx < index_task_n) {
@@ -298,7 +299,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
         } else {
             segment_entry = iter->second;
         }
-        auto segment_row_count = segment_entry->row_count_;
+        auto segment_row_count = segment_entry->row_count();
         Bitmask bitmask;
         bitmask.Initialize(std::bit_ceil(segment_row_count));
         if (filter_expression_) {
@@ -308,7 +309,8 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
             auto &bool_column = knn_scan_function_data->bool_column_;
             // filter and build bitmask, if filter_expression_ != nullptr
             ExpressionEvaluator expr_evaluator;
-            for (auto &block_entry : segment_entry->block_entries_) {
+            const auto& block_entries = segment_entry->block_entries();
+            for (auto &block_entry : block_entries) {
                 auto row_count = block_entry->row_count_;
                 db_for_filter->Reset(row_count);
                 ReadDataBlock(db_for_filter, buffer_mgr, row_count, block_entry.get(), base_table_ref_->column_ids_);

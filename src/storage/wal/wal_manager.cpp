@@ -688,14 +688,14 @@ void WalManager::WalCmdImportReplay(const WalCmdImport &cmd, u64 txn_id, i64 com
         auto block_entry = MakeUnique<BlockEntry>(segment_entry.get(),
                                                   id,
                                                   0,
-                                                  segment_entry->column_count_,
+                                                  table_entry->ColumnCount(),
                                                   storage_->buffer_manager(),
                                                   cmd.row_counts_[id],
                                                   commit_ts,
                                                   commit_ts);
 
-        segment_entry->block_entries_.emplace_back(Move(block_entry));
-        segment_entry->row_count_ += cmd.row_counts_[id];
+        segment_entry->AppendBlockEntry(Move(block_entry));
+        segment_entry->IncreaseRowCount(cmd.row_counts_[id]);
     }
 
     NewCatalog::ImportSegment(table_entry, cmd.segment_id, segment_entry);

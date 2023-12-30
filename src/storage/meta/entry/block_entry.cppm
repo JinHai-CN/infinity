@@ -137,6 +137,8 @@ public:
 
     String VersionFilePath() { return LocalFileSystem::ConcatenateFilePath(*base_dir_, BlockVersion::PATH); }
 
+    const SharedPtr<DataType> GetColumnType(u64 column_id) const;
+
 private:
     static SharedPtr<String> DetermineDir(const String &parent_dir, u64 block_id);
 };

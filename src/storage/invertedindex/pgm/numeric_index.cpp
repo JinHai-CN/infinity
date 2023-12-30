@@ -204,11 +204,12 @@ void NumericIndex::CreatePGM(LogicalType logical_type) {
 
 void NumericIndex::Insert(SegmentEntry *segment_entry, SharedPtr<ColumnDef> column_def, BufferManager *buffer_mgr) {
     u64 column_id = column_def->id();
+    const auto& block_entries = segment_entry->block_entries();
     if (!column_index_.get()) {
-        CreatePGM(segment_entry->block_entries_[0]->columns_[column_id].get()->column_type_->type());
+        CreatePGM(block_entries[0]->columns_[column_id].get()->column_type_->type());
     }
 
-    for (const auto &block_entry : segment_entry->block_entries_) {
+    for (const auto &block_entry : block_entries) {
         for (SizeT i = 0; i < block_entry->row_count_; ++i) {
             auto block_column_entry = block_entry->columns_[column_id].get();
             BufferHandle buffer_handle = block_column_entry->buffer_->Load();

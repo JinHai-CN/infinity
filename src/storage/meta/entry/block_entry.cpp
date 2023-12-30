@@ -114,7 +114,7 @@ void BlockVersion::SaveToFile(const String &version_path) {
 BlockEntry::BlockEntry(const SegmentEntry *segment_entry, u16 block_id, TxnTimeStamp checkpoint_ts, u64 column_count, BufferManager *buffer_mgr)
     : BaseEntry(EntryType::kBlock), segment_entry_(segment_entry), block_id_(block_id), row_count_(0), row_capacity_(DEFAULT_VECTOR_SIZE),
       checkpoint_ts_(checkpoint_ts) {
-    base_dir_ = BlockEntry::DetermineDir(*segment_entry->segment_dir_, block_id);
+    base_dir_ = BlockEntry::DetermineDir(*segment_entry->segment_dir(), block_id);
     columns_.reserve(column_count);
     for (SizeT column_id = 0; column_id < column_count; ++column_id) {
         columns_.emplace_back(BlockColumnEntry::MakeNewBlockColumnEntry(this, column_id, buffer_mgr));
@@ -134,7 +134,7 @@ BlockEntry::BlockEntry(const SegmentEntry *segment_entry,
     : BaseEntry(EntryType::kBlock), segment_entry_(segment_entry), block_id_(block_id), row_count_(row_count_), row_capacity_(DEFAULT_VECTOR_SIZE),
       min_row_ts_(min_row_ts_), max_row_ts_(max_row_ts_), checkpoint_ts_(checkpoint_ts) {
 
-    base_dir_ = BlockEntry::DetermineDir(*segment_entry->segment_dir_, block_id);
+    base_dir_ = BlockEntry::DetermineDir(*segment_entry->segment_dir(), block_id);
 
     columns_.reserve(column_count);
     for (SizeT column_id = 0; column_id < column_count; ++column_id) {
@@ -171,7 +171,7 @@ u16 BlockEntry::AppendData(BlockEntry *block_entry,
     UniqueLock<RWMutex> lck(block_entry->rw_locker_);
     if (block_entry->using_txn_id_ != 0 && block_entry->using_txn_id_ != txn_id) {
         Error<StorageException>(Format("Multiple transactions are changing data of Segment: {}, Block: {}",
-                                       block_entry->segment_entry_->segment_id_,
+                                       block_entry->segment_entry_->segment_id(),
                                        block_entry->block_id_));
     }
 
@@ -190,7 +190,7 @@ u16 BlockEntry::AppendData(BlockEntry *block_entry,
                                  actual_copied);
 
         LOG_TRACE(Format("Segment: {}, Block: {}, Column: {} is appended with {} rows",
-                         block_entry->segment_entry_->segment_id_,
+                         block_entry->segment_entry_->segment_id(),
                          block_entry->block_id_,
                          column_id,
                          actual_copied));
@@ -204,14 +204,13 @@ void BlockEntry::DeleteData(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp co
     UniqueLock<RWMutex> lck(block_entry->rw_locker_);
     if (block_entry->using_txn_id_ != 0 && block_entry->using_txn_id_ != txn_id) {
         Error<StorageException>(Format("Multiple transactions are changing data of Segment: {}, Block: {}",
-                                       block_entry->segment_entry_->segment_id_,
+                                       block_entry->segment_entry_->segment_id(),
                                        block_entry->block_id_));
     }
 
     block_entry->using_txn_id_ = txn_id;
 
-    String *table_collect_name_ptr = block_entry->segment_entry_->table_entry_->GetTableName().get();
-    u32 segment_id = block_entry->segment_entry_->segment_id_;
+    u32 segment_id = block_entry->segment_entry_->segment_id();
     u16 block_id = block_entry->block_id_;
 
     auto &block_version = block_entry->block_version_;
@@ -220,7 +219,7 @@ void BlockEntry::DeleteData(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp co
         block_version->deleted_[block_offset] = commit_ts;
     }
 
-    LOG_TRACE(Format("Table {} Segment {} Block {} has deleted {} rows", *table_collect_name_ptr, segment_id, block_id, rows.size()));
+    LOG_TRACE(Format("Segment {} Block {} has deleted {} rows", segment_id, block_id, rows.size()));
 }
 
 // A txn may invoke AppendData() multiple times, and then invoke CommitAppend() once.
@@ -228,7 +227,7 @@ void BlockEntry::CommitAppend(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp 
     UniqueLock<RWMutex> lck(block_entry->rw_locker_);
     if (block_entry->using_txn_id_ != txn_id) {
         Error<StorageException>(Format("Multiple transactions are changing data of Segment: {}, Block: {}",
-                                       block_entry->segment_entry_->segment_id_,
+                                       block_entry->segment_entry_->segment_id(),
                                        block_entry->block_id_));
     }
     block_entry->using_txn_id_ = 0;
@@ -245,7 +244,7 @@ void BlockEntry::CommitDelete(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp 
     UniqueLock<RWMutex> lck(block_entry->rw_locker_);
     if (block_entry->using_txn_id_ != 0 && block_entry->using_txn_id_ != txn_id) {
         Error<StorageException>(Format("Multiple transactions are changing data of Segment: {}, Block: {}",
-                                       block_entry->segment_entry_->segment_id_,
+                                       block_entry->segment_entry_->segment_id(),
                                        block_entry->block_id_));
     }
 
@@ -277,7 +276,7 @@ void BlockEntry::FlushVersion(BlockEntry *block_entry, BlockVersion &checkpoint_
 }
 
 void BlockEntry::Flush(BlockEntry *block_entry, TxnTimeStamp checkpoint_ts) {
-    LOG_TRACE(Format("Segment: {}, Block: {} is being flushing", block_entry->segment_entry_->segment_id_, block_entry->block_id_));
+    LOG_TRACE(Format("Segment: {}, Block: {} is being flushing", block_entry->segment_entry_->segment_id(), block_entry->block_id_));
     if (checkpoint_ts < block_entry->checkpoint_ts_) {
         Error<StorageException>(
             Format("BlockEntry checkpoint_ts skew! checkpoint_ts: {}, block_entry->checkpoint_ts_: {}", checkpoint_ts, block_entry->checkpoint_ts_));
@@ -322,7 +321,7 @@ void BlockEntry::Flush(BlockEntry *block_entry, TxnTimeStamp checkpoint_ts) {
     FlushData(block_entry, checkpoint_row_count);
     block_entry->checkpoint_ts_ = checkpoint_ts;
     block_entry->checkpoint_row_count_ = checkpoint_row_count;
-    LOG_TRACE(Format("Segment: {}, Block {} is flushed", block_entry->segment_entry_->segment_id_, block_entry->block_id_));
+    LOG_TRACE(Format("Segment: {}, Block {} is flushed", block_entry->segment_entry_->segment_id(), block_entry->block_id_));
     return;
 }
 
@@ -424,6 +423,10 @@ void BlockEntry::MergeFrom(BaseEntry &other) {
     this->max_row_ts_ = block_entry2->max_row_ts_;
     this->checkpoint_ts_ = block_entry2->checkpoint_ts_;
     this->checkpoint_row_count_ = block_entry2->checkpoint_row_count_;
+}
+
+const SharedPtr<DataType> BlockEntry::GetColumnType(u64 column_id) const {
+    return this->segment_entry_->GetTableEntry()->GetColumnDefByID(column_id)->type();
 }
 
 } // namespace infinity

@@ -46,8 +46,7 @@ BlockColumnEntry::MakeNewBlockColumnEntry(const BlockEntry *block_entry, u64 col
 
     block_column_entry->file_name_ = MakeShared<String>(ToStr(column_id) + ".col");
 
-    const ColumnDef* column_def = block_entry->segment_entry_->table_entry_->GetColumnDefByID(column_id);
-    block_column_entry->column_type_ = column_def->type();
+    block_column_entry->column_type_ = block_entry->GetColumnType(column_id);
     DataType *column_type = block_column_entry->column_type_.get();
 
     SizeT row_capacity = block_entry->row_capacity_;

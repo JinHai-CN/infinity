@@ -715,8 +715,10 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
     if (segment_id_.has_value() && block_id_.has_value()) {
         auto iter = table_entry->segment_map().find(*segment_id_);
 
-        if (iter != table_entry->segment_map().end() && iter->second->block_entries_.size() > *block_id_) {
-            auto block = iter->second->block_entries_[*block_id_];
+        const auto& block_entries = iter->second->block_entries();
+
+        if (iter != table_entry->segment_map().end() && block_entries.size() > *block_id_) {
+            auto block = block_entries[*block_id_];
             auto version_path = block->VersionFilePath();
 
             chuck_filling(LocalFileSystem::GetFileSizeByPath, version_path);
@@ -731,9 +733,10 @@ void PhysicalShow::ExecuteShowSegments(QueryContext *query_context, ShowOperator
         }
     } else if (segment_id_.has_value()) {
         auto iter = table_entry->segment_map().find(*segment_id_);
+        const auto& block_entries = iter->second->block_entries();
 
         if (iter != table_entry->segment_map().end()) {
-            for (auto &entry : iter->second->block_entries_) {
+            for (auto &entry : block_entries) {
                 auto dir_path = entry->DirPath();
 
                 chuck_filling(LocalFileSystem::GetFolderSizeByPath, dir_path);
