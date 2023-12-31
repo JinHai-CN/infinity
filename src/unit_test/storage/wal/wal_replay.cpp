@@ -550,7 +550,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
 
             {
                 auto block_column_entry1 = last_block_entry->GetColumnBlockEntry(0);
-                auto column_type1 = block_column_entry1->column_type_.get();
+                auto column_type1 = block_column_entry1->column_type().get();
                 EXPECT_EQ(column_type1->type(), LogicalType::kTinyInt);
                 SizeT data_type_size = columns_vector[0]->data_type_size_;
                 EXPECT_EQ(data_type_size, 1);
@@ -560,7 +560,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
             }
             {
                 auto block_column_entry2 = last_block_entry->GetColumnBlockEntry(1);
-                auto column_type2 = block_column_entry2->column_type_.get();
+                auto column_type2 = block_column_entry2->column_type().get();
                 EXPECT_EQ(column_type2->type(), LogicalType::kBigInt);
                 SizeT data_type_size = columns_vector[1]->data_type_size_;
                 EXPECT_EQ(data_type_size, 8);
@@ -570,7 +570,7 @@ TEST_F(WalReplayTest, WalReplayImport) {
             }
             {
                 auto block_column_entry3 = last_block_entry->GetColumnBlockEntry(2);
-                auto column_type3 = block_column_entry3->column_type_.get();
+                auto column_type3 = block_column_entry3->column_type().get();
                 EXPECT_EQ(column_type3->type(), LogicalType::kDouble);
                 SizeT data_type_size = columns_vector[2]->data_type_size_;
                 EXPECT_EQ(data_type_size, 8);
@@ -622,17 +622,17 @@ TEST_F(WalReplayTest, WalReplayImport) {
 
             ColumnBuffer col0_obj = BlockColumnEntry::GetColumnData(column0, buffer_manager);
             col0_obj.GetAll();
-            DataType *col0_type = column0->column_type_.get();
+            DataType *col0_type = column0->column_type().get();
             i8 *col0_ptr = (i8 *)(col0_obj.GetValueAt(0, *col0_type));
             EXPECT_EQ(*col0_ptr, (1));
 
             ColumnBuffer col1_obj = BlockColumnEntry::GetColumnData(column1, buffer_manager);
-            DataType *col1_type = column1->column_type_.get();
+            DataType *col1_type = column1->column_type().get();
             i8 *col1_ptr = (i8 *)(col1_obj.GetValueAt(0, *col1_type));
             EXPECT_EQ(*col1_ptr, (i64)(22));
 
             ColumnBuffer col2_obj = BlockColumnEntry::GetColumnData(column2, buffer_manager);
-            DataType *col2_type = column2->column_type_.get();
+            DataType *col2_type = column2->column_type().get();
             EXPECT_EQ(col2_type->type(), LogicalType::kDouble);
             f64 *col2_ptr = (f64 *)(col2_obj.GetValueAt(0, *col2_type));
             EXPECT_EQ(col2_ptr[0], (f64)(3) + 0.33f);

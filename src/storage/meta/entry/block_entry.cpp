@@ -265,7 +265,7 @@ void BlockEntry::FlushData(int64_t checkpoint_row_count) {
     while (column_idx < column_count) {
         BlockColumnEntry *block_column_entry = this->columns_[column_idx].get();
         BlockColumnEntry::Flush(block_column_entry, checkpoint_row_count);
-        LOG_TRACE(Format("ColumnData {} is flushed", block_column_entry->column_id_));
+        LOG_TRACE(Format("ColumnData {} is flushed", block_column_entry->column_id()));
         ++column_idx;
     }
 }

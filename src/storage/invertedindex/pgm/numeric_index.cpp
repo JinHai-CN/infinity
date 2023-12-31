@@ -206,14 +206,14 @@ void NumericIndex::Insert(SegmentEntry *segment_entry, SharedPtr<ColumnDef> colu
     u64 column_id = column_def->id();
     const auto& block_entries = segment_entry->block_entries();
     if (!column_index_.get()) {
-        CreatePGM(block_entries[0]->GetColumnBlockEntry(column_id)->column_type_->type());
+        CreatePGM(block_entries[0]->GetColumnBlockEntry(column_id)->column_type()->type());
     }
 
     for (const auto &block_entry : block_entries) {
         for (SizeT i = 0; i < block_entry->row_count(); ++i) {
             auto block_column_entry = block_entry->GetColumnBlockEntry(column_id);
-            BufferHandle buffer_handle = block_column_entry->buffer_->Load();
-            switch (block_column_entry->column_type_->type()) {
+            BufferHandle buffer_handle = block_column_entry->buffer()->Load();
+            switch (block_column_entry->column_type()->type()) {
                 case kTinyInt: {
                     auto block_data_ptr = reinterpret_cast<const TinyIntT *>(buffer_handle.GetData());
                     column_index_->AppendBlock(block_data_ptr, block_entry->row_count());

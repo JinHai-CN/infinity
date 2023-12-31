@@ -34,29 +34,19 @@ struct BlockEntry;
 
 export struct BlockColumnEntry : public BaseEntry {
 public:
-    inline explicit BlockColumnEntry(const BlockEntry *block_entry, u64 column_id, const SharedPtr<String> &base_dir_ref)
-        : BaseEntry(EntryType::kBlockColumn), block_entry_(block_entry), column_id_(column_id), base_dir_(base_dir_ref) {}
-
-    const BlockEntry *block_entry_{nullptr};
-    u64 column_id_{};
-    SharedPtr<DataType> column_type_{};
-    BufferObj *buffer_{};
-
-    SharedPtr<String> base_dir_{};
-    SharedPtr<String> file_name_{};
-
-    UniquePtr<OutlineInfo> outline_info_{};
-
-public:
     static UniquePtr<BlockColumnEntry>
     MakeNewBlockColumnEntry(const BlockEntry *block_entry, u64 column_id, BufferManager *buffer_manager, bool is_replay = false);
+
+    inline explicit BlockColumnEntry(const BlockEntry *block_entry, u64 column_id, const SharedPtr<String> &base_dir_ref)
+        : BaseEntry(EntryType::kBlockColumn), block_entry_(block_entry), column_id_(column_id), base_dir_(base_dir_ref) {}
 
     static ColumnBuffer GetColumnData(BlockColumnEntry *column_data_entry, BufferManager *buffer_manager);
 
     static void
     Append(BlockColumnEntry *column_entry, u16 column_entry_offset, ColumnVector *input_column_vector, u16 input_offset, SizeT append_rows);
 
-    static void AppendRaw(BlockColumnEntry *block_column_entry, SizeT dst_offset, const_ptr_t src_ptr, SizeT data_size, SharedPtr<VectorBuffer> vector_buffer);
+    static void
+    AppendRaw(BlockColumnEntry *block_column_entry, SizeT dst_offset, const_ptr_t src_ptr, SizeT data_size, SharedPtr<VectorBuffer> vector_buffer);
 
     static void Flush(BlockColumnEntry *block_column_entry, SizeT row_count);
 
@@ -82,6 +72,25 @@ public:
         }
         return outline_paths;
     }
+
+public:
+    // Getter
+    inline const SharedPtr<DataType> &column_type() const { return column_type_; }
+    inline BufferObj *buffer() const { return buffer_; }
+    inline u64 column_id() const { return column_id_; }
+    inline const SharedPtr<String> &base_dir() const { return base_dir_; }
+    inline const BlockEntry *block_entry() const { return block_entry_; }
+
+protected:
+    const BlockEntry *block_entry_{nullptr};
+    u64 column_id_{};
+    SharedPtr<DataType> column_type_{};
+    BufferObj *buffer_{};
+
+    SharedPtr<String> base_dir_{};
+    SharedPtr<String> file_name_{};
+
+    UniquePtr<OutlineInfo> outline_info_{};
 };
 
 } // namespace infinity

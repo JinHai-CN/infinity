@@ -329,8 +329,8 @@ void IRSDataStore::BatchInsert(TableEntry *table_entry, IndexDef *index_def, Seg
                 auto index_base = reinterpret_cast<IndexFullText *>(index_def->index_array_[col].get());
                 u64 column_id = table_entry->GetColumnIdByName(index_base->column_name());
                 auto block_column_entry = block_entry->GetColumnBlockEntry(column_id);
-                BufferHandle buffer_handle = block_column_entry->buffer_->Load();
-                switch (block_column_entry->column_type_->type()) {
+                BufferHandle buffer_handle = block_column_entry->buffer()->Load();
+                switch (block_column_entry->column_type()->type()) {
                     case kTinyInt: {
                         auto block_data_ptr = reinterpret_cast<const TinyIntT *>(buffer_handle.GetData());
                         auto field = MakeUnique<NumericField<i32>>(index_base->column_name().c_str(), irs::IndexFeatures::NONE, numeric_features);
@@ -409,7 +409,7 @@ void IRSDataStore::BatchInsert(TableEntry *table_entry, IndexDef *index_def, Seg
                         doc.Insert<irs::Action::INDEX | irs::Action::STORE>(field.get());
                     } break;
                     case kVarchar: {
-                        ColumnBuffer column_buffer(column_id, buffer_handle, buffer_mgr, block_column_entry->base_dir_);
+                        ColumnBuffer column_buffer(column_id, buffer_handle, buffer_mgr, block_column_entry->base_dir());
                         auto field = MakeUnique<TextField>(index_base->column_name().c_str(),
                                                            irs::IndexFeatures::FREQ | irs::IndexFeatures::POS,
                                                            text_features,

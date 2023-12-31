@@ -142,7 +142,7 @@ void PhysicalMergeKnn::ExecuteInner(QueryContext *query_context, MergeKnnOperato
                     SizeT column_id = table_ref_->column_ids_[i];
                     ColumnBuffer column_buffer =
                         BlockColumnEntry::GetColumnData(block_entry->GetColumnBlockEntry(column_id), buffer_mgr);
-                    auto &column_type = block_entry->GetColumnBlockEntry(column_id)->column_type_;
+                    auto &column_type = block_entry->GetColumnBlockEntry(column_id)->column_type();
 
                     if (column_type->Plain()) {
                         const_ptr_t ptr = column_buffer.GetValueAt(block_offset, *column_type);

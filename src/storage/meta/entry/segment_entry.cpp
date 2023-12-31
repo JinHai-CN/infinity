@@ -211,7 +211,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
                     segment_column_data.reserve(segment_entry->row_count_ * dimension);
                     for (const auto &block_entry : segment_entry->block_entries_) {
                         BlockColumnEntry *block_column_entry = block_entry->GetColumnBlockEntry(column_id);
-                        BufferHandle block_column_buffer_handle = block_column_entry->buffer_->Load();
+                        BufferHandle block_column_buffer_handle = block_column_entry->buffer()->Load();
                         auto block_column_data_ptr = reinterpret_cast<const float *>(block_column_buffer_handle.GetData());
                         SizeT block_row_cnt = block_entry->row_count();
                         segment_column_data.insert(segment_column_data.end(),

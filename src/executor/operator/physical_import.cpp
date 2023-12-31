@@ -132,7 +132,7 @@ void PhysicalImport::ImportFVECS(QueryContext *query_context, ImportOperatorStat
     u64 segment_id = NewCatalog::GetNextSegmentID(table_entry_);
     SharedPtr<SegmentEntry> segment_entry = SegmentEntry::MakeNewSegmentEntry(table_entry_, segment_id, query_context->GetTxn()->GetBufferMgr());
     BlockEntry *last_block_entry = segment_entry->GetLastEntry();
-    BufferHandle buffer_handle = last_block_entry->GetColumnBlockEntry(0)->buffer_->Load();
+    BufferHandle buffer_handle = last_block_entry->GetColumnBlockEntry(0)->buffer()->Load();
     SizeT row_idx = 0;
     auto buf_ptr = static_cast<ptr_t>(buffer_handle.GetDataMut());
     while (true) {
@@ -159,7 +159,7 @@ void PhysicalImport::ImportFVECS(QueryContext *query_context, ImportOperatorStat
             segment_entry = SegmentEntry::MakeNewSegmentEntry(table_entry_, segment_id, query_context->GetTxn()->GetBufferMgr());
 
             last_block_entry = segment_entry->GetLastEntry();
-            buffer_handle = last_block_entry->GetColumnBlockEntry(0)->buffer_->Load();
+            buffer_handle = last_block_entry->GetColumnBlockEntry(0)->buffer()->Load();
         }
 
         if (last_block_entry->GetAvailableCapacity() <= 0) {
@@ -169,7 +169,7 @@ void PhysicalImport::ImportFVECS(QueryContext *query_context, ImportOperatorStat
                                                                    table_entry_->ColumnCount(),
                                                                    txn->GetBufferMgr()));
             last_block_entry = segment_entry->GetLastEntry();
-            buffer_handle = last_block_entry->GetColumnBlockEntry(0)->buffer_->Load();
+            buffer_handle = last_block_entry->GetColumnBlockEntry(0)->buffer()->Load();
             buf_ptr = static_cast<ptr_t>(buffer_handle.GetDataMut());
         }
     }
@@ -411,7 +411,7 @@ void PhysicalImport::CSVRowHandler(void *context) {
             str_view = StringView((char *)cell.str, cell.len);
         }
         BlockColumnEntry *block_column_entry = last_block_entry->GetColumnBlockEntry(column_idx);
-        auto column_type = block_column_entry->column_type_.get();
+        auto column_type = block_column_entry->column_type().get();
         // FIXME: Variable length types cannot use type inference addresses
         SizeT dst_offset = write_row * column_type->Size();
 
@@ -521,7 +521,7 @@ void PhysicalImport::JSONLRowHandler(const Json &line_json, BlockEntry *block_en
         const ColumnDef *column_def = table_entry_->GetColumnDefByID(i);
         auto block_column_entry = block_entry->GetColumnBlockEntry(i);
 
-        auto column_type = block_column_entry->column_type_.get();
+        auto column_type = block_column_entry->column_type().get();
         SizeT dst_offset = row_cnt * column_type->Size();
         switch (column_type->type()) {
             case LogicalType::kVarchar: {

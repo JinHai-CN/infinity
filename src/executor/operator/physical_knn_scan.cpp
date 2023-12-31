@@ -251,7 +251,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
         LOG_TRACE(Format("KnnScan: {} brute force {}/{}", knn_scan_function_data->task_id_, block_column_idx + 1, brute_task_n));
         // brute force
         BlockColumnEntry *block_column_entry = knn_scan_shared_data->block_column_entries_->at(block_column_idx);
-        const BlockEntry *block_entry = block_column_entry->block_entry_;
+        const BlockEntry *block_entry = block_column_entry->block_entry();
         const auto row_count = block_entry->row_count();
         BufferManager *buffer_mgr = query_context->storage()->buffer_manager();
 
@@ -581,7 +581,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
                     SizeT column_id = base_table_ref_->column_ids_[i];
                     ColumnBuffer column_buffer =
                         BlockColumnEntry::GetColumnData(block_entry->GetColumnBlockEntry(column_id), query_context->storage()->buffer_manager());
-                    auto &column_type = block_entry->GetColumnBlockEntry(column_id)->column_type_;
+                    auto &column_type = block_entry->GetColumnBlockEntry(column_id)->column_type();
                     if (column_type->Plain()) {
                         const_ptr_t ptr = column_buffer.GetValueAt(block_offset, *column_type);
                         output_block_ptr->AppendValueByPtr(i, ptr);
