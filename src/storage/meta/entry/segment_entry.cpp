@@ -118,7 +118,7 @@ u64 SegmentEntry::AppendData(SegmentEntry *segment_entry, u64 txn_id, AppendStat
         while (to_append_rows > 0 && segment_entry->row_count_ < segment_entry->row_capacity_) {
             // Append to_append_rows into block
             BlockEntry *last_block_entry = segment_entry->block_entries_.back().get();
-            if (BlockEntry::Room(last_block_entry) <= 0) {
+            if (last_block_entry->GetAvailableCapacity() <= 0) {
                 segment_entry->block_entries_.emplace_back(
                     MakeUnique<BlockEntry>(segment_entry, segment_entry->block_entries_.size(), 0, segment_entry->column_count_, buffer_mgr));
                 last_block_entry = segment_entry->block_entries_.back().get();
@@ -129,7 +129,7 @@ u64 SegmentEntry::AppendData(SegmentEntry *segment_entry, u64 txn_id, AppendStat
             u16 range_block_start_row = last_block_entry->row_count();
 
             u16 actual_appended =
-                BlockEntry::AppendData(last_block_entry, txn_id, input_block, append_state_ptr->current_block_offset_, to_append_rows, buffer_mgr);
+                last_block_entry->AppendData(txn_id, input_block, append_state_ptr->current_block_offset_, to_append_rows, buffer_mgr);
             if (to_append_rows < actual_appended) {
                 Error<StorageException>(Format("Attempt to append rows: {}, but rows: {} are appended", to_append_rows, actual_appended));
             }
@@ -160,7 +160,7 @@ void SegmentEntry::DeleteData(SegmentEntry *segment_entry, u64 txn_id, TxnTimeSt
         }
 
         const Vector<RowID> &rows = row_hash_map.second;
-        BlockEntry::DeleteData(block_entry, txn_id, commit_ts, rows);
+        block_entry->DeleteData(txn_id, commit_ts, rows);
     }
 }
 
@@ -210,7 +210,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
                     Vector<f32> segment_column_data;
                     segment_column_data.reserve(segment_entry->row_count_ * dimension);
                     for (const auto &block_entry : segment_entry->block_entries_) {
-                        BlockColumnEntry* block_column_entry = block_entry->GetColumnBlockEntry(column_id);
+                        BlockColumnEntry *block_column_entry = block_entry->GetColumnBlockEntry(column_id);
                         BufferHandle block_column_buffer_handle = block_column_entry->buffer_->Load();
                         auto block_column_data_ptr = reinterpret_cast<const float *>(block_column_buffer_handle.GetData());
                         SizeT block_row_cnt = block_entry->row_count();
@@ -336,7 +336,7 @@ void SegmentEntry::CommitAppend(SegmentEntry *segment_entry, u64 txn_id, TxnTime
         segment_entry->max_row_ts_ = Max(segment_entry->max_row_ts_, commit_ts);
         block_entry = segment_entry->block_entries_[block_id];
     }
-    BlockEntry::CommitAppend(block_entry.get(), txn_id, commit_ts);
+    block_entry->CommitAppend(txn_id, commit_ts);
 }
 
 void SegmentEntry::CommitDelete(SegmentEntry *segment_entry,
@@ -353,7 +353,7 @@ void SegmentEntry::CommitDelete(SegmentEntry *segment_entry,
             Error<StorageException>(Format("The segment doesn't contain the given block: {}.", block_id));
         }
 
-        BlockEntry::CommitDelete(block_entry, txn_id, commit_ts);
+        block_entry->CommitDelete(txn_id, commit_ts);
         segment_entry->max_row_ts_ = Max(segment_entry->max_row_ts_, commit_ts);
     }
 }
@@ -391,7 +391,7 @@ Json SegmentEntry::Serialize(SegmentEntry *segment_entry, TxnTimeStamp max_commi
                          block_entry->min_row_ts(),
                          block_entry->max_row_ts(),
                          max_commit_ts));
-        BlockEntry::Flush(block_entry, max_commit_ts);
+        block_entry->Flush(max_commit_ts);
         LOG_TRACE(Format("Finish Flush: block_entry checkpoint ts: {}, min_row_ts: {}, max_row_ts: {} || max_commit_ts: {}",
                          block_entry->checkpoint_ts(),
                          block_entry->min_row_ts(),

@@ -141,7 +141,7 @@ void PhysicalTableScan::ExecuteInternal(QueryContext *query_context,
         u16 block_id = block_ids->at(block_ids_idx).block_id_;
 
         BlockEntry *current_block_entry = block_index->GetBlockEntry(segment_id, block_id);
-        auto [row_begin, row_end] = BlockEntry::VisibleRange(current_block_entry, begin_ts, read_offset);
+        auto [row_begin, row_end] = current_block_entry->GetVisibleRange(begin_ts, read_offset);
         auto write_size = Min(write_capacity, SizeT(row_end - row_begin));
 
         if (write_size > 0) {

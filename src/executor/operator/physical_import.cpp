@@ -162,7 +162,7 @@ void PhysicalImport::ImportFVECS(QueryContext *query_context, ImportOperatorStat
             buffer_handle = last_block_entry->GetColumnBlockEntry(0)->buffer_->Load();
         }
 
-        if (BlockEntry::Room(last_block_entry) <= 0) {
+        if (last_block_entry->GetAvailableCapacity() <= 0) {
             segment_entry->AppendBlockEntry(MakeUnique<BlockEntry>(segment_entry.get(),
                                                                    segment_entry->block_entries().size(),
                                                                    0,
@@ -269,7 +269,7 @@ void PhysicalImport::ImportJSONL(QueryContext *query_context, ImportOperatorStat
             segment_entry = SegmentEntry::MakeNewSegmentEntry(table_entry_, segment_id, txn->GetBufferMgr());
         }
         BlockEntry *block_entry = segment_entry->GetLastEntry();
-        if (BlockEntry::Room(block_entry) <= 0) {
+        if (block_entry->GetAvailableCapacity() <= 0) {
             LOG_INFO(Format("Block {} saved", block_entry->block_id()));
             segment_entry->AppendBlockEntry(MakeUnique<BlockEntry>(segment_entry.get(),
                                                                    segment_entry->block_entries().size(),
@@ -389,7 +389,7 @@ void PhysicalImport::CSVRowHandler(void *context) {
     }
 
     BlockEntry *last_block_entry = segment_entry->GetLastEntry();
-    if (BlockEntry::Room(last_block_entry) <= 0) {
+    if (last_block_entry->GetAvailableCapacity() <= 0) {
         segment_entry->AppendBlockEntry(
             MakeUnique<BlockEntry>(segment_entry.get(), segment_entry->block_entries().size(), 0, table_entry->ColumnCount(), txn->GetBufferMgr()));
         last_block_entry = segment_entry->GetLastEntry();
@@ -610,7 +610,7 @@ void PhysicalImport::SaveSegmentData(TxnTableStore *txn_store, SharedPtr<Segment
     const auto& block_entries = segment_entry->block_entries();
     block_row_counts.reserve(block_entries.size());
     for (auto &block_entry : block_entries) {
-        BlockEntry::FlushData(block_entry.get(), block_entry->row_count());
+        block_entry->FlushData(block_entry->row_count());
         auto size = Max(block_entries.size(), static_cast<SizeT>(block_entry->block_id() + 1));
         block_row_counts.resize(size);
         block_row_counts[block_entry->block_id()] = block_entry->row_count();

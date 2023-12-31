@@ -146,8 +146,8 @@ BlockEntry::BlockEntry(const SegmentEntry *segment_entry,
     block_version_->created_.emplace_back((TxnTimeStamp)min_row_ts_, (i32)row_count_);
 }
 
-Pair<u16, u16> BlockEntry::VisibleRange(BlockEntry *block_entry, TxnTimeStamp begin_ts, u16 block_offset_begin) {
-    auto &block_version = block_entry->block_version_;
+Pair<u16, u16> BlockEntry::GetVisibleRange(TxnTimeStamp begin_ts, u16 block_offset_begin) const {
+    auto &block_version = this->block_version_;
     auto &deleted = block_version->deleted_;
     u16 block_offset_end = block_version->GetRowCount(begin_ts);
     while (block_offset_begin < block_offset_end && deleted[block_offset_begin] != 0 && deleted[block_offset_begin] <= begin_ts) {
@@ -162,58 +162,57 @@ Pair<u16, u16> BlockEntry::VisibleRange(BlockEntry *block_entry, TxnTimeStamp be
     return {block_offset_begin, row_idx};
 }
 
-u16 BlockEntry::AppendData(BlockEntry *block_entry,
-                           u64 txn_id,
+u16 BlockEntry::AppendData(u64 txn_id,
                            DataBlock *input_data_block,
                            u16 input_block_offset,
                            u16 append_rows,
                            BufferManager *) {
-    UniqueLock<RWMutex> lck(block_entry->rw_locker_);
-    if (block_entry->using_txn_id_ != 0 && block_entry->using_txn_id_ != txn_id) {
+    UniqueLock<RWMutex> lck(this->rw_locker_);
+    if (this->using_txn_id_ != 0 && this->using_txn_id_ != txn_id) {
         Error<StorageException>(Format("Multiple transactions are changing data of Segment: {}, Block: {}",
-                                       block_entry->segment_entry_->segment_id(),
-                                       block_entry->block_id_));
+                                       this->segment_entry_->segment_id(),
+                                       this->block_id_));
     }
 
-    block_entry->using_txn_id_ = txn_id;
+    this->using_txn_id_ = txn_id;
     u16 actual_copied = append_rows;
-    if (block_entry->row_count_ + append_rows > block_entry->row_capacity_) {
-        actual_copied = block_entry->row_capacity_ - block_entry->row_count_;
+    if (this->row_count_ + append_rows > this->row_capacity_) {
+        actual_copied = this->row_capacity_ - this->row_count_;
     }
 
-    SizeT column_count = block_entry->columns_.size();
+    SizeT column_count = this->columns_.size();
     for (SizeT column_id = 0; column_id < column_count; ++column_id) {
-        BlockColumnEntry::Append(block_entry->columns_[column_id].get(),
-                                 block_entry->row_count_,
+        BlockColumnEntry::Append(this->columns_[column_id].get(),
+                                 this->row_count_,
                                  input_data_block->column_vectors[column_id].get(),
                                  input_block_offset,
                                  actual_copied);
 
         LOG_TRACE(Format("Segment: {}, Block: {}, Column: {} is appended with {} rows",
-                         block_entry->segment_entry_->segment_id(),
-                         block_entry->block_id_,
+                         this->segment_entry_->segment_id(),
+                         this->block_id_,
                          column_id,
                          actual_copied));
     }
 
-    block_entry->row_count_ += actual_copied;
+    this->row_count_ += actual_copied;
     return actual_copied;
 }
 
-void BlockEntry::DeleteData(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts, const Vector<RowID> &rows) {
-    UniqueLock<RWMutex> lck(block_entry->rw_locker_);
-    if (block_entry->using_txn_id_ != 0 && block_entry->using_txn_id_ != txn_id) {
+void BlockEntry::DeleteData(u64 txn_id, TxnTimeStamp commit_ts, const Vector<RowID> &rows) {
+    UniqueLock<RWMutex> lck(this->rw_locker_);
+    if (this->using_txn_id_ != 0 && this->using_txn_id_ != txn_id) {
         Error<StorageException>(Format("Multiple transactions are changing data of Segment: {}, Block: {}",
-                                       block_entry->segment_entry_->segment_id(),
-                                       block_entry->block_id_));
+                                       this->segment_entry_->segment_id(),
+                                       this->block_id_));
     }
 
-    block_entry->using_txn_id_ = txn_id;
+    this->using_txn_id_ = txn_id;
 
-    u32 segment_id = block_entry->segment_entry_->segment_id();
-    u16 block_id = block_entry->block_id_;
+    u32 segment_id = this->segment_entry_->segment_id();
+    u16 block_id = this->block_id_;
 
-    auto &block_version = block_entry->block_version_;
+    auto &block_version = this->block_version_;
     for (RowID row_id : rows) {
         u16 block_offset = row_id.segment_offset_ % DEFAULT_BLOCK_CAPACITY;
         block_version->deleted_[block_offset] = commit_ts;
@@ -223,83 +222,83 @@ void BlockEntry::DeleteData(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp co
 }
 
 // A txn may invoke AppendData() multiple times, and then invoke CommitAppend() once.
-void BlockEntry::CommitAppend(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts) {
-    UniqueLock<RWMutex> lck(block_entry->rw_locker_);
-    if (block_entry->using_txn_id_ != txn_id) {
+void BlockEntry::CommitAppend(u64 txn_id, TxnTimeStamp commit_ts) {
+    UniqueLock<RWMutex> lck(this->rw_locker_);
+    if (this->using_txn_id_ != txn_id) {
         Error<StorageException>(Format("Multiple transactions are changing data of Segment: {}, Block: {}",
-                                       block_entry->segment_entry_->segment_id(),
-                                       block_entry->block_id_));
+                                       this->segment_entry_->segment_id(),
+                                       this->block_id_));
     }
-    block_entry->using_txn_id_ = 0;
-    if (block_entry->min_row_ts_ == 0) {
-        block_entry->min_row_ts_ = commit_ts;
+    this->using_txn_id_ = 0;
+    if (this->min_row_ts_ == 0) {
+        this->min_row_ts_ = commit_ts;
     }
-    block_entry->max_row_ts_ = Max(block_entry->max_row_ts_, commit_ts);
+    this->max_row_ts_ = Max(this->max_row_ts_, commit_ts);
 
-    auto &block_version = block_entry->block_version_;
-    block_version->created_.push_back({commit_ts, int32_t(block_entry->row_count_)});
+    auto &block_version = this->block_version_;
+    block_version->created_.push_back({commit_ts, int32_t(this->row_count_)});
 }
 
-void BlockEntry::CommitDelete(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts) {
-    UniqueLock<RWMutex> lck(block_entry->rw_locker_);
-    if (block_entry->using_txn_id_ != 0 && block_entry->using_txn_id_ != txn_id) {
+void BlockEntry::CommitDelete(u64 txn_id, TxnTimeStamp commit_ts) {
+    UniqueLock<RWMutex> lck(this->rw_locker_);
+    if (this->using_txn_id_ != 0 && this->using_txn_id_ != txn_id) {
         Error<StorageException>(Format("Multiple transactions are changing data of Segment: {}, Block: {}",
-                                       block_entry->segment_entry_->segment_id(),
-                                       block_entry->block_id_));
+                                       this->segment_entry_->segment_id(),
+                                       this->block_id_));
     }
 
-    if (block_entry->using_txn_id_ == 0) {
+    if (this->using_txn_id_ == 0) {
         // Which case will come here?
         return;
     }
 
-    block_entry->using_txn_id_ = 0;
-    if (block_entry->min_row_ts_ == 0) {
-        block_entry->min_row_ts_ = commit_ts;
+    this->using_txn_id_ = 0;
+    if (this->min_row_ts_ == 0) {
+        this->min_row_ts_ = commit_ts;
     }
-    block_entry->max_row_ts_ = Max(block_entry->max_row_ts_, commit_ts);
+    this->max_row_ts_ = Max(this->max_row_ts_, commit_ts);
 }
 
-void BlockEntry::FlushData(BlockEntry *block_entry, int64_t checkpoint_row_count) {
-    SizeT column_count = block_entry->columns_.size();
+void BlockEntry::FlushData(int64_t checkpoint_row_count) {
+    SizeT column_count = this->columns_.size();
     SizeT column_idx = 0;
     while (column_idx < column_count) {
-        BlockColumnEntry *block_column_entry = block_entry->columns_[column_idx].get();
+        BlockColumnEntry *block_column_entry = this->columns_[column_idx].get();
         BlockColumnEntry::Flush(block_column_entry, checkpoint_row_count);
         LOG_TRACE(Format("ColumnData {} is flushed", block_column_entry->column_id_));
         ++column_idx;
     }
 }
 
-void BlockEntry::FlushVersion(BlockEntry *block_entry, BlockVersion &checkpoint_version) {
-    checkpoint_version.SaveToFile(block_entry->VersionFilePath());
+void BlockEntry::FlushVersion(BlockVersion &checkpoint_version) {
+    checkpoint_version.SaveToFile(this->VersionFilePath());
 }
 
-void BlockEntry::Flush(BlockEntry *block_entry, TxnTimeStamp checkpoint_ts) {
-    LOG_TRACE(Format("Segment: {}, Block: {} is being flushing", block_entry->segment_entry_->segment_id(), block_entry->block_id_));
-    if (checkpoint_ts < block_entry->checkpoint_ts_) {
+void BlockEntry::Flush(TxnTimeStamp checkpoint_ts) {
+    LOG_TRACE(Format("Segment: {}, Block: {} is being flushing", this->segment_entry_->segment_id(), this->block_id_));
+    if (checkpoint_ts < this->checkpoint_ts_) {
         Error<StorageException>(
-            Format("BlockEntry checkpoint_ts skew! checkpoint_ts: {}, block_entry->checkpoint_ts_: {}", checkpoint_ts, block_entry->checkpoint_ts_));
+            Format("BlockEntry checkpoint_ts skew! checkpoint_ts: {}, this->checkpoint_ts_: {}", checkpoint_ts, this->checkpoint_ts_));
     }
     int checkpoint_row_count = 0;
 
-    BlockVersion checkpoint_version(block_entry->block_version_->deleted_.size());
+    BlockVersion checkpoint_version(this->block_version_->deleted_.size());
     {
-        SharedLock<RWMutex> lock(block_entry->rw_locker_);
+        SharedLock<RWMutex> lock(this->rw_locker_);
         // Skip if entry has been flushed at some previous checkpoint, or is invisible at current checkpoint.
-        if (block_entry->max_row_ts_ <= block_entry->checkpoint_ts_ || block_entry->min_row_ts_ > checkpoint_ts)
+        if (this->max_row_ts_ <= this->checkpoint_ts_ || this->min_row_ts_ > checkpoint_ts)
             return;
 
-        checkpoint_row_count = block_entry->block_version_->GetRowCount(checkpoint_ts);
+        checkpoint_row_count = this->block_version_->GetRowCount(checkpoint_ts);
         if (checkpoint_row_count == 0) {
             Error<StorageException>("BlockEntry is empty at checkpoint_ts!");
         }
-        const Vector<TxnTimeStamp> &deleted = block_entry->block_version_->deleted_;
-        if (checkpoint_row_count <= block_entry->checkpoint_row_count_) {
+        const Vector<TxnTimeStamp> &deleted = this->block_version_->deleted_;
+        if (checkpoint_row_count <= this->checkpoint_row_count_) {
             // BlockEntry doesn't append rows between the previous checkpoint and checkpoint_ts.
             bool deleted_between = false;
             for (int i = 0; i < checkpoint_row_count; i++) {
-                if (deleted[i] > block_entry->checkpoint_ts_ && deleted[i] <= checkpoint_ts) {
+                if (deleted[i] > this->checkpoint_ts_ && deleted[i] <= checkpoint_ts) {
                     deleted_between = true;
                     break;
                 }
@@ -307,7 +306,7 @@ void BlockEntry::Flush(BlockEntry *block_entry, TxnTimeStamp checkpoint_ts) {
             if (!deleted_between) // BlockEntry doesn't change between the previous checkpoint and checkpoint_ts.
                 return;
         }
-        checkpoint_version.created_ = block_entry->block_version_->created_;
+        checkpoint_version.created_ = this->block_version_->created_;
         checkpoint_version.deleted_.reserve(checkpoint_row_count);
         Memcpy(checkpoint_version.deleted_.data(), deleted.data(), checkpoint_row_count * sizeof(TxnTimeStamp));
     }
@@ -317,11 +316,11 @@ void BlockEntry::Flush(BlockEntry *block_entry, TxnTimeStamp checkpoint_ts) {
         }
     }
 
-    FlushVersion(block_entry, checkpoint_version);
-    FlushData(block_entry, checkpoint_row_count);
-    block_entry->checkpoint_ts_ = checkpoint_ts;
-    block_entry->checkpoint_row_count_ = checkpoint_row_count;
-    LOG_TRACE(Format("Segment: {}, Block {} is flushed", block_entry->segment_entry_->segment_id(), block_entry->block_id_));
+    FlushVersion(checkpoint_version);
+    FlushData(checkpoint_row_count);
+    this->checkpoint_ts_ = checkpoint_ts;
+    this->checkpoint_row_count_ = checkpoint_row_count;
+    LOG_TRACE(Format("Segment: {}, Block {} is flushed", this->segment_entry_->segment_id(), this->block_id_));
     return;
 }
 
@@ -369,9 +368,9 @@ UniquePtr<BlockEntry> BlockEntry::Deserialize(const Json &block_entry_json, Segm
     return block_entry;
 }
 
-i32 BlockEntry::Room(BlockEntry *block_entry) {
-    SharedLock<RWMutex> lck(block_entry->rw_locker_);
-    return block_entry->row_capacity_ - block_entry->row_count_;
+i32 BlockEntry::GetAvailableCapacity() {
+    SharedLock<RWMutex> lck(this->rw_locker_);
+    return this->row_capacity_ - this->row_count_;
 }
 
 SharedPtr<String> BlockEntry::DetermineDir(const String &parent_dir, u64 block_id) {
@@ -429,8 +428,6 @@ const SharedPtr<DataType> BlockEntry::GetColumnType(u64 column_id) const {
     return this->segment_entry_->GetTableEntry()->GetColumnDefByID(column_id)->type();
 }
 
-u32 BlockEntry::segment_id() const {
-    return segment_entry_->segment_id();
-}
+u32 BlockEntry::segment_id() const { return segment_entry_->segment_id(); }
 
 } // namespace infinity

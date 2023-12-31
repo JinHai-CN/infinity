@@ -48,7 +48,7 @@ struct CreateField {
 export struct BlockVersion {
     constexpr static String PATH = "version";
 
-    BlockVersion(SizeT capacity) : deleted_(capacity, 0) {}
+    explicit BlockVersion(SizeT capacity) : deleted_(capacity, 0) {}
     bool operator==(const BlockVersion &rhs) const;
     bool operator!=(const BlockVersion &rhs) const { return !(*this == rhs); };
     i32 GetRowCount(TxnTimeStamp begin_ts);
@@ -62,6 +62,7 @@ export struct BlockVersion {
 
 export struct BlockEntry : public BaseEntry {
     friend struct TableEntry;
+    friend struct SegmentEntry;
 
 public:
     // for iterator unit test
@@ -80,41 +81,31 @@ public:
                         i16 max_row_ts_);
 
 public:
-    // Get visible range of the BlockEntry since the given row number for a txn
-    static Pair<u16, u16> VisibleRange(BlockEntry *block_entry, TxnTimeStamp begin_ts, u16 block_offset_begin = 0);
+    // Used in physical import
+    void FlushData(i64 checkpoint_row_count);
 
-    static u16
-    AppendData(BlockEntry *block_entry, u64 txn_id, DataBlock *input_data_block, u16 input_block_offset, u16 append_rows, BufferManager *buffer_mgr);
-
-    static void DeleteData(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts, const Vector<RowID> &rows);
-
-    static void CommitAppend(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts);
-
-    static void CommitDelete(BlockEntry *block_entry, u64 txn_id, TxnTimeStamp commit_ts);
-
-    static void Flush(BlockEntry *block_entry, TxnTimeStamp checkpoint_ts);
-
-    static void FlushData(BlockEntry *block_entry, i64 checkpoint_row_count);
-
-    static void FlushVersion(BlockEntry *block_entry, BlockVersion &checkpoint_version);
-
-    inline static BlockColumnEntry *GetColumnDataByID(const BlockEntry *block_entry, u64 column_id) { return block_entry->columns_[column_id].get(); }
+    // Used in block iterator
+    inline BlockColumnEntry *GetColumnDataByID(u64 column_id) const { return this->columns_[column_id].get(); }
 
     static Json Serialize(BlockEntry *segment_entry, TxnTimeStamp max_commit_ts);
 
     static UniquePtr<BlockEntry> Deserialize(const Json &table_entry_json, SegmentEntry *table_entry, BufferManager *buffer_mgr);
 
-    static i32 Room(BlockEntry *block_entry);
-
     void MergeFrom(BaseEntry &other) override;
 
-    const String &DirPath() { return *base_dir_; }
+protected:
+    u16 AppendData(u64 txn_id, DataBlock *input_data_block, u16 input_block_offset, u16 append_rows, BufferManager *buffer_mgr);
 
-    String VersionFilePath() { return LocalFileSystem::ConcatenateFilePath(*base_dir_, BlockVersion::PATH); }
+    void DeleteData(u64 txn_id, TxnTimeStamp commit_ts, const Vector<RowID> &rows);
 
-    const SharedPtr<DataType> GetColumnType(u64 column_id) const;
+    void CommitAppend(u64 txn_id, TxnTimeStamp commit_ts);
 
-private:
+    void CommitDelete(u64 txn_id, TxnTimeStamp commit_ts);
+
+    void Flush(TxnTimeStamp checkpoint_ts);
+
+    void FlushVersion(BlockVersion &checkpoint_version);
+
     static SharedPtr<String> DetermineDir(const String &parent_dir, u64 block_id);
 
 public:
@@ -136,6 +127,17 @@ public:
     const SharedPtr<String> &base_dir() const { return base_dir_; }
 
     BlockColumnEntry *GetColumnBlockEntry(SizeT column_id) const { return columns_[column_id].get(); }
+
+    // Get visible range of the BlockEntry since the given row number for a txn
+    Pair<u16, u16> GetVisibleRange(TxnTimeStamp begin_ts, u16 block_offset_begin = 0) const;
+
+    i32 GetAvailableCapacity();
+
+    const String &DirPath() { return *base_dir_; }
+
+    String VersionFilePath() { return LocalFileSystem::ConcatenateFilePath(*base_dir_, BlockVersion::PATH); }
+
+    const SharedPtr<DataType> GetColumnType(u64 column_id) const;
 
 public:
     // Setter
