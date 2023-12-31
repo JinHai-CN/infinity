@@ -85,7 +85,7 @@ void ReadDataBlock(DataBlock *output,
             u32 segment_offset = block_id * DEFAULT_BLOCK_CAPACITY;
             output->column_vectors[output_column_id++]->AppendWith(RowID(segment_id, segment_offset), row_count);
         } else {
-            ColumnBuffer column_buffer = BlockColumnEntry::GetColumnData(current_block_entry->GetColumnBlockEntry(column_id), buffer_mgr);
+            ColumnBuffer column_buffer = current_block_entry->GetColumnBlockEntry(column_id)->GetColumnData(buffer_mgr);
             output->column_vectors[output_column_id++]->AppendWith(column_buffer, 0, row_count);
         }
     }
@@ -274,7 +274,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
             bool_column->Reset();
         }
 
-        ColumnBuffer column_buffer = BlockColumnEntry::GetColumnData(block_column_entry, buffer_mgr);
+        ColumnBuffer column_buffer = block_column_entry->GetColumnData(buffer_mgr);
 
         auto data = reinterpret_cast<const DataType *>(column_buffer.GetAll());
         merge_heap->Search(query,
@@ -580,7 +580,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
                 for (SizeT i = 0; i < column_n; ++i) {
                     SizeT column_id = base_table_ref_->column_ids_[i];
                     ColumnBuffer column_buffer =
-                        BlockColumnEntry::GetColumnData(block_entry->GetColumnBlockEntry(column_id), query_context->storage()->buffer_manager());
+                                     block_entry->GetColumnBlockEntry(column_id)->GetColumnData(query_context->storage()->buffer_manager());
                     auto &column_type = block_entry->GetColumnBlockEntry(column_id)->column_type();
                     if (column_type->Plain()) {
                         const_ptr_t ptr = column_buffer.GetValueAt(block_offset, *column_type);

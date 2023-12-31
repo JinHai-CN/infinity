@@ -49,7 +49,7 @@ bool PhysicalMergeKnn::Execute(QueryContext *query_context, OperatorState *opera
         LOG_TRACE("PhysicalMergeKnn::Input is complete");
     }
 
-    if(merge_knn_op_state->data_block_array_.empty()) {
+    if (merge_knn_op_state->data_block_array_.empty()) {
         merge_knn_op_state->data_block_array_.emplace_back(DataBlock::MakeUniquePtr());
         merge_knn_op_state->data_block_array_[0]->Init(*GetOutputTypes());
     }
@@ -105,7 +105,7 @@ void PhysicalMergeKnn::ExecuteInner(QueryContext *query_context, MergeKnnOperato
     SizeT row_n = input_data.row_count();
     merge_knn->Search(dists, row_ids, row_n);
 
-    if(merge_knn_state->input_complete_) {
+    if (merge_knn_state->input_complete_) {
         merge_knn->End(); // reorder the heap
         BufferManager *buffer_mgr = query_context->storage()->buffer_manager();
 
@@ -128,8 +128,8 @@ void PhysicalMergeKnn::ExecuteInner(QueryContext *query_context, MergeKnnOperato
                     Error<ExecutorException>(Format("Cannot find block segment id: {}, block id: {}", segment_id, block_id));
                 }
 
-                DataBlock* output_data_block = merge_knn_state->data_block_array_.back().get();
-                if(output_row_count == DEFAULT_BLOCK_CAPACITY) {
+                DataBlock *output_data_block = merge_knn_state->data_block_array_.back().get();
+                if (output_row_count == DEFAULT_BLOCK_CAPACITY) {
                     output_data_block->Finalize();
                     merge_knn_state->data_block_array_.emplace_back(DataBlock::MakeUniquePtr());
                     merge_knn_state->data_block_array_.back()->Init(*GetOutputTypes());
@@ -140,8 +140,7 @@ void PhysicalMergeKnn::ExecuteInner(QueryContext *query_context, MergeKnnOperato
                 SizeT column_n = table_ref_->column_ids_.size();
                 for (SizeT i = 0; i < column_n; ++i) {
                     SizeT column_id = table_ref_->column_ids_[i];
-                    ColumnBuffer column_buffer =
-                        BlockColumnEntry::GetColumnData(block_entry->GetColumnBlockEntry(column_id), buffer_mgr);
+                    ColumnBuffer column_buffer = block_entry->GetColumnBlockEntry(column_id)->GetColumnData(buffer_mgr);
                     auto &column_type = block_entry->GetColumnBlockEntry(column_id)->column_type();
 
                     if (column_type->Plain()) {

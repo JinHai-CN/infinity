@@ -60,7 +60,7 @@ void TableScanFunc(QueryContext *query_context, TableFunctionData *table_functio
         SizeT output_column_id{0};
         for (auto column_id : column_ids) {
             ColumnBuffer column_buffer =
-                BlockColumnEntry::GetColumnData(current_block_entry->GetColumnBlockEntry(column_id), query_context->storage()->buffer_manager());
+                current_block_entry->GetColumnBlockEntry(column_id)->GetColumnData(query_context->storage()->buffer_manager());
             output.column_vectors[output_column_id++]->AppendWith(column_buffer, read_offset, write_size);
         }
 

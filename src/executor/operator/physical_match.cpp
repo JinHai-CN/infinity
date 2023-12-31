@@ -131,7 +131,7 @@ bool PhysicalMatch::Execute(QueryContext *query_context, OperatorState *operator
         SizeT column_id = 0;
         for (; column_id < column_n; ++column_id) {
             BlockColumnEntry* block_column_ptr = block_entry->GetColumnBlockEntry(column_ids[column_id]);
-            ColumnBuffer column_buffer = BlockColumnEntry::GetColumnData(block_column_ptr, query_context->storage()->buffer_manager());
+            ColumnBuffer column_buffer = block_column_ptr->GetColumnData(query_context->storage()->buffer_manager());
             output_data_block->column_vectors[column_id]->AppendWith(column_buffer, block_offset, 1);
         }
 

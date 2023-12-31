@@ -110,9 +110,8 @@ Vector<SharedPtr<Vector<GlobalBlockID>>> PhysicalTableScan::PlanBlockEntries(i64
     return result;
 }
 
-void PhysicalTableScan::ExecuteInternal(QueryContext *query_context,
-                                        TableScanOperatorState *table_scan_operator_state) {
-    if(!table_scan_operator_state->data_block_array_.empty()) {
+void PhysicalTableScan::ExecuteInternal(QueryContext *query_context, TableScanOperatorState *table_scan_operator_state) {
+    if (!table_scan_operator_state->data_block_array_.empty()) {
         Error<ExecutorException>("Table scan output data block array should be empty");
     }
 
@@ -153,7 +152,7 @@ void PhysicalTableScan::ExecuteInternal(QueryContext *query_context,
                     output_ptr->column_vectors[output_column_id++]->AppendWith(RowID(segment_id, segment_offset), write_size);
                 } else {
                     ColumnBuffer column_buffer =
-                        BlockColumnEntry::GetColumnData(current_block_entry->GetColumnBlockEntry(column_id), query_context->storage()->buffer_manager());
+                        current_block_entry->GetColumnBlockEntry(column_id)->GetColumnData(query_context->storage()->buffer_manager());
                     output_ptr->column_vectors[output_column_id++]->AppendWith(column_buffer, read_offset, write_size);
                 }
             }
