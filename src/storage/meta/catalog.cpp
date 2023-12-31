@@ -285,7 +285,7 @@ void NewCatalog::CreateIndexFile(TableEntry *table_entry,
 
 Status NewCatalog::RemoveIndexEntry(const String &index_name, TableIndexEntry *table_index_entry, u64 txn_id, TxnManager *txn_mgr) {
     TableIndexMeta *table_index_meta = table_index_entry->table_index_meta_;
-    TableEntry *table_entry = TableIndexMeta::GetTableEntry(table_index_meta);
+    TableEntry *table_entry = table_index_meta->GetTableEntry();
     table_entry->RemoveIndexEntry(index_name, txn_id, txn_mgr);
     return Status::OK();
 }

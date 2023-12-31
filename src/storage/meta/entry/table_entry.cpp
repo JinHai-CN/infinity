@@ -522,7 +522,7 @@ UniquePtr<TableEntry> TableEntry::Deserialize(const Json &table_entry_json, Tabl
     return table_entry;
 }
 
-u64 TableEntry::GetColumnIdByName(const String &column_name) {
+u64 TableEntry::GetColumnIdByName(const String &column_name) const {
     auto it = column_name2column_id_.find(column_name);
     if (it == column_name2column_id_.end()) {
         Error<NotImplementException>(Format("No column name: {}", column_name));

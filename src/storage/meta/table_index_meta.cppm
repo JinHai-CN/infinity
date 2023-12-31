@@ -33,10 +33,18 @@ struct TableEntry;
 struct SegmentEntry;
 
 export class TableIndexMeta {
+    friend struct TableEntry;
+
 public:
     explicit TableIndexMeta(TableEntry *table_entry, SharedPtr<String> index_name);
 
 public:
+    // Getter
+    inline TableEntry *GetTableEntry() const { return table_entry_; }
+
+    Tuple<TableIndexEntry *, Status> GetEntry(u64 txn_id, TxnTimeStamp begin_ts);
+
+private:
     Tuple<TableIndexEntry *, Status>
     CreateTableIndexEntry(const SharedPtr<IndexDef> &index_def, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
@@ -44,19 +52,14 @@ public:
 
     static SharedPtr<String> ToString(TableIndexMeta *table_index_meta);
 
-    static inline TableEntry *GetTableEntry(TableIndexMeta *table_index_meta) { return table_index_meta->table_entry_; }
-
     static Json Serialize(TableIndexMeta *table_index_meta, TxnTimeStamp max_commit_ts);
 
     static UniquePtr<TableIndexMeta> Deserialize(const Json &index_def_meta_json, TableEntry *table_entry, BufferManager *buffer_mgr);
-
-    Tuple<TableIndexEntry *, Status> GetEntry(u64 txn_id, TxnTimeStamp begin_ts);
 
     void DeleteNewEntry(u64 txn_id, TxnManager *txn_mgr);
 
     void MergeFrom(TableIndexMeta &other);
 
-private:
     Tuple<TableIndexEntry *, Status>
     CreateTableIndexEntryInternal(const SharedPtr<IndexDef> &index_def, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 

@@ -132,7 +132,7 @@ public:
     virtual void MergeFrom(BaseEntry &other);
 
 public:
-    u64 GetColumnIdByName(const String &column_name);
+    u64 GetColumnIdByName(const String &column_name) const;
 
     Map<u32, SharedPtr<SegmentEntry>>& segment_map() { return segment_map_; }
 
