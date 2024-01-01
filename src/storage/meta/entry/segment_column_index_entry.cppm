@@ -64,10 +64,6 @@ private:
 
     bool Flush(TxnTimeStamp checkpoint_ts);
 
-    static UniquePtr<IndexFileWorker> CreateFileWorker(ColumnIndexEntry *column_index_entry, CreateIndexParam *param, u32 segment_id);
-
-    static String IndexFileName(const String &index_name, u32 segment_id);
-
     // Load from disk. Is called by SegmentColumnIndexEntry::Deserialize.
     static UniquePtr<SegmentColumnIndexEntry>
     LoadIndexEntry(ColumnIndexEntry *column_index_entry, u32 segment_id, BufferManager *buffer_manager, CreateIndexParam *create_index_param);

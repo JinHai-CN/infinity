@@ -22,12 +22,9 @@ import buffer_handle;
 import buffer_obj;
 import logger;
 import third_party;
-import parser;
 import infinity_exception;
 
 import index_file_worker;
-import annivfflat_index_file_worker;
-import hnsw_file_worker;
 import column_index_entry;
 import table_entry;
 import segment_entry;
@@ -45,7 +42,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentColumnIndexEntry::NewIndexEntry(Column
                                                                           BufferManager *buffer_manager,
                                                                           CreateIndexParam *param) {
     // FIXME: estimate index size.
-    UniquePtr<IndexFileWorker> file_worker = SegmentColumnIndexEntry::CreateFileWorker(column_index_entry, param, segment_id);
+    UniquePtr<IndexFileWorker> file_worker = column_index_entry->CreateFileWorker(param, segment_id);
     auto buffer = buffer_manager->Allocate(Move(file_worker));
     auto segment_column_index_entry = SharedPtr<SegmentColumnIndexEntry>(new SegmentColumnIndexEntry(column_index_entry, segment_id, buffer));
     segment_column_index_entry->min_ts_ = create_ts;
@@ -57,7 +54,7 @@ UniquePtr<SegmentColumnIndexEntry> SegmentColumnIndexEntry::LoadIndexEntry(Colum
                                                                            u32 segment_id,
                                                                            BufferManager *buffer_manager,
                                                                            CreateIndexParam *param) {
-    UniquePtr<IndexFileWorker> file_worker = SegmentColumnIndexEntry::CreateFileWorker(column_index_entry, param, segment_id);
+    UniquePtr<IndexFileWorker> file_worker = column_index_entry->CreateFileWorker(param, segment_id);
     auto buffer = buffer_manager->Get(Move(file_worker));
     return UniquePtr<SegmentColumnIndexEntry>(new SegmentColumnIndexEntry(column_index_entry, segment_id, buffer));
 }
@@ -147,60 +144,5 @@ void SegmentColumnIndexEntry::MergeFrom(BaseEntry &other) {
         checkpoint_ts_ = other_index_entry.checkpoint_ts_;
     }
 }
-
-UniquePtr<IndexFileWorker> SegmentColumnIndexEntry::CreateFileWorker(ColumnIndexEntry *column_index_entry, CreateIndexParam *param, u32 segment_id) {
-    UniquePtr<IndexFileWorker> file_worker = nullptr;
-    const auto *index_base = param->index_base_;
-    const auto *column_def = param->column_def_;
-    auto file_name = MakeShared<String>(SegmentColumnIndexEntry::IndexFileName(index_base->file_name_, segment_id));
-    switch (index_base->index_type_) {
-        case IndexType::kIVFFlat: {
-            auto create_annivfflat_param = static_cast<CreateAnnIVFFlatParam *>(param);
-            auto elem_type = ((EmbeddingInfo *)(column_def->type()->type_info().get()))->Type();
-            switch (elem_type) {
-                case kElemFloat: {
-                    file_worker = MakeUnique<AnnIVFFlatIndexFileWorker<f32>>(column_index_entry->index_dir(),
-                                                                             file_name,
-                                                                             index_base,
-                                                                             column_def,
-                                                                             create_annivfflat_param->row_count_);
-                    break;
-                }
-                default: {
-                    ExecutorException("Create IVF Flat index: unsupported element type.");
-                }
-            }
-            break;
-        }
-        case IndexType::kHnsw: {
-            auto create_hnsw_param = static_cast<CreateHnswParam *>(param);
-            file_worker =
-                MakeUnique<HnswFileWorker>(column_index_entry->index_dir(), file_name, index_base, column_def, create_hnsw_param->max_element_);
-            break;
-        }
-        case IndexType::kIRSFullText: {
-            //            auto create_fulltext_param = static_cast<CreateFullTextParam *>(param);
-            UniquePtr<String> err_msg =
-                MakeUnique<String>(Format("File worker isn't implemented: {}", IndexInfo::IndexTypeToString(index_base->index_type_)));
-            LOG_ERROR(*err_msg);
-            Error<StorageException>(*err_msg);
-            break;
-        }
-        default: {
-            UniquePtr<String> err_msg =
-                MakeUnique<String>(Format("File worker isn't implemented: {}", IndexInfo::IndexTypeToString(index_base->index_type_)));
-            LOG_ERROR(*err_msg);
-            Error<StorageException>(*err_msg);
-        }
-    }
-    if (file_worker.get() == nullptr) {
-        UniquePtr<String> err_msg = MakeUnique<String>("Failed to create index file worker");
-        LOG_ERROR(*err_msg);
-        Error<StorageException>(*err_msg);
-    }
-    return file_worker;
-}
-
-String SegmentColumnIndexEntry::IndexFileName(const String &index_name, u32 segment_id) { return Format("seg{}.idx", segment_id, index_name); }
 
 } // namespace infinity

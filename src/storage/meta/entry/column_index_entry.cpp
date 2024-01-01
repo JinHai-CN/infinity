@@ -29,6 +29,11 @@ import random;
 import buffer_manager;
 import infinity_exception;
 import table_entry;
+import index_file_worker;
+import parser;
+import annivfflat_index_file_worker;
+import hnsw_file_worker;
+import logger;
 
 module column_index_entry;
 
@@ -133,5 +138,59 @@ SharedPtr<String> ColumnIndexEntry::DetermineIndexDir(const String &parent_dir, 
     } while (!fs.CreateDirectoryNoExp(*index_dir));
     return index_dir;
 }
+
+UniquePtr<IndexFileWorker> ColumnIndexEntry::CreateFileWorker(CreateIndexParam *param, u32 segment_id) {
+    UniquePtr<IndexFileWorker> file_worker = nullptr;
+    const auto *index_base = param->index_base_;
+    const auto *column_def = param->column_def_;
+    auto file_name = MakeShared<String>(ColumnIndexEntry::IndexFileName(index_base->file_name_, segment_id));
+    switch (index_base->index_type_) {
+        case IndexType::kIVFFlat: {
+            auto create_annivfflat_param = static_cast<CreateAnnIVFFlatParam *>(param);
+            auto elem_type = ((EmbeddingInfo *)(column_def->type()->type_info().get()))->Type();
+            switch (elem_type) {
+                case kElemFloat: {
+                    file_worker = MakeUnique<AnnIVFFlatIndexFileWorker<f32>>(this->index_dir(),
+                                                                             file_name,
+                                                                             index_base,
+                                                                             column_def,
+                                                                             create_annivfflat_param->row_count_);
+                    break;
+                }
+                default: {
+                    ExecutorException("Create IVF Flat index: unsupported element type.");
+                }
+            }
+            break;
+        }
+        case IndexType::kHnsw: {
+            auto create_hnsw_param = static_cast<CreateHnswParam *>(param);
+            file_worker = MakeUnique<HnswFileWorker>(this->index_dir(), file_name, index_base, column_def, create_hnsw_param->max_element_);
+            break;
+        }
+        case IndexType::kIRSFullText: {
+            //            auto create_fulltext_param = static_cast<CreateFullTextParam *>(param);
+            UniquePtr<String> err_msg =
+                MakeUnique<String>(Format("File worker isn't implemented: {}", IndexInfo::IndexTypeToString(index_base->index_type_)));
+            LOG_ERROR(*err_msg);
+            Error<StorageException>(*err_msg);
+            break;
+        }
+        default: {
+            UniquePtr<String> err_msg =
+                MakeUnique<String>(Format("File worker isn't implemented: {}", IndexInfo::IndexTypeToString(index_base->index_type_)));
+            LOG_ERROR(*err_msg);
+            Error<StorageException>(*err_msg);
+        }
+    }
+    if (file_worker.get() == nullptr) {
+        UniquePtr<String> err_msg = MakeUnique<String>("Failed to create index file worker");
+        LOG_ERROR(*err_msg);
+        Error<StorageException>(*err_msg);
+    }
+    return file_worker;
+}
+
+String ColumnIndexEntry::IndexFileName(const String &index_name, u32 segment_id) { return Format("seg{}.idx", segment_id, index_name); }
 
 } // namespace infinity

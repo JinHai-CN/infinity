@@ -21,6 +21,7 @@ import base_entry;
 import third_party;
 import segment_column_index_entry;
 import index_base;
+import index_file_worker;
 
 export module column_index_entry;
 
@@ -62,9 +63,13 @@ public:
     TableIndexEntry *table_index_entry() const { return table_index_entry_; }
     const HashMap<u32, SharedPtr<SegmentColumnIndexEntry>>& index_by_segment() const { return index_by_segment_; }
 
+    // Used in segment column index entry
+    UniquePtr<IndexFileWorker> CreateFileWorker(CreateIndexParam *param, u32 segment_id);
+
 private:
     static SharedPtr<String> DetermineIndexDir(const String &parent_dir, const String &index_name);
     void CommitCreatedIndex(u32 segment_id, UniquePtr<SegmentColumnIndexEntry> index_entry);
+    static String IndexFileName(const String &index_name, u32 segment_id);
 
 private:
     RWMutex rw_locker_{};
