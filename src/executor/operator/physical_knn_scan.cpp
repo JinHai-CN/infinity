@@ -212,8 +212,9 @@ void PhysicalKnnScan::PlanWithIndex(QueryContext *query_context) { // TODO: retu
 
         // Fill the segment with index
         ColumnIndexEntry *column_index_entry = index_map[knn_column_id].get();
-        index_entry_map.reserve(column_index_entry->index_by_segment.size());
-        for (auto &[segment_id, segment_column_index] : column_index_entry->index_by_segment) {
+        const HashMap<u32, SharedPtr<SegmentColumnIndexEntry>>& index_by_segment = column_index_entry->index_by_segment();
+        index_entry_map.reserve(index_by_segment.size());
+        for (auto &[segment_id, segment_column_index] : index_by_segment) {
             index_entry_map[segment_id].emplace_back(segment_column_index.get());
         }
     }
@@ -333,7 +334,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
         }
         // bool use_bitmask = !bitmask.IsAllTrue();
 
-        switch (segment_column_index_entry->column_index_entry()->index_base_->index_type_) {
+        switch (segment_column_index_entry->column_index_entry()->index_base_ptr()->index_type_) {
             case IndexType::kIVFFlat: {
                 BufferHandle index_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry, buffer_mgr);
                 auto index = static_cast<const AnnIVFFlatIndexData<DataType> *>(index_handle.GetData());
@@ -373,7 +374,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
             }
             case IndexType::kHnsw: {
                 BufferHandle index_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry, buffer_mgr);
-                auto index_hnsw = static_cast<IndexHnsw *>(segment_column_index_entry->column_index_entry()->index_base_.get());
+                auto index_hnsw = static_cast<const IndexHnsw *>(segment_column_index_entry->column_index_entry()->index_base_ptr());
                 auto KnnScanOld = [&](auto *index) {
                     Vector<DataType> dists(knn_scan_shared_data->topk_ * knn_scan_shared_data->query_count_);
                     Vector<RowID> row_ids(knn_scan_shared_data->topk_ * knn_scan_shared_data->query_count_);

@@ -69,7 +69,7 @@ BufferHandle SegmentColumnIndexEntry::GetIndex(SegmentColumnIndexEntry *segment_
 void SegmentColumnIndexEntry::UpdateIndex(TxnTimeStamp, FaissIndexPtr *, BufferManager *) { Error<NotImplementException>("Not implemented"); }
 
 bool SegmentColumnIndexEntry::Flush(TxnTimeStamp checkpoint_ts) {
-    String &index_name = *this->column_index_entry_->index_dir_;
+    String &index_name = *this->column_index_entry_->index_dir();
     u64 segment_id = this->segment_id_;
     LOG_TRACE(Format("Segment: {}, Index: {} is being flushing", segment_id, index_name));
     if (this->max_ts_ <= this->checkpoint_ts_ || this->min_ts_ > checkpoint_ts) {
@@ -120,9 +120,9 @@ UniquePtr<SegmentColumnIndexEntry> SegmentColumnIndexEntry::Deserialize(const Js
         Error<StorageException>(status.message());
         return nullptr;
     }
-    u64 column_id = column_index_entry->column_id_;
+    u64 column_id = column_index_entry->column_id();
     UniquePtr<CreateIndexParam> create_index_param =
-        SegmentEntry::GetCreateIndexParam(segment_row_count, column_index_entry->index_base_.get(), table_entry->GetColumnDefByID(column_id));
+        SegmentEntry::GetCreateIndexParam(segment_row_count, column_index_entry->index_base_ptr(), table_entry->GetColumnDefByID(column_id));
     // TODO: need to get create index param;
     //    UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry, index_base, column_def.get());
     auto segment_column_index_entry = LoadIndexEntry(column_index_entry, segment_id, buffer_mgr, create_index_param.get());
@@ -159,7 +159,7 @@ UniquePtr<IndexFileWorker> SegmentColumnIndexEntry::CreateFileWorker(ColumnIndex
             auto elem_type = ((EmbeddingInfo *)(column_def->type()->type_info().get()))->Type();
             switch (elem_type) {
                 case kElemFloat: {
-                    file_worker = MakeUnique<AnnIVFFlatIndexFileWorker<f32>>(column_index_entry->index_dir_,
+                    file_worker = MakeUnique<AnnIVFFlatIndexFileWorker<f32>>(column_index_entry->index_dir(),
                                                                              file_name,
                                                                              index_base,
                                                                              column_def,
@@ -175,7 +175,7 @@ UniquePtr<IndexFileWorker> SegmentColumnIndexEntry::CreateFileWorker(ColumnIndex
         case IndexType::kHnsw: {
             auto create_hnsw_param = static_cast<CreateHnswParam *>(param);
             file_worker =
-                MakeUnique<HnswFileWorker>(column_index_entry->index_dir_, file_name, index_base, column_def, create_hnsw_param->max_element_);
+                MakeUnique<HnswFileWorker>(column_index_entry->index_dir(), file_name, index_base, column_def, create_hnsw_param->max_element_);
             break;
         }
         case IndexType::kIRSFullText: {

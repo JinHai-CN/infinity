@@ -95,7 +95,7 @@ UniquePtr<TableIndexEntry> TableIndexEntry::NewDropTableIndexEntry(TableIndexMet
 void TableIndexEntry::CommitCreateIndex(u64 column_id, u32 segment_id, SharedPtr<SegmentColumnIndexEntry> segment_column_index_entry) {
     UniqueLock<RWMutex> w_locker(this->rw_locker_);
     ColumnIndexEntry *column_index_entry = this->column_index_map_[column_id].get();
-    column_index_entry->index_by_segment.emplace(segment_id, segment_column_index_entry);
+    column_index_entry->index_by_segment_.emplace(segment_id, segment_column_index_entry);
 }
 
 void TableIndexEntry::CommitCreateIndex(const SharedPtr<IrsIndexEntry> &irs_index_entry) { this->irs_index_entry_ = irs_index_entry; }

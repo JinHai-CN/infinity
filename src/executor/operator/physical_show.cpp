@@ -1326,7 +1326,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
         for (const auto &column_index_entry_pair : table_index_entry->column_index_map()) {
             u64 index_column_id = column_index_entry_pair.first;
             ColumnIndexEntry *column_index_entry = column_index_entry_pair.second.get();
-            const IndexBase *index_base = column_index_entry->index_base_.get();
+            const IndexBase *index_base = column_index_entry->index_base_ptr();
             SizeT column_id = 0;
             {
                 // Append index name to the first column
@@ -1367,7 +1367,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
             ++column_id;
             {
                 // Append index path
-                Value value = Value::MakeVarchar(*column_index_entry->index_dir_);
+                Value value = Value::MakeVarchar(*column_index_entry->index_dir());
                 ValueExpression value_expr(value);
                 value_expr.AppendToChunk(output_block_ptr->column_vectors[column_id]);
             }
@@ -1375,7 +1375,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
             {
                 // Append Index segment
                 SizeT segment_count = table_entry->segment_map().size();
-                SizeT index_segment_count = column_index_entry->index_by_segment.size();
+                SizeT index_segment_count = column_index_entry->index_by_segment().size();
                 String result_value = Format("{}/{}", index_segment_count, segment_count);
                 Value value = Value::MakeVarchar(result_value);
                 ValueExpression value_expr(value);

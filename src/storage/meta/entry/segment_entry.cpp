@@ -188,7 +188,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
                                                                  TxnTableStore *txn_store) {
     u64 column_id = column_def->id();
     //    SharedPtr<IndexDef> index_def = index_def_entry->index_def_;
-    IndexBase *index_base = column_index_entry->index_base_.get();
+    const IndexBase *index_base = column_index_entry->index_base_ptr();
     //    UniquePtr<CreateIndexParam> create_index_param = MakeUnique<CreateIndexParam>(index_base, column_def.get());
     UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry->row_count_, index_base, column_def.get());
     SharedPtr<SegmentColumnIndexEntry> segment_column_index_entry =
@@ -230,7 +230,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
             break;
         }
         case IndexType::kHnsw: {
-            auto index_hnsw = static_cast<IndexHnsw *>(index_base);
+            auto index_hnsw = static_cast<const IndexHnsw *>(index_base);
             if (column_def->type()->type() != LogicalType::kEmbedding) {
                 Error<StorageException>("HNSW supports embedding type.");
             }
@@ -322,7 +322,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
             Error<StorageException>(*err_msg);
         }
     }
-    txn_store->CreateIndexFile(column_index_entry->table_index_entry_, column_id, segment_entry->segment_id_, segment_column_index_entry);
+    txn_store->CreateIndexFile(column_index_entry->table_index_entry(), column_id, segment_entry->segment_id_, segment_column_index_entry);
     return segment_column_index_entry;
 }
 

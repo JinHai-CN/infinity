@@ -232,7 +232,7 @@ void TableEntry::CreateIndexFile(void *txn_store, TableIndexEntry *table_index_e
             for (const auto &[segment_id, segment_entry] : this->segment_map_) {
                 SharedPtr<SegmentColumnIndexEntry> segment_column_index_entry =
                     SegmentEntry::CreateIndexFile(segment_entry.get(), column_index_entry, column_def, begin_ts, buffer_mgr, txn_store_ptr);
-                column_index_entry->index_by_segment.emplace(segment_id, segment_column_index_entry);
+                column_index_entry->index_by_segment_.emplace(segment_id, segment_column_index_entry);
             }
         } else if (base_entry->entry_type_ == EntryType::kIRSIndex) {
             continue;
