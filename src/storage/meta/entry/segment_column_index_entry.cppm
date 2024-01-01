@@ -43,7 +43,7 @@ public:
                                                             BufferManager *buffer_manager,
                                                             CreateIndexParam *create_index_param);
 
-    [[nodiscard]] static BufferHandle GetIndex(SegmentColumnIndexEntry *segment_column_index_entry, BufferManager *buffer_mgr);
+    [[nodiscard]] BufferHandle GetIndex();
 
     static Json Serialize(SegmentColumnIndexEntry *segment_column_index_entry);
 

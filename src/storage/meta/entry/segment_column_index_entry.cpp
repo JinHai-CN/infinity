@@ -59,8 +59,8 @@ UniquePtr<SegmentColumnIndexEntry> SegmentColumnIndexEntry::LoadIndexEntry(Colum
     return UniquePtr<SegmentColumnIndexEntry>(new SegmentColumnIndexEntry(column_index_entry, segment_id, buffer));
 }
 
-BufferHandle SegmentColumnIndexEntry::GetIndex(SegmentColumnIndexEntry *segment_column_index_entry, BufferManager *) {
-    return segment_column_index_entry->buffer_->Load();
+BufferHandle SegmentColumnIndexEntry::GetIndex() {
+    return buffer_->Load();
 }
 
 void SegmentColumnIndexEntry::UpdateIndex(TxnTimeStamp, FaissIndexPtr *, BufferManager *) { Error<NotImplementException>("Not implemented"); }

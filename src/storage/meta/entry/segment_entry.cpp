@@ -202,7 +202,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
             TypeInfo *type_info = column_def->type()->type_info().get();
             auto embedding_info = static_cast<EmbeddingInfo *>(type_info);
             SizeT dimension = embedding_info->Dimension();
-            BufferHandle buffer_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry.get(), buffer_mgr);
+            BufferHandle buffer_handle = segment_column_index_entry->GetIndex();
             switch (embedding_info->Type()) {
                 case kElemFloat: {
                     auto annivfflat_index = static_cast<AnnIVFFlatIndexData<f32> *>(buffer_handle.GetDataMut());
@@ -237,7 +237,7 @@ SharedPtr<SegmentColumnIndexEntry> SegmentEntry::CreateIndexFile(SegmentEntry *s
             TypeInfo *type_info = column_def->type()->type_info().get();
             auto embedding_info = static_cast<EmbeddingInfo *>(type_info);
 
-            BufferHandle buffer_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry.get(), buffer_mgr);
+            BufferHandle buffer_handle = segment_column_index_entry->GetIndex();
             auto InsertHnsw = [&](auto &hnsw_index) {
                 u32 segment_offset = 0;
                 Vector<u64> row_ids;

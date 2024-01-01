@@ -336,7 +336,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
 
         switch (segment_column_index_entry->column_index_entry()->index_base_ptr()->index_type_) {
             case IndexType::kIVFFlat: {
-                BufferHandle index_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry, buffer_mgr);
+                BufferHandle index_handle = segment_column_index_entry->GetIndex();
                 auto index = static_cast<const AnnIVFFlatIndexData<DataType> *>(index_handle.GetData());
                 i32 n_probes = 1;
                 auto IVFFlatScan = [&]<typename AnnIVFFlatType>() {
@@ -373,7 +373,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
                 break;
             }
             case IndexType::kHnsw: {
-                BufferHandle index_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry, buffer_mgr);
+                BufferHandle index_handle = segment_column_index_entry->GetIndex();
                 auto index_hnsw = static_cast<const IndexHnsw *>(segment_column_index_entry->column_index_entry()->index_base_ptr());
                 auto KnnScanOld = [&](auto *index) {
                     Vector<DataType> dists(knn_scan_shared_data->topk_ * knn_scan_shared_data->query_count_);
