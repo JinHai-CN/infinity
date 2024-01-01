@@ -89,7 +89,7 @@ UniquePtr<String> TxnTableStore::Import(const SharedPtr<SegmentEntry> &segment) 
 
 UniquePtr<String>
 TxnTableStore::CreateIndexFile(TableIndexEntry *table_index_entry, u64 column_id, u32 segment_id, SharedPtr<SegmentColumnIndexEntry> index) {
-    const String &index_name = *table_index_entry->index_def_->index_name_;
+    const String &index_name = *table_index_entry->index_def()->index_name_;
     if (auto column_index_iter = txn_indexes_store_.find(index_name); column_index_iter != txn_indexes_store_.end()) {
         TxnIndexStore *txn_index_store = &(column_index_iter->second);
         if (auto segment_column_index_iter = txn_index_store->index_entry_map_.find(column_id);

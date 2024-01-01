@@ -1323,7 +1323,7 @@ void PhysicalShow::ExecuteShowIndexes(QueryContext *query_context, ShowOperatorS
             continue;
         }
 
-        for (const auto &column_index_entry_pair : table_index_entry->column_index_map_) {
+        for (const auto &column_index_entry_pair : table_index_entry->column_index_map()) {
             u64 index_column_id = column_index_entry_pair.first;
             ColumnIndexEntry *column_index_entry = column_index_entry_pair.second.get();
             const IndexBase *index_base = column_index_entry->index_base_.get();

@@ -203,14 +203,15 @@ void PhysicalKnnScan::PlanWithIndex(QueryContext *query_context) { // TODO: retu
             Error<StorageException>("Cannot find index entry.");
         }
 
-        auto column_index_iter = table_index_entry->column_index_map_.find(knn_column_id);
-        if (column_index_iter == table_index_entry->column_index_map_.end()) {
+        auto& index_map = table_index_entry->column_index_map();
+        auto column_index_iter = index_map.find(knn_column_id);
+        if (column_index_iter == index_map.end()) {
             // knn_column_id isn't in this table index
             continue;
         }
 
         // Fill the segment with index
-        ColumnIndexEntry *column_index_entry = table_index_entry->column_index_map_[knn_column_id].get();
+        ColumnIndexEntry *column_index_entry = index_map[knn_column_id].get();
         index_entry_map.reserve(column_index_entry->index_by_segment.size());
         for (auto &[segment_id, segment_column_index] : column_index_entry->index_by_segment) {
             index_entry_map[segment_id].emplace_back(segment_column_index.get());

@@ -130,7 +130,7 @@ public:
 
     void StopSchedule();
 
-    void BatchInsert(TableEntry *table_entry, IndexDef *index_def, SegmentEntry *segment_entry, BufferManager *buffer_mgr);
+    void BatchInsert(TableEntry *table_entry, const IndexDef *index_def, SegmentEntry *segment_entry, BufferManager *buffer_mgr);
 
     void Reset();
 

@@ -50,8 +50,8 @@ TableIndexEntry::TableIndexEntry(const SharedPtr<IndexDef> &index_def,
 
     SizeT index_count = index_def->index_array_.size();
     column_index_map_.reserve(index_count);
-    if(is_replay) {
-        return ;
+    if (is_replay) {
+        return;
     }
     HashMap<u64, SharedPtr<IndexFullText>> index_info_map;
     for (SizeT idx = 0; idx < index_count; ++idx) {
@@ -84,8 +84,7 @@ TableIndexEntry::TableIndexEntry(TableIndexMeta *table_index_meta, u64 txn_id, T
 
 UniquePtr<TableIndexEntry>
 TableIndexEntry::NewTableIndexEntry(const SharedPtr<IndexDef> &index_def, TableIndexMeta *table_index_meta, u64 txn_id, TxnTimeStamp begin_ts) {
-    SharedPtr<String> index_dir =
-        DetermineIndexDir(*table_index_meta->GetTableEntry()->TableEntryDir(), *index_def->index_name_);
+    SharedPtr<String> index_dir = DetermineIndexDir(*table_index_meta->GetTableEntry()->TableEntryDir(), *index_def->index_name_);
     return MakeUnique<TableIndexEntry>(index_def, table_index_meta, index_dir, txn_id, begin_ts);
 }
 
@@ -93,18 +92,13 @@ UniquePtr<TableIndexEntry> TableIndexEntry::NewDropTableIndexEntry(TableIndexMet
     return MakeUnique<TableIndexEntry>(table_index_meta, txn_id, begin_ts);
 }
 
-void TableIndexEntry::CommitCreateIndex(TableIndexEntry *table_index_entry,
-                                        u64 column_id,
-                                        u32 segment_id,
-                                        SharedPtr<SegmentColumnIndexEntry> segment_column_index_entry) {
-    UniqueLock<RWMutex> w_locker(table_index_entry->rw_locker_);
-    ColumnIndexEntry *column_index_entry = table_index_entry->column_index_map_[column_id].get();
+void TableIndexEntry::CommitCreateIndex(u64 column_id, u32 segment_id, SharedPtr<SegmentColumnIndexEntry> segment_column_index_entry) {
+    UniqueLock<RWMutex> w_locker(this->rw_locker_);
+    ColumnIndexEntry *column_index_entry = this->column_index_map_[column_id].get();
     column_index_entry->index_by_segment.emplace(segment_id, segment_column_index_entry);
 }
 
-void TableIndexEntry::CommitCreateIndex(TableIndexEntry *table_index_entry, SharedPtr<IrsIndexEntry> irs_index_entry) {
-    table_index_entry->irs_index_entry_ = irs_index_entry;
-}
+void TableIndexEntry::CommitCreateIndex(const SharedPtr<IrsIndexEntry> &irs_index_entry) { this->irs_index_entry_ = irs_index_entry; }
 
 Json TableIndexEntry::Serialize(TableIndexEntry *table_index_entry, TxnTimeStamp max_commit_ts) {
     Json json;
@@ -135,17 +129,15 @@ Json TableIndexEntry::Serialize(TableIndexEntry *table_index_entry, TxnTimeStamp
         json["column_indexes"].emplace_back(ColumnIndexEntry::Serialize(column_index_entry, max_commit_ts));
     }
 
-    if(irs_index_entry_candidate_ != nullptr) {
+    if (irs_index_entry_candidate_ != nullptr) {
         json["irs_index_entry"] = IrsIndexEntry::Serialize(irs_index_entry_candidate_, max_commit_ts);
     }
 
     return json;
 }
 
-UniquePtr<TableIndexEntry> TableIndexEntry::Deserialize(const Json &index_def_entry_json,
-                                                        TableIndexMeta *table_index_meta,
-                                                        BufferManager *buffer_mgr,
-                                                        TableEntry *table_entry) {
+UniquePtr<TableIndexEntry>
+TableIndexEntry::Deserialize(const Json &index_def_entry_json, TableIndexMeta *table_index_meta, BufferManager *buffer_mgr, TableEntry *table_entry) {
     u64 txn_id = index_def_entry_json["txn_id"];
     TxnTimeStamp begin_ts = index_def_entry_json["begin_ts"];
     TxnTimeStamp commit_ts = index_def_entry_json["commit_ts"];

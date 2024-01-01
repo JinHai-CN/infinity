@@ -165,11 +165,11 @@ void TableEntry::GetFullTextAnalyzers(TableEntry *table_entry,
     for (auto &[_, table_index_meta] : table_entry->index_meta_map_) {
         auto [table_index_entry, status] = table_index_meta->GetEntry(txn_id, begin_ts);
         if (status.ok()) {
-            irs_index_entry = table_index_entry->irs_index_entry_;
-            for (SharedPtr<IndexBase> &indexBase : table_index_entry->index_def_->index_array_) {
-                if (indexBase->index_type_ != IndexType::kIRSFullText)
+            irs_index_entry = table_index_entry->irs_index_entry();
+            for (const SharedPtr<IndexBase> &index_base : table_index_entry->index_def()->index_array_) {
+                if (index_base->index_type_ != IndexType::kIRSFullText)
                     continue;
-                IndexFullText *index_full_text = static_cast<IndexFullText *>(indexBase.get());
+                IndexFullText *index_full_text = static_cast<IndexFullText *>(index_base.get());
                 for (auto &column_name : index_full_text->column_names_) {
                     column2analyzer[column_name] = index_full_text->analyzer_;
                 }
@@ -213,10 +213,11 @@ void TableEntry::Append(u64 txn_id, void *txn_store, BufferManager *buffer_mgr) 
 }
 
 void TableEntry::CreateIndexFile(void *txn_store, TableIndexEntry *table_index_entry, TxnTimeStamp begin_ts, BufferManager *buffer_mgr) {
-    if (table_index_entry->irs_index_entry_.get() != nullptr) {
-        IrsIndexEntry *irs_index_entry = table_index_entry->irs_index_entry_.get();
+    IrsIndexEntry *irs_index_entry = table_index_entry->irs_index_entry().get();
+    if (irs_index_entry != nullptr) {
+
         for (const auto &[_segment_id, segment_entry] : this->segment_map_) {
-            irs_index_entry->irs_index_->BatchInsert(this, table_index_entry->index_def_.get(), segment_entry.get(), buffer_mgr);
+            irs_index_entry->irs_index_->BatchInsert(this, table_index_entry->index_def(), segment_entry.get(), buffer_mgr);
         }
         irs_index_entry->irs_index_->Commit();
         irs_index_entry->irs_index_->StopSchedule();
@@ -246,11 +247,11 @@ void TableEntry::CommitCreateIndex(HashMap<String, TxnIndexStore> &txn_indexes_s
         TableIndexEntry *table_index_entry = txn_index_store.table_index_entry_;
         for (auto &[column_id, segment_index_map] : txn_index_store.index_entry_map_) {
             for (auto &[segment_id, segment_column_index] : segment_index_map) {
-                TableIndexEntry::CommitCreateIndex(table_index_entry, column_id, segment_id, segment_column_index);
+                table_index_entry->CommitCreateIndex(column_id, segment_id, segment_column_index);
             }
         }
-        if (table_index_entry->irs_index_entry_.get() != nullptr) {
-            TableIndexEntry::CommitCreateIndex(table_index_entry, table_index_entry->irs_index_entry_);
+        if (table_index_entry->irs_index_entry().get() != nullptr) {
+            table_index_entry->CommitCreateIndex(table_index_entry->irs_index_entry());
         }
     }
 }

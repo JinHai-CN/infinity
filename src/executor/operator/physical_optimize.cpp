@@ -70,9 +70,9 @@ void PhysicalOptimize::OptimizeIndex(QueryContext *query_context, OperatorState 
         if (!index_status.ok()) {
             Error<StorageException>("Cannot find index entry.");
         }
-        irs_index_entry = table_index_entry->irs_index_entry_;
+        irs_index_entry = table_index_entry->irs_index_entry();
     }
-    if (irs_index_entry.get()) {
+    if (irs_index_entry) {
         LOG_INFO(Format("ScheduleOptimize"));
         irs_index_entry->irs_index_->ScheduleOptimize();
     }

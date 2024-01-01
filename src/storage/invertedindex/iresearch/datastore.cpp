@@ -289,7 +289,7 @@ void IRSDataStore::StopSchedule() {
     maintenance_state_->cancel_.store(true, MemoryOrderRelease);
 }
 
-void IRSDataStore::BatchInsert(TableEntry *table_entry, IndexDef *index_def, SegmentEntry *segment_entry, BufferManager *buffer_mgr) {
+void IRSDataStore::BatchInsert(TableEntry *table_entry, const IndexDef *index_def, SegmentEntry *segment_entry, BufferManager *buffer_mgr) {
 
     constexpr static Array<IRSTypeInfo::type_id, 1> TEXT_FEATURES{IRSType<Norm>::id()};
     constexpr static Array<IRSTypeInfo::type_id, 1> NUMERIC_FEATURES{IRSType<GranularityPrefix>::id()};
@@ -319,7 +319,7 @@ void IRSDataStore::BatchInsert(TableEntry *table_entry, IndexDef *index_def, Seg
         }
     }
 
-    const auto& block_entries = segment_entry->block_entries();
+    const auto &block_entries = segment_entry->block_entries();
     for (const auto &block_entry : block_entries) {
         auto ctx = index_writer_->GetBatch();
         for (SizeT i = 0; i < block_entry->row_count(); ++i) {
