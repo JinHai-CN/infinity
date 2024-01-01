@@ -27,15 +27,14 @@ export module segment_column_index_entry;
 namespace infinity {
 
 struct TableEntry;
-class ColumnIndexEntry;
+struct ColumnIndexEntry;
 class FaissIndexPtr;
 class BufferManager;
 class IndexDef;
 struct SegmentEntry;
 
 export class SegmentColumnIndexEntry : public BaseEntry {
-private:
-    explicit SegmentColumnIndexEntry(ColumnIndexEntry *column_index_entry, u32 segment_id, BufferObj *buffer);
+    friend ColumnIndexEntry;
 
 public:
     static SharedPtr<SegmentColumnIndexEntry> NewIndexEntry(ColumnIndexEntry *column_index_entry,
@@ -44,40 +43,39 @@ public:
                                                             BufferManager *buffer_manager,
                                                             CreateIndexParam *create_index_param);
 
-private:
-    // Load from disk. Is called by SegmentColumnIndexEntry::Deserialize.
-    static UniquePtr<SegmentColumnIndexEntry> LoadIndexEntry(ColumnIndexEntry *column_index_entry,
-                                                             u32 segment_id,
-                                                             BufferManager *buffer_manager,
-                                                             CreateIndexParam* create_index_param);
-
-public:
     [[nodiscard]] static BufferHandle GetIndex(SegmentColumnIndexEntry *segment_column_index_entry, BufferManager *buffer_mgr);
-
-    static void
-    UpdateIndex(SegmentColumnIndexEntry *segment_column_index_entry, TxnTimeStamp commit_ts, FaissIndexPtr *index, BufferManager *buffer_mgr);
-
-    static bool Flush(SegmentColumnIndexEntry *segment_column_index_entry, TxnTimeStamp checkpoint_ts);
 
     static Json Serialize(SegmentColumnIndexEntry *segment_column_index_entry);
 
-    static UniquePtr<SegmentColumnIndexEntry> Deserialize(const Json &index_entry_json,
-                                                          ColumnIndexEntry *column_index_entry,
-                                                          BufferManager *buffer_mgr,
-                                                          TableEntry *table_entry);
+    static UniquePtr<SegmentColumnIndexEntry>
+    Deserialize(const Json &index_entry_json, ColumnIndexEntry *column_index_entry, BufferManager *buffer_mgr, TableEntry *table_entry);
 
     void MergeFrom(BaseEntry &other);
 
+public:
+    // Getter
+    inline u32 segment_id() const { return segment_id_; }
+    inline const ColumnIndexEntry *column_index_entry() const { return column_index_entry_; }
+
 private:
+    explicit SegmentColumnIndexEntry(ColumnIndexEntry *column_index_entry, u32 segment_id, BufferObj *buffer);
+
+    void UpdateIndex(TxnTimeStamp commit_ts, FaissIndexPtr *index, BufferManager *buffer_mgr);
+
+    bool Flush(TxnTimeStamp checkpoint_ts);
+
     static UniquePtr<IndexFileWorker> CreateFileWorker(ColumnIndexEntry *column_index_entry, CreateIndexParam *param, u32 segment_id);
 
     static String IndexFileName(const String &index_name, u32 segment_id);
 
-public:
-    const ColumnIndexEntry *column_index_entry_;
-    u32 segment_id_{};
+    // Load from disk. Is called by SegmentColumnIndexEntry::Deserialize.
+    static UniquePtr<SegmentColumnIndexEntry>
+    LoadIndexEntry(ColumnIndexEntry *column_index_entry, u32 segment_id, BufferManager *buffer_manager, CreateIndexParam *create_index_param);
 
 private:
+    const ColumnIndexEntry *column_index_entry_{};
+    u32 segment_id_{};
+
     BufferObj *const buffer_{};
 
     RWMutex rw_locker_{};

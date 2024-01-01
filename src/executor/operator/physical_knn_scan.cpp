@@ -292,7 +292,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
         SegmentColumnIndexEntry *segment_column_index_entry = knn_scan_shared_data->index_entries_->at(index_idx);
         BufferManager *buffer_mgr = query_context->storage()->buffer_manager();
 
-        auto segment_id = segment_column_index_entry->segment_id_;
+        auto segment_id = segment_column_index_entry->segment_id();
         SegmentEntry *segment_entry = nullptr;
         auto &segment_index_hashmap = base_table_ref_->block_index_->segment_index_;
         if (auto iter = segment_index_hashmap.find(segment_id); iter == segment_index_hashmap.end()) {
@@ -333,7 +333,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
         }
         // bool use_bitmask = !bitmask.IsAllTrue();
 
-        switch (segment_column_index_entry->column_index_entry_->index_base_->index_type_) {
+        switch (segment_column_index_entry->column_index_entry()->index_base_->index_type_) {
             case IndexType::kIVFFlat: {
                 BufferHandle index_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry, buffer_mgr);
                 auto index = static_cast<const AnnIVFFlatIndexData<DataType> *>(index_handle.GetData());
@@ -373,7 +373,7 @@ void PhysicalKnnScan::ExecuteInternal(QueryContext *query_context, KnnScanOperat
             }
             case IndexType::kHnsw: {
                 BufferHandle index_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry, buffer_mgr);
-                auto index_hnsw = static_cast<IndexHnsw *>(segment_column_index_entry->column_index_entry_->index_base_.get());
+                auto index_hnsw = static_cast<IndexHnsw *>(segment_column_index_entry->column_index_entry()->index_base_.get());
                 auto KnnScanOld = [&](auto *index) {
                     Vector<DataType> dists(knn_scan_shared_data->topk_ * knn_scan_shared_data->query_count_);
                     Vector<RowID> row_ids(knn_scan_shared_data->topk_ * knn_scan_shared_data->query_count_);

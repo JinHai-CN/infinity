@@ -86,7 +86,7 @@ Json ColumnIndexEntry::Serialize(ColumnIndexEntry *column_index_entry, TxnTimeSt
     }
 
     for(const auto& segment_column_index_entry: segment_column_index_entry_candidates) {
-        SegmentColumnIndexEntry::Flush(segment_column_index_entry, max_commit_ts);
+        segment_column_index_entry->Flush(max_commit_ts);
         json["index_by_segment"].push_back(SegmentColumnIndexEntry::Serialize(segment_column_index_entry));
     }
 
@@ -117,7 +117,7 @@ UniquePtr<ColumnIndexEntry> ColumnIndexEntry::Deserialize(const Json &column_ind
         for (const auto &index_by_segment_json : column_index_entry_json["index_by_segment"]) {
             UniquePtr<SegmentColumnIndexEntry> segment_column_index_entry =
                 SegmentColumnIndexEntry::Deserialize(index_by_segment_json, column_index_entry.get(), buffer_mgr, table_entry);
-            column_index_entry->index_by_segment.emplace(segment_column_index_entry->segment_id_, Move(segment_column_index_entry));
+            column_index_entry->index_by_segment.emplace(segment_column_index_entry->segment_id(), Move(segment_column_index_entry));
         }
     }
 

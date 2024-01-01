@@ -66,33 +66,28 @@ BufferHandle SegmentColumnIndexEntry::GetIndex(SegmentColumnIndexEntry *segment_
     return segment_column_index_entry->buffer_->Load();
 }
 
-void SegmentColumnIndexEntry::UpdateIndex(SegmentColumnIndexEntry *,
-                                          TxnTimeStamp,
-                                          FaissIndexPtr *,
-                                          BufferManager *) {
-    Error<NotImplementException>("Not implemented");
-}
+void SegmentColumnIndexEntry::UpdateIndex(TxnTimeStamp, FaissIndexPtr *, BufferManager *) { Error<NotImplementException>("Not implemented"); }
 
-bool SegmentColumnIndexEntry::Flush(SegmentColumnIndexEntry *segment_column_index_entry, TxnTimeStamp checkpoint_ts) {
-    String &index_name = *segment_column_index_entry->column_index_entry_->index_dir_;
-    u64 segment_id = segment_column_index_entry->segment_id_;
+bool SegmentColumnIndexEntry::Flush(TxnTimeStamp checkpoint_ts) {
+    String &index_name = *this->column_index_entry_->index_dir_;
+    u64 segment_id = this->segment_id_;
     LOG_TRACE(Format("Segment: {}, Index: {} is being flushing", segment_id, index_name));
-    if (segment_column_index_entry->max_ts_ <= segment_column_index_entry->checkpoint_ts_ || segment_column_index_entry->min_ts_ > checkpoint_ts) {
+    if (this->max_ts_ <= this->checkpoint_ts_ || this->min_ts_ > checkpoint_ts) {
         LOG_TRACE(Format("Segment: {}, Index: {} has been flushed at some previous checkpoint, or is not visible at current checkpoint.",
                          segment_id,
                          index_name));
         return false;
     }
-    if (segment_column_index_entry->buffer_ == nullptr) {
+    if (this->buffer_ == nullptr) {
         LOG_WARN("Index entry is not initialized");
         return false;
     }
-    if (segment_column_index_entry->buffer_->Save()) {
-        segment_column_index_entry->buffer_->Sync();
-        segment_column_index_entry->buffer_->CloseFile();
+    if (this->buffer_->Save()) {
+        this->buffer_->Sync();
+        this->buffer_->CloseFile();
     }
 
-    segment_column_index_entry->checkpoint_ts_ = checkpoint_ts;
+    this->checkpoint_ts_ = checkpoint_ts;
     LOG_TRACE(Format("Segment: {}, Index: {} is flushed", segment_id, index_name));
     return true;
 }
@@ -121,7 +116,7 @@ UniquePtr<SegmentColumnIndexEntry> SegmentColumnIndexEntry::Deserialize(const Js
     u32 segment_id = index_entry_json["segment_id"];
     auto [segment_row_count, status] = table_entry->GetSegmentRowCountBySegmentID(segment_id);
 
-    if(!status.ok()) {
+    if (!status.ok()) {
         Error<StorageException>(status.message());
         return nullptr;
     }
@@ -184,9 +179,9 @@ UniquePtr<IndexFileWorker> SegmentColumnIndexEntry::CreateFileWorker(ColumnIndex
             break;
         }
         case IndexType::kIRSFullText: {
-//            auto create_fulltext_param = static_cast<CreateFullTextParam *>(param);
+            //            auto create_fulltext_param = static_cast<CreateFullTextParam *>(param);
             UniquePtr<String> err_msg =
-                    MakeUnique<String>(Format("File worker isn't implemented: {}", IndexInfo::IndexTypeToString(index_base->index_type_)));
+                MakeUnique<String>(Format("File worker isn't implemented: {}", IndexInfo::IndexTypeToString(index_base->index_type_)));
             LOG_ERROR(*err_msg);
             Error<StorageException>(*err_msg);
             break;
