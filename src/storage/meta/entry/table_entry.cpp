@@ -134,8 +134,8 @@ TableEntry::DropIndex(const String &index_name, ConflictType conflict_type, u64 
     return index_meta->DropTableIndexEntry(conflict_type, txn_id, begin_ts, txn_mgr);
 }
 
-Tuple<TableIndexEntry *, Status> TableEntry::GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts) {
-    if (auto iter = table_entry->index_meta_map_.find(index_name); iter != table_entry->index_meta_map_.end()) {
+Tuple<TableIndexEntry *, Status> TableEntry::GetIndex(const String &index_name, u64 txn_id, TxnTimeStamp begin_ts) {
+    if (auto iter = this->index_meta_map_.find(index_name); iter != this->index_meta_map_.end()) {
         return iter->second->GetEntry(txn_id, begin_ts);
     }
     UniquePtr<String> err_msg = MakeUnique<String>("Cannot find index def");
@@ -156,13 +156,12 @@ void TableEntry::RemoveIndexEntry(const String &index_name, u64 txn_id, TxnManag
     table_index_meta->DeleteNewEntry(txn_id, txn_mgr);
 }
 
-void TableEntry::GetFullTextAnalyzers(TableEntry *table_entry,
-                                      u64 txn_id,
+void TableEntry::GetFullTextAnalyzers(u64 txn_id,
                                       TxnTimeStamp begin_ts,
                                       SharedPtr<IrsIndexEntry> &irs_index_entry,
                                       Map<String, String> &column2analyzer) {
     column2analyzer.clear();
-    for (auto &[_, table_index_meta] : table_entry->index_meta_map_) {
+    for (auto &[_, table_index_meta] : this->index_meta_map_) {
         auto [table_index_entry, status] = table_index_meta->GetEntry(txn_id, begin_ts);
         if (status.ok()) {
             irs_index_entry = table_index_entry->irs_index_entry();
@@ -377,13 +376,13 @@ Pair<SizeT, Status> TableEntry::GetSegmentRowCountBySegmentID(u32 seg_id) {
 
 const SharedPtr<String> &TableEntry::GetDBName() const { return table_meta_->db_name_ptr(); }
 
-SharedPtr<BlockIndex> TableEntry::GetBlockIndex(TableEntry *table_entry, u64, TxnTimeStamp begin_ts) {
+SharedPtr<BlockIndex> TableEntry::GetBlockIndex(u64, TxnTimeStamp begin_ts) {
     //    SharedPtr<MultiIndex<u64, u64, SegmentEntry*>> result = MakeShared<MultiIndex<u64, u64, SegmentEntry*>>();
     SharedPtr<BlockIndex> result = MakeShared<BlockIndex>();
-    SharedLock<RWMutex> rw_locker(table_entry->rw_locker_);
-    result->Reserve(table_entry->segment_map_.size());
+    SharedLock<RWMutex> rw_locker(this->rw_locker_);
+    result->Reserve(this->segment_map_.size());
 
-    for (const auto &segment_pair : table_entry->segment_map_) {
+    for (const auto &segment_pair : this->segment_map_) {
         result->Insert(segment_pair.second.get(), begin_ts);
     }
 

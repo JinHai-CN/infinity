@@ -65,7 +65,7 @@ private:
     Tuple<TableIndexEntry *, Status>
     DropIndex(const String &index_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
-    Tuple<TableIndexEntry *, Status> GetIndex(TableEntry *table_entry, const String &index_name, u64 txn_id, TxnTimeStamp begin_ts);
+    Tuple<TableIndexEntry *, Status> GetIndex(const String &index_name, u64 txn_id, TxnTimeStamp begin_ts);
 
     void RemoveIndexEntry(const String &index_name, u64 txn_id, TxnManager *txn_mgr);
 
@@ -115,16 +115,15 @@ public:
     inline TableEntryType EntryType() const { return table_entry_type_; }
 
     Pair<SizeT, Status> GetSegmentRowCountBySegmentID(u32 seg_id);
+
+    SharedPtr<BlockIndex> GetBlockIndex(u64 txn_id, TxnTimeStamp begin_ts);
+
+    void GetFullTextAnalyzers(u64 txn_id,
+                              TxnTimeStamp begin_ts,
+                              SharedPtr<IrsIndexEntry> &irs_index_entry,
+                              Map<String, String> &column2analyzer);
+
 public:
-
-    static SharedPtr<BlockIndex> GetBlockIndex(TableEntry *table_entry, u64 txn_id, TxnTimeStamp begin_ts);
-
-    static void GetFullTextAnalyzers(TableEntry *table_entry,
-                                     u64 txn_id,
-                                     TxnTimeStamp begin_ts,
-                                     SharedPtr<IrsIndexEntry> &irs_index_entry,
-                                     Map<String, String> &column2analyzer);
-
     static Json Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
 
     static UniquePtr<TableEntry> Deserialize(const Json &table_entry_json, TableMeta *table_meta, BufferManager *buffer_mgr);
@@ -134,9 +133,10 @@ public:
 public:
     u64 GetColumnIdByName(const String &column_name) const;
 
-    Map<u32, SharedPtr<SegmentEntry>>& segment_map() { return segment_map_; }
+    Map<u32, SharedPtr<SegmentEntry>> &segment_map() { return segment_map_; }
 
-    HashMap<String, UniquePtr<TableIndexMeta>>& index_meta_map() { return index_meta_map_; }
+    HashMap<String, UniquePtr<TableIndexMeta>> &index_meta_map() { return index_meta_map_; }
+
 protected:
     HashMap<String, u64> column_name2column_id_;
 

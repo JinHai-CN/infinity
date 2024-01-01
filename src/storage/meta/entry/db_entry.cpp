@@ -77,11 +77,8 @@ Tuple<TableEntry *, Status> DBEntry::CreateTable(TableEntryType table_entry_type
     return table_meta->CreateNewEntry(table_entry_type, table_collection_name, columns, txn_id, begin_ts, txn_mgr);
 }
 
-Tuple<TableEntry *, Status> DBEntry::DropTable(const String &table_collection_name,
-                                                         ConflictType conflict_type,
-                                                         u64 txn_id,
-                                                         TxnTimeStamp begin_ts,
-                                                         TxnManager *txn_mgr) {
+Tuple<TableEntry *, Status>
+DBEntry::DropTable(const String &table_collection_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr) {
     this->rw_locker_.lock_shared();
 
     TableMeta *table_meta{nullptr};
@@ -167,7 +164,7 @@ Status DBEntry::GetTablesDetail(u64 txn_id, TxnTimeStamp begin_ts, Vector<TableD
         table_detail.row_count_ = table_entry->RowCount();
         table_detail.segment_capacity_ = DEFAULT_SEGMENT_CAPACITY;
 
-        SharedPtr<BlockIndex> segment_index = TableEntry::GetBlockIndex(table_entry, txn_id, begin_ts);
+        SharedPtr<BlockIndex> segment_index = table_entry->GetBlockIndex(txn_id, begin_ts);
 
         table_detail.segment_count_ = segment_index->SegmentCount();
         table_detail.block_count_ = segment_index->BlockCount();
