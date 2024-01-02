@@ -30,8 +30,6 @@ import logger;
 import iresearch_datastore;
 import irs_index_entry;
 import base_table_ref;
-import table_index_entry;
-import table_index_meta;
 
 module physical_optimize;
 

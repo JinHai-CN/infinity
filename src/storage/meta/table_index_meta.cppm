@@ -14,25 +14,26 @@
 
 module;
 
-export module table_index_meta;
+export module catalog:table_index_meta;
+
+import :table_index_entry;
 
 import stl;
 import base_entry;
 import parser;
-import txn_manager;
 import third_party;
 import index_def;
 import base_entry;
 import status;
-import table_index_entry;
 
 namespace infinity {
 
+class TxnManager;
 class BufferManager;
 struct TableEntry;
 struct SegmentEntry;
 
-export class TableIndexMeta {
+class TableIndexMeta {
     friend struct TableEntry;
 
 public:

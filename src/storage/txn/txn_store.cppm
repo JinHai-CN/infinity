@@ -17,15 +17,16 @@ module;
 import stl;
 import parser;
 import data_access_state;
-import table_index_entry;
 import column_index_entry;
 import irs_index_entry;
+// import catalog;
 
 export module txn_store;
 
 namespace infinity {
 
 class Txn;
+struct TableIndexEntry;
 struct TableEntry;
 struct SegmentEntry;
 class DataBlock;
@@ -37,14 +38,14 @@ struct TxnSegmentIndexStore {
 
 export struct TxnIndexStore {
 public:
-    explicit TxnIndexStore(TableIndexEntry *table_index_entry) : table_index_entry_(table_index_entry) {}
+    explicit TxnIndexStore(TableIndexEntry *table_index_entry);
     TxnIndexStore() = default;
 
     TableIndexEntry *const table_index_entry_{};
 
-//    Vector<ColumnIndexEntry*> column_index_entry_{};
-//
-    IrsIndexEntry* irs_index_entry_{};
+    //    Vector<ColumnIndexEntry*> column_index_entry_{};
+    //
+    IrsIndexEntry *irs_index_entry_{};
 
     HashMap<u64, HashMap<u32, SharedPtr<SegmentColumnIndexEntry>>> index_entry_map_{}; // column_id -> segment_id -> segment_column_index_entry
 };

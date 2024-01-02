@@ -26,13 +26,14 @@ import logger;
 import data_access_state;
 import txn;
 import segment_column_index_entry;
-import table_index_entry;
 import default_values;
 import catalog;
 
 module txn_store;
 
 namespace infinity {
+
+TxnIndexStore::TxnIndexStore(TableIndexEntry *table_index_entry) : table_index_entry_(table_index_entry) {}
 
 UniquePtr<String> TxnTableStore::Append(const SharedPtr<DataBlock> &input_block) {
     SizeT column_count = table_entry_->ColumnCount();

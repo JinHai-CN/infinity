@@ -44,7 +44,6 @@ import local_file_system;
 import random;
 import parser;
 import txn_store;
-import table_index_entry;
 import segment_column_index_entry;
 import column_index_entry;
 import index_base;

@@ -21,7 +21,6 @@ import stl;
 import parser;
 import third_party;
 import table_entry_type;
-import txn_manager;
 import buffer_manager;
 import status;
 
@@ -29,6 +28,7 @@ namespace infinity {
 
 export class DBEntry;
 class TableEntry;
+class TxnManager;
 
 export struct TableMeta {
 

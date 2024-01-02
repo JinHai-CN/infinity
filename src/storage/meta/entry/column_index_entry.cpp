@@ -24,7 +24,6 @@ import base_entry;
 import index_base;
 import third_party;
 import segment_column_index_entry;
-import table_index_entry;
 import local_file_system;
 import default_values;
 import random;

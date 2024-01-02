@@ -14,7 +14,7 @@
 
 module;
 
-export module table_index_entry;
+export module catalog:table_index_entry;
 
 import stl;
 import index_def;

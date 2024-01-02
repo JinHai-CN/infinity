@@ -17,13 +17,11 @@ module;
 #include <ctime>
 #include <memory>
 
-module table_index_entry;
+module catalog;
 
 import stl;
 import index_def;
 import base_entry;
-import table_index_meta;
-import catalog;
 import third_party;
 import local_file_system;
 import default_values;

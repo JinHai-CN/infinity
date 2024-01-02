@@ -40,8 +40,6 @@ import data_table;
 import third_party;
 import index_def;
 import index_ivfflat;
-import table_index_meta;
-import table_index_entry;
 import index_base;
 import index_hnsw;
 import index_full_text;

@@ -25,7 +25,6 @@ import parser;
 import third_party;
 import table_detail;
 import buffer_manager;
-import txn_manager;
 import status;
 
 namespace infinity {

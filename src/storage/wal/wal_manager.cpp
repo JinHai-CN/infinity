@@ -35,7 +35,6 @@ import parser;
 import txn_store;
 
 import data_access_state;
-import table_index_entry;
 import status;
 import base_entry;
 import bg_task;

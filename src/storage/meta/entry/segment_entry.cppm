@@ -22,20 +22,18 @@ import stl;
 import default_values;
 import base_entry;
 import third_party;
-import txn;
 import buffer_manager;
 import index_base;
 import data_access_state;
 import parser;
 import segment_column_index_entry;
-import table_index_entry;
-import txn_store;
 import index_file_worker;
 import column_index_entry;
 import infinity_exception;
 
 namespace infinity {
 
+class TxnTableStore;
 struct TableEntry;
 
 struct SegmentEntry : public BaseEntry {

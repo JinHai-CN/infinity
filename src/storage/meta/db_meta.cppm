@@ -20,7 +20,6 @@ import :db_entry;
 import stl;
 import parser;
 import base_entry;
-import txn_manager;
 import buffer_manager;
 import third_party;
 import status;

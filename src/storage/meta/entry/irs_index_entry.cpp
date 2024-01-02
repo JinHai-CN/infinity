@@ -20,8 +20,6 @@ import stl;
 import base_entry;
 import third_party;
 import infinity_exception;
-import table_index_entry;
-import table_index_meta;
 import buffer_manager;
 import iresearch_datastore;
 import index_base;

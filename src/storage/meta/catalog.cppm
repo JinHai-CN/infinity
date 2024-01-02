@@ -24,13 +24,14 @@ export import :view_entry;
 export import :segment_entry;
 export import :block_entry;
 export import :block_column_entry;
+export import :table_index_meta;
+export import :table_index_entry;
 
 import stl;
 import parser;
 import base_entry;
 
 import table_def;
-import txn_manager;
 import function;
 import function_set;
 import table_function;
@@ -41,7 +42,6 @@ import profiler;
 import status;
 import default_values;
 import table_detail;
-import table_index_entry;
 import index_def;
 import txn_store;
 import data_access_state;

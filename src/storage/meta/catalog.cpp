@@ -37,9 +37,7 @@ import file_system;
 import table_def;
 import table_entry_type;
 import table_detail;
-import table_index_entry;
 import index_def;
-import table_index_meta;
 import txn_store;
 import data_access_state;
 

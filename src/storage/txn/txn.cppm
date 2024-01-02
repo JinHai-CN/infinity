@@ -27,7 +27,6 @@ import txn_state;
 import txn_context;
 import wal_entry;
 import txn_store;
-import table_index_entry;
 import database_detail;
 import status;
 
@@ -50,7 +49,8 @@ struct ScanParam {
 class TxnManager;
 struct NewCatalog;
 struct TableEntry;
-class DBEntry;
+struct DBEntry;
+struct TableIndexEntry;
 
 export class Txn {
 public:
