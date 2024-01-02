@@ -14,7 +14,7 @@
 
 module;
 
-export module block_column_entry;
+export module catalog:block_column_entry;
 
 import stl;
 import base_entry;
@@ -31,7 +31,9 @@ import vector_buffer;
 
 namespace infinity {
 
-struct BlockEntry;
+export struct BlockEntry;
+export struct TableEntry;
+export struct SegmentEntry;
 
 export struct BlockColumnEntry : public BaseEntry {
     friend struct BlockEntry;

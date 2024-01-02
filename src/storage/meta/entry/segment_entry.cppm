@@ -36,7 +36,7 @@ import infinity_exception;
 
 namespace infinity {
 
-
+struct TableEntry;
 
 struct SegmentEntry : public BaseEntry {
     friend struct TableEntry;

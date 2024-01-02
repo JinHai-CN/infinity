@@ -21,7 +21,6 @@ import buffer_handle;
 import parser;
 import file_worker;
 
-import block_column_entry;
 import block_column_iter;
 import block_iter;
 import segment_iter;

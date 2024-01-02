@@ -55,7 +55,6 @@ import dist_func_ip;
 import hnsw_alg;
 import lvq_store;
 import plain_store;
-import block_column_entry;
 import segment_iter;
 
 namespace infinity {

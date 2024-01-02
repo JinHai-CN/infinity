@@ -16,18 +16,18 @@ module;
 
 export module catalog:block_entry;
 
+import :block_column_entry;
+
 import stl;
 import default_values;
 import base_entry;
 import third_party;
-import block_column_entry;
 import parser;
 import local_file_system;
 
 namespace infinity {
 
-export struct TableEntry;
-export struct SegmentEntry;
+
 
 class BufferManager;
 class Txn;
@@ -62,7 +62,7 @@ export struct BlockVersion {
     Vector<TxnTimeStamp> deleted_{};
 };
 
-export struct BlockEntry : public BaseEntry {
+struct BlockEntry : public BaseEntry {
     friend struct TableEntry;
     friend struct SegmentEntry;
 

@@ -52,7 +52,6 @@ import config;
 import session;
 import options;
 import status;
-import block_column_entry;
 import local_file_system;
 import utility;
 import buffer_manager;

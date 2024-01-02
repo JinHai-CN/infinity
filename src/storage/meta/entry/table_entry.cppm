@@ -16,6 +16,9 @@ module;
 
 export module catalog:table_entry;
 
+import :segment_entry;
+import :block_entry;
+
 import stl;
 import parser;
 import txn_store;
@@ -30,8 +33,6 @@ import segment_column_index_entry;
 import table_index_meta;
 import txn;
 import status;
-import :segment_entry;
-import :block_entry;
 
 namespace infinity {
 

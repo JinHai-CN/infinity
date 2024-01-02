@@ -29,7 +29,6 @@ import merge_knn;
 import block_index;
 import column_buffer;
 import buffer_manager;
-import block_column_entry;
 import third_party;
 import catalog;
 import default_values;

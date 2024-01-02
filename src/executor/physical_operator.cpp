@@ -20,7 +20,6 @@ import default_values;
 import operator_state;
 import column_buffer;
 import column_vector;
-import block_column_entry;
 import query_context;
 import parser;
 import base_table_ref;

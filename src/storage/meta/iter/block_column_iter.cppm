@@ -18,7 +18,7 @@ export module block_column_iter;
 
 import stl;
 import buffer_handle;
-import block_column_entry;
+import catalog;
 
 namespace infinity {
 

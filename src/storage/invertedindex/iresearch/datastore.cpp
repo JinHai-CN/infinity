@@ -51,7 +51,6 @@ import global_block_id;
 import block_index;
 import query_context;
 import column_buffer;
-import block_column_entry;
 import default_values;
 import value;
 import buffer_manager;

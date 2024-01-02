@@ -26,7 +26,6 @@ import block_index;
 import base_table_ref;
 import knn_scan_data;
 import column_buffer;
-import block_column_entry;
 import knn_distance;
 import third_party;
 
@@ -34,7 +33,6 @@ import infinity_exception;
 import catalog;
 import default_values;
 
-import block_column_entry;
 import base_entry;
 import knn_expression;
 import column_expression;

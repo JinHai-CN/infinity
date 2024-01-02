@@ -16,11 +16,10 @@ module;
 
 #include <string>
 
-module block_column_entry;
+module catalog;
 
 import stl;
 import buffer_manager;
-import catalog;
 import outline_info;
 import parser;
 import column_buffer;

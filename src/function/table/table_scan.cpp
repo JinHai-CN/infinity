@@ -23,7 +23,6 @@ import table_scan_function_data;
 import block_index;
 import global_block_id;
 import query_context;
-import block_column_entry;
 import column_buffer;
 import catalog;
 

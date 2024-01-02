@@ -32,7 +32,6 @@ export module physical_knn_scan;
 
 namespace infinity {
 
-class BlockColumnEntry;
 class SegmentColumnIndexEntry;
 
 export class PhysicalKnnScan final : public PhysicalOperator {
