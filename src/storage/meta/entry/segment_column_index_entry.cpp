@@ -18,7 +18,6 @@ module segment_column_index_entry;
 
 import stl;
 import base_entry;
-// import segment_entry;
 import buffer_manager;
 import buffer_handle;
 import buffer_obj;
@@ -29,7 +28,6 @@ import infinity_exception;
 import index_file_worker;
 import column_index_entry;
 import catalog;
-import segment_entry;
 import status;
 
 namespace infinity {

@@ -19,6 +19,7 @@ export import :db_meta;
 export import :db_entry;
 export import :table_meta;
 export import :table_entry;
+export import :segment_entry;
 
 import stl;
 import parser;
@@ -40,7 +41,6 @@ import table_index_entry;
 import index_def;
 import txn_store;
 import data_access_state;
-import segment_entry;
 import block_column_entry;
 
 namespace infinity {

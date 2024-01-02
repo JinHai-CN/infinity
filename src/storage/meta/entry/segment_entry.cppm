@@ -14,7 +14,7 @@
 
 module;
 
-export module segment_entry;
+export module catalog:segment_entry;
 
 import stl;
 import default_values;
@@ -35,7 +35,7 @@ import infinity_exception;
 
 namespace infinity {
 
-struct TableEntry;
+export struct TableEntry;
 
 export struct SegmentEntry;
 

@@ -25,7 +25,6 @@ import block_column_entry;
 import block_column_iter;
 import block_entry;
 import block_iter;
-import segment_entry;
 import segment_iter;
 import catalog;
 

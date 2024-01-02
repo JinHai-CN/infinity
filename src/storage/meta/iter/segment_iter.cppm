@@ -17,7 +17,7 @@ module;
 export module segment_iter;
 
 import stl;
-import segment_entry;
+import catalog;
 import block_iter;
 
 namespace infinity {

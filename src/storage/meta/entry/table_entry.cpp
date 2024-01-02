@@ -27,7 +27,6 @@ import table_entry_type;
 import third_party;
 import txn;
 import buffer_manager;
-import segment_entry;
 import index_def;
 import block_index;
 import data_access_state;

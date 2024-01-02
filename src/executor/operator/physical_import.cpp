@@ -48,7 +48,6 @@ import file_system;
 import buffer_handle;
 import catalog;
 import infinity_exception;
-import segment_entry;
 import zsv;
 
 module physical_import;

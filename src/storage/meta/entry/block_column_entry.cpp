@@ -21,7 +21,6 @@ module block_column_entry;
 import stl;
 import buffer_manager;
 import block_entry;
-import segment_entry;
 import outline_info;
 import parser;
 import column_buffer;

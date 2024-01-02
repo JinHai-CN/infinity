@@ -23,16 +23,15 @@ import buffer_manager;
 import third_party;
 import table_entry_type;
 import base_entry;
-import segment_entry;
 import block_index;
 import data_access_state;
 import txn_manager;
 import segment_column_index_entry;
-import segment_entry;
 import block_entry;
 import table_index_meta;
 import txn;
 import status;
+import :segment_entry;
 
 namespace infinity {
 
@@ -42,7 +41,7 @@ class TableIndexEntry;
 class IrsIndexEntry;
 class TableMeta;
 
-export struct TableEntry : public BaseEntry {
+struct TableEntry : public BaseEntry {
     friend struct NewCatalog;
 
 public:

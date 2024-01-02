@@ -41,7 +41,6 @@ import third_party;
 import iresearch_analyzer;
 import irs_index_entry;
 import base_table_ref;
-import segment_entry;
 import block_entry;
 import column_buffer;
 import block_column_entry;

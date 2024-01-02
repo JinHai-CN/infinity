@@ -23,7 +23,6 @@ import txn_manager;
 import table_def;
 import data_block;
 import value;
-import segment_entry;
 import block_entry;
 import txn_store;
 import buffer_manager;

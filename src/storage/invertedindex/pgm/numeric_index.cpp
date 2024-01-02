@@ -31,7 +31,7 @@ import default_values;
 import data_block;
 import buffer_handle;
 import local_file_system;
-import segment_entry;
+import catalog;
 import parser;
 import codec;
 import file_writer;

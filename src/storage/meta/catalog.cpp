@@ -42,7 +42,6 @@ import index_def;
 import table_index_meta;
 import txn_store;
 import data_access_state;
-import segment_entry;
 import block_column_entry;
 import block_entry;
 

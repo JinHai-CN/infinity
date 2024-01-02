@@ -35,7 +35,6 @@ import infinity_exception;
 import catalog;
 import default_values;
 
-import segment_entry;
 import block_column_entry;
 import base_entry;
 import knn_expression;

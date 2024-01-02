@@ -64,7 +64,6 @@ import catalog;
 import base_entry;
 import buffer_handle;
 import local_file_system;
-import segment_entry;
 import buffer_manager;
 import index_full_text;
 import infinity_exception;
