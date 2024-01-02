@@ -26,7 +26,6 @@ import third_party;
 import infinity_exception;
 
 import index_file_worker;
-import column_index_entry;
 import catalog;
 import status;
 

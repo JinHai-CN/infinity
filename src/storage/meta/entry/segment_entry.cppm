@@ -17,6 +17,7 @@ module;
 export module catalog:segment_entry;
 
 import :block_entry;
+import :column_index_entry;
 
 import stl;
 import default_values;
@@ -28,7 +29,6 @@ import data_access_state;
 import parser;
 import segment_column_index_entry;
 import index_file_worker;
-import column_index_entry;
 import infinity_exception;
 
 namespace infinity {

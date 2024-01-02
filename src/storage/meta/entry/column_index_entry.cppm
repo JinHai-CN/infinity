@@ -14,7 +14,7 @@
 
 module;
 
-export module column_index_entry;
+export module catalog:column_index_entry;
 
 import stl;
 import parser;
@@ -27,9 +27,10 @@ import index_file_worker;
 
 namespace infinity {
 
+export struct TableIndexEntry;
+
 class BufferManager;
 struct TableEntry;
-struct TableIndexEntry;
 
 export struct ColumnIndexEntry : public BaseEntry {
     friend struct TableEntry;

@@ -17,7 +17,6 @@ module;
 import stl;
 import parser;
 import data_access_state;
-import column_index_entry;
 import irs_index_entry;
 // import catalog;
 

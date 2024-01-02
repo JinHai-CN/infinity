@@ -45,7 +45,6 @@ import random;
 import parser;
 import txn_store;
 import segment_column_index_entry;
-import column_index_entry;
 import index_base;
 
 import hnsw_common;

@@ -23,7 +23,7 @@ import third_party;
 
 namespace infinity {
 
-class TableIndexEntry;
+struct TableIndexEntry;
 class BufferManager;
 struct TableEntry;
 class IRSDataStore;

@@ -36,7 +36,7 @@ namespace infinity {
 
 class DBEntry;
 class IndexDef;
-class TableIndexEntry;
+struct TableIndexEntry;
 class IrsIndexEntry;
 class TableMeta;
 

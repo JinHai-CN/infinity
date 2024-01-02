@@ -54,7 +54,6 @@ import local_file_system;
 import utility;
 import buffer_manager;
 import session_manager;
-import column_index_entry;
 
 module physical_show;
 

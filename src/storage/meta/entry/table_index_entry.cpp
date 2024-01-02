@@ -29,7 +29,6 @@ import random;
 import index_base;
 import parser;
 import infinity_exception;
-import column_index_entry;
 import segment_column_index_entry;
 import irs_index_entry;
 import index_full_text;

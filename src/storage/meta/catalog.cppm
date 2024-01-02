@@ -26,6 +26,7 @@ export import :block_entry;
 export import :block_column_entry;
 export import :table_index_meta;
 export import :table_index_entry;
+export import :column_index_entry;
 
 import stl;
 import parser;
