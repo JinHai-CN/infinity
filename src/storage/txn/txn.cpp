@@ -33,7 +33,6 @@ import meta_state;
 import buffer_manager;
 import data_access_state;
 
-import base_entry;
 import table_detail;
 import table_entry_type;
 import catalog;

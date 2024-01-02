@@ -19,10 +19,10 @@ export module catalog:segment_entry;
 import :block_entry;
 import :column_index_entry;
 import :segment_column_index_entry;
+import :base_entry;
 
 import stl;
 import default_values;
-import base_entry;
 import third_party;
 import buffer_manager;
 import index_base;

@@ -33,7 +33,6 @@ import value_expression;
 import logical_show;
 import table_detail;
 import catalog;
-import base_entry;
 import value;
 import table_def;
 import data_table;

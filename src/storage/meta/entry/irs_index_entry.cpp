@@ -17,7 +17,6 @@ module;
 module catalog;
 
 import stl;
-import base_entry;
 import third_party;
 import infinity_exception;
 import buffer_manager;

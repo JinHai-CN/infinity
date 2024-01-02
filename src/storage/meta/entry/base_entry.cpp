@@ -14,7 +14,7 @@
 
 module;
 
-module base_entry;
+module catalog;
 
 import stl;
 

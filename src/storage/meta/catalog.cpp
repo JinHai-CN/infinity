@@ -20,7 +20,6 @@ module catalog;
 
 import stl;
 import parser;
-import base_entry;
 import txn_manager;
 import logger;
 import third_party;

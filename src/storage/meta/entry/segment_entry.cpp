@@ -28,7 +28,6 @@ import data_block;
 import txn;
 import data_access_state;
 import index_def;
-import base_entry;
 
 import infinity_exception;
 import defer_op;

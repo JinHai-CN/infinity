@@ -17,8 +17,8 @@ module;
 export module catalog:db_entry;
 
 import :table_meta;
+import :base_entry;
 
-import base_entry;
 import stl;
 import table_entry_type;
 import parser;

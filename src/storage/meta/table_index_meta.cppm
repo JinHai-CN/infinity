@@ -17,13 +17,12 @@ module;
 export module catalog:table_index_meta;
 
 import :table_index_entry;
+import :base_entry;
 
 import stl;
-import base_entry;
 import parser;
 import third_party;
 import index_def;
-import base_entry;
 import status;
 
 namespace infinity {

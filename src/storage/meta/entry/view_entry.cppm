@@ -16,8 +16,9 @@ module;
 
 export module catalog:view_entry;
 
+import :base_entry;
+
 import stl;
-import base_entry;
 import parser;
 
 // FIXME: Not finished

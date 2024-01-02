@@ -17,10 +17,10 @@ module;
 export module catalog:block_entry;
 
 import :block_column_entry;
+import :base_entry;
 
 import stl;
 import default_values;
-import base_entry;
 import third_party;
 import parser;
 import local_file_system;

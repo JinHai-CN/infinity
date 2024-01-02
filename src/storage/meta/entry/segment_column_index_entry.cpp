@@ -17,7 +17,6 @@ module;
 module catalog;
 
 import stl;
-import base_entry;
 import buffer_manager;
 import buffer_handle;
 import buffer_obj;

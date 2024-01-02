@@ -18,7 +18,8 @@ module;
 
 module catalog;
 
-import base_entry;
+import :base_entry;
+
 import stl;
 import parser;
 import txn_manager;

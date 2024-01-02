@@ -16,8 +16,9 @@ module;
 
 export module catalog:segment_column_index_entry;
 
+import :base_entry;
+
 import stl;
-import base_entry;
 import buffer_handle;
 import third_party;
 import buffer_obj;

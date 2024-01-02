@@ -22,7 +22,6 @@ module catalog;
 
 import stl;
 import parser;
-import base_entry;
 import table_entry_type;
 import third_party;
 import txn;

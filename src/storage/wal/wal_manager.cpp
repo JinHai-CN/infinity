@@ -36,7 +36,6 @@ import txn_store;
 
 import data_access_state;
 import status;
-import base_entry;
 import bg_task;
 
 import infinity_exception;

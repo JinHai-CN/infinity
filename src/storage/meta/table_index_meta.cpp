@@ -19,7 +19,6 @@ module;
 
 module catalog;
 
-import base_entry;
 import stl;
 import parser;
 import index_def;
@@ -32,7 +31,6 @@ import third_party;
 import infinity_exception;
 import status;
 import iresearch_datastore;
-import base_meta;
 
 namespace infinity {
 

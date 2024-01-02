@@ -16,8 +16,9 @@ module;
 
 export module catalog:block_column_entry;
 
+import :base_entry;
+
 import stl;
-import base_entry;
 import buffer_obj;
 import parser;
 import third_party;

@@ -18,7 +18,8 @@ module;
 
 module catalog;
 
-import base_entry;
+import :base_entry;
+
 import table_entry_type;
 import stl;
 import parser;

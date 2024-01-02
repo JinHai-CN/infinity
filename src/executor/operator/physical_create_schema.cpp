@@ -22,7 +22,6 @@ import data_table;
 import parser;
 import physical_operator_type;
 import operator_state;
-import base_entry;
 import status;
 
 module physical_create_schema;

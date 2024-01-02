@@ -21,7 +21,6 @@ module catalog;
 
 import stl;
 import index_def;
-import base_entry;
 import third_party;
 import local_file_system;
 import default_values;

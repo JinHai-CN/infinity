@@ -33,7 +33,6 @@ import infinity_exception;
 import catalog;
 import default_values;
 
-import base_entry;
 import knn_expression;
 import column_expression;
 

@@ -20,7 +20,6 @@ module;
 module catalog;
 
 import stl;
-import base_entry;
 import index_base;
 import third_party;
 import local_file_system;

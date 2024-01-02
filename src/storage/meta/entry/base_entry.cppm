@@ -14,7 +14,7 @@
 
 module;
 
-export module base_entry;
+export module catalog:base_entry;
 
 import stl;
 import default_values;

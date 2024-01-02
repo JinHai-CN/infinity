@@ -30,7 +30,6 @@ import data_block;
 import default_values;
 import txn_manager;
 import txn;
-import base_entry;
 import catalog;
 import buffer_manager;
 import column_vector;

@@ -20,7 +20,6 @@ module;
 module catalog;
 
 import stl;
-import base_entry;
 import default_values;
 import logger;
 import third_party;

@@ -16,9 +16,10 @@ module;
 
 export module catalog:irs_index_entry;
 
+import :base_entry;
+
 import stl;
 import index_base;
-import base_entry;
 import third_party;
 
 namespace infinity {

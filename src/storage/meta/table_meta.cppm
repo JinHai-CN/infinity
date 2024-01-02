@@ -16,7 +16,8 @@ module;
 
 export module catalog:table_meta;
 
-import base_entry;
+import :base_entry;
+
 import stl;
 import parser;
 import third_party;

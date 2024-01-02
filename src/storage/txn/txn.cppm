@@ -14,7 +14,6 @@
 module;
 
 import stl;
-import base_entry;
 import parser;
 import table_detail;
 import table_def;
@@ -50,6 +49,7 @@ class TxnManager;
 struct NewCatalog;
 struct TableEntry;
 struct DBEntry;
+struct BaseEntry;
 struct TableIndexEntry;
 
 export class Txn {

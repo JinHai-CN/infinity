@@ -16,10 +16,9 @@ module;
 
 #include <algorithm>
 
-module base_meta;
+module catalog;
 
 import stl;
-import base_entry;
 import infinity_exception;
 import default_values;
 import txn_manager;

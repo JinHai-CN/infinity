@@ -30,7 +30,6 @@ import column_buffer;
 import wal_entry;
 import infinity_exception;
 import status;
-import base_entry;
 import column_vector;
 import physical_import;
 import txn;

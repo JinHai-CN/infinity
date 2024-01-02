@@ -16,12 +16,12 @@ module;
 
 export module catalog:column_index_entry;
 
+import :base_entry;
 import :segment_column_index_entry;
 
 import stl;
 import parser;
 import index_base;
-import base_entry;
 import third_party;
 import index_base;
 import index_file_worker;

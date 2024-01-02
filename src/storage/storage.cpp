@@ -19,7 +19,6 @@ module;
 #include <regex>
 #include <string>
 
-import base_entry;
 import config;
 import stl;
 import buffer_manager;

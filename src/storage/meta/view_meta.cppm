@@ -16,8 +16,9 @@ module;
 
 export module catalog:view_meta;
 
+import :base_entry;
+
 import stl;
-import base_entry;
 import parser;
 import status;
 

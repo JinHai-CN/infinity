@@ -14,10 +14,9 @@
 
 module;
 
-export module base_meta;
+export module catalog:base_meta;
 
 import stl;
-import base_entry;
 import parser;
 import status;
 import infinity_exception;
