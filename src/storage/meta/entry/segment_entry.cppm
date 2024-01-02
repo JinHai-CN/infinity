@@ -16,10 +16,11 @@ module;
 
 export module catalog:segment_entry;
 
+import :block_entry;
+
 import stl;
 import default_values;
 import base_entry;
-import block_entry;
 import third_party;
 import txn;
 import buffer_manager;
@@ -35,9 +36,7 @@ import infinity_exception;
 
 namespace infinity {
 
-export struct TableEntry;
 
-export struct SegmentEntry;
 
 struct SegmentEntry : public BaseEntry {
     friend struct TableEntry;

@@ -27,11 +27,11 @@ import block_index;
 import data_access_state;
 import txn_manager;
 import segment_column_index_entry;
-import block_entry;
 import table_index_meta;
 import txn;
 import status;
 import :segment_entry;
+import :block_entry;
 
 namespace infinity {
 

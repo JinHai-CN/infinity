@@ -20,6 +20,7 @@ export import :db_entry;
 export import :table_meta;
 export import :table_entry;
 export import :segment_entry;
+export import :block_entry;
 
 import stl;
 import parser;

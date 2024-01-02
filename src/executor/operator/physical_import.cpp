@@ -41,7 +41,6 @@ import local_file_system;
 import defer_op;
 import txn_store;
 import block_column_entry;
-import block_entry;
 import wal_entry;
 import file_system_type;
 import file_system;

@@ -45,7 +45,6 @@ import column_index_entry;
 import irs_index_entry;
 import index_base;
 import index_full_text;
-import block_entry;
 
 namespace infinity {
 

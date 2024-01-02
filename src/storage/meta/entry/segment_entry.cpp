@@ -22,7 +22,6 @@ module catalog;
 
 import stl;
 import third_party;
-import block_entry;
 import buffer_manager;
 import default_values;
 import data_block;

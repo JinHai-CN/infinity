@@ -31,7 +31,7 @@ import column_buffer;
 import buffer_manager;
 import block_column_entry;
 import third_party;
-import block_entry;
+import catalog;
 import default_values;
 import data_block;
 import knn_expression;

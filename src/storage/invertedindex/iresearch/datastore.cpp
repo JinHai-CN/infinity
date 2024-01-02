@@ -49,7 +49,6 @@ import operator_state;
 import column_vector;
 import global_block_id;
 import block_index;
-import block_entry;
 import query_context;
 import column_buffer;
 import block_column_entry;

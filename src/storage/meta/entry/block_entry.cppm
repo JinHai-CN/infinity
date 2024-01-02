@@ -14,7 +14,7 @@
 
 module;
 
-export module block_entry;
+export module catalog:block_entry;
 
 import stl;
 import default_values;
@@ -26,9 +26,11 @@ import local_file_system;
 
 namespace infinity {
 
+export struct TableEntry;
+export struct SegmentEntry;
+
 class BufferManager;
 class Txn;
-struct TableEntry;
 struct SegmentEntry;
 class DataBlock;
 

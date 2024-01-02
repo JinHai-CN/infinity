@@ -43,7 +43,6 @@ import table_index_meta;
 import txn_store;
 import data_access_state;
 import block_column_entry;
-import block_entry;
 
 namespace infinity {
 

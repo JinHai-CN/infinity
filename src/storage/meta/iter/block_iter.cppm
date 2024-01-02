@@ -19,7 +19,7 @@ module;
 export module block_iter;
 
 import stl;
-import block_entry;
+import catalog;
 import block_column_iter;
 
 namespace infinity {

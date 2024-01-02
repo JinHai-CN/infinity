@@ -17,7 +17,7 @@ module;
 #include <filesystem>
 #include <memory>
 
-module block_entry;
+module catalog;
 
 import stl;
 import base_entry;
@@ -30,7 +30,6 @@ import local_file_system;
 import serialize;
 
 import infinity_exception;
-import catalog;
 import parser;
 
 

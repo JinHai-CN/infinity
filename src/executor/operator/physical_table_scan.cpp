@@ -26,7 +26,6 @@ import operator_state;
 import global_block_id;
 import data_block;
 import table_scan_function_data;
-import block_entry;
 import base_table_ref;
 import column_buffer;
 import block_column_entry;

@@ -34,7 +34,6 @@ import table_entry_type;
 import parser;
 import txn_store;
 
-import block_entry;
 import data_access_state;
 import table_index_entry;
 import status;

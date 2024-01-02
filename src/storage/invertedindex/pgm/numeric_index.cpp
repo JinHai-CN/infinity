@@ -24,7 +24,6 @@ import stl;
 import third_party;
 import data_block;
 import column_vector;
-import block_entry;
 import block_column_entry;
 import buffer_manager;
 import default_values;

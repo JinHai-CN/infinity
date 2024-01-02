@@ -16,7 +16,6 @@ module;
 
 import stl;
 import catalog;
-import block_entry;
 import global_block_id;
 
 module block_index;

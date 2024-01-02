@@ -26,7 +26,6 @@ import block_index;
 import global_block_id;
 
 import infinity_exception;
-import block_entry;
 import column_buffer;
 import block_column_entry;
 import parser;

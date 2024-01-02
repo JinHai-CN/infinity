@@ -24,7 +24,6 @@ import third_party;
 import txn;
 import txn_store;
 import catalog;
-import block_entry;
 import block_column_entry;
 import zsv;
 import load_meta;

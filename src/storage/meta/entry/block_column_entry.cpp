@@ -20,7 +20,7 @@ module block_column_entry;
 
 import stl;
 import buffer_manager;
-import block_entry;
+import catalog;
 import outline_info;
 import parser;
 import column_buffer;
