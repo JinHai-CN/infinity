@@ -17,6 +17,8 @@ module;
 #include <algorithm>
 #include <vector>
 
+module table_index_meta;
+
 import base_entry;
 import stl;
 import parser;
@@ -33,8 +35,6 @@ import status;
 import iresearch_datastore;
 import table_index_entry;
 import base_meta;
-
-module table_index_meta;
 
 namespace infinity {
 

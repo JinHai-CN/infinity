@@ -17,11 +17,12 @@ module;
 #include <filesystem>
 #include <memory>
 
+module block_entry;
+
 import stl;
 import base_entry;
 import segment_entry;
 import default_values;
-import block_entry;
 import block_column_entry;
 import logger;
 import third_party;
@@ -33,7 +34,7 @@ import infinity_exception;
 import table_entry;
 import parser;
 
-module block_entry;
+
 namespace infinity {
 
 bool BlockVersion::operator==(const BlockVersion &rhs) const {

@@ -14,6 +14,8 @@
 
 module;
 
+export module table_entry;
+
 import stl;
 import parser;
 import txn_store;
@@ -31,8 +33,6 @@ import block_entry;
 import table_index_meta;
 import txn;
 import status;
-
-export module table_entry;
 
 namespace infinity {
 

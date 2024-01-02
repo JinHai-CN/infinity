@@ -14,6 +14,8 @@
 
 module;
 
+export module table_meta;
+
 import base_entry;
 import stl;
 import parser;
@@ -23,8 +25,6 @@ import txn_manager;
 import buffer_manager;
 import status;
 import table_entry;
-
-export module table_meta;
 
 namespace infinity {
 

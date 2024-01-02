@@ -14,11 +14,11 @@
 
 module;
 
+export module table_entry_type;
+
 import stl;
 
 import infinity_exception;
-
-export module table_entry_type;
 
 namespace infinity {
 

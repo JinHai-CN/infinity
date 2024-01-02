@@ -14,6 +14,8 @@
 
 module;
 
+export module block_entry;
+
 import stl;
 import default_values;
 import base_entry;
@@ -21,8 +23,6 @@ import third_party;
 import block_column_entry;
 import parser;
 import local_file_system;
-
-export module block_entry;
 
 namespace infinity {
 

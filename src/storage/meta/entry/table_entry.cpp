@@ -17,6 +17,9 @@ module;
 #include <iostream>
 #include <memory>
 #include <string>
+
+module table_entry;
+
 import stl;
 import parser;
 import base_entry;
@@ -45,8 +48,6 @@ import irs_index_entry;
 import index_base;
 import index_full_text;
 import block_entry;
-
-module table_entry;
 
 namespace infinity {
 

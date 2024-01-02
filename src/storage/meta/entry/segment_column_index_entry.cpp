@@ -14,6 +14,8 @@
 
 module;
 
+module segment_column_index_entry;
+
 import stl;
 import base_entry;
 // import segment_entry;
@@ -29,8 +31,6 @@ import column_index_entry;
 import table_entry;
 import segment_entry;
 import status;
-
-module segment_column_index_entry;
 
 namespace infinity {
 SegmentColumnIndexEntry::SegmentColumnIndexEntry(ColumnIndexEntry *column_index_entry, u32 segment_id, BufferObj *buffer)

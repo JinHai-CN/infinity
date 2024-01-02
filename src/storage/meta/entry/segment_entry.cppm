@@ -14,6 +14,8 @@
 
 module;
 
+export module segment_entry;
+
 import stl;
 import default_values;
 import base_entry;
@@ -30,8 +32,6 @@ import txn_store;
 import index_file_worker;
 import column_index_entry;
 import infinity_exception;
-
-export module segment_entry;
 
 namespace infinity {
 

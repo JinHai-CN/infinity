@@ -14,6 +14,8 @@
 
 module;
 
+export module segment_column_index_entry;
+
 import stl;
 import base_entry;
 import buffer_handle;
@@ -21,8 +23,6 @@ import third_party;
 import buffer_obj;
 import parser;
 import index_file_worker;
-
-export module segment_column_index_entry;
 
 namespace infinity {
 

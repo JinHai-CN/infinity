@@ -14,6 +14,8 @@
 
 module;
 
+export module db_entry;
+
 import base_entry;
 import stl;
 import table_entry_type;
@@ -26,7 +28,6 @@ import buffer_manager;
 import txn_manager;
 import status;
 
-export module db_entry;
 
 namespace infinity {
 

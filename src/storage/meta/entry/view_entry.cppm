@@ -14,11 +14,11 @@
 
 module;
 
+export module view_entry;
+
 import stl;
 import base_entry;
 import parser;
-
-export module view_entry;
 
 // FIXME: Not finished
 

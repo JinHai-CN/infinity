@@ -14,6 +14,8 @@
 
 module;
 
+export module block_column_entry;
+
 import stl;
 import base_entry;
 import buffer_obj;
@@ -26,7 +28,6 @@ import column_vector;
 import local_file_system;
 import vector_buffer;
 
-export module block_column_entry;
 
 namespace infinity {
 

@@ -17,6 +17,8 @@ module;
 #include <ctime>
 #include <string>
 
+module column_index_entry;
+
 import stl;
 import base_entry;
 import index_base;
@@ -34,8 +36,6 @@ import parser;
 import annivfflat_index_file_worker;
 import hnsw_file_worker;
 import logger;
-
-module column_index_entry;
 
 namespace infinity {
 

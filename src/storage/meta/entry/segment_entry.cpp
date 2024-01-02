@@ -18,6 +18,8 @@ module;
 #include <string>
 #include <vector>
 
+module segment_entry;
+
 import stl;
 import third_party;
 import block_entry;
@@ -57,8 +59,6 @@ import lvq_store;
 import plain_store;
 import block_column_entry;
 import segment_iter;
-
-module segment_entry;
 
 namespace infinity {
 

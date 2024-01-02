@@ -14,11 +14,11 @@
 
 module;
 
+export module segment_iter;
+
 import stl;
 import segment_entry;
 import block_iter;
-
-export module segment_iter;
 
 namespace infinity {
 

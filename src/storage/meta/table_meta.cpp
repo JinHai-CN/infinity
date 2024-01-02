@@ -16,6 +16,8 @@ module;
 
 #include <algorithm>
 
+module table_meta;
+
 import base_entry;
 import stl;
 import table_entry;
@@ -31,8 +33,6 @@ import db_entry;
 import third_party;
 import status;
 import infinity_exception;
-
-module table_meta;
 
 namespace infinity {
 

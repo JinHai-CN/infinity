@@ -14,6 +14,8 @@
 
 module;
 
+export module table_index_meta;
+
 import stl;
 import base_entry;
 import parser;
@@ -23,8 +25,6 @@ import index_def;
 import base_entry;
 import status;
 import table_index_entry;
-
-export module table_index_meta;
 
 namespace infinity {
 

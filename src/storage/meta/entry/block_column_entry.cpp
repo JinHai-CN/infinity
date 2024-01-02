@@ -16,6 +16,8 @@ module;
 
 #include <string>
 
+module block_column_entry;
+
 import stl;
 import buffer_manager;
 import block_entry;
@@ -35,8 +37,6 @@ import infinity_exception;
 import varchar_layout;
 import logger;
 import data_file_worker;
-
-module block_column_entry;
 
 namespace infinity {
 

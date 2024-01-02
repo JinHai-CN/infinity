@@ -14,9 +14,9 @@
 
 module;
 
-import stl;
-
 export module meta_state;
+
+import stl;
 
 namespace infinity {
 

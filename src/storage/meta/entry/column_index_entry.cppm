@@ -14,6 +14,8 @@
 
 module;
 
+export module column_index_entry;
+
 import stl;
 import parser;
 import index_base;
@@ -22,8 +24,6 @@ import third_party;
 import segment_column_index_entry;
 import index_base;
 import index_file_worker;
-
-export module column_index_entry;
 
 namespace infinity {
 

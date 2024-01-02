@@ -16,6 +16,8 @@ module;
 
 #include <vector>
 
+module db_entry;
+
 import base_entry;
 import table_entry_type;
 import stl;
@@ -32,8 +34,6 @@ import third_party;
 import infinity_exception;
 import table_entry;
 import status;
-
-module db_entry;
 
 namespace infinity {
 

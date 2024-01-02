@@ -16,11 +16,11 @@ module;
 
 #include <vector>
 
+export module block_iter;
+
 import stl;
 import block_entry;
 import block_column_iter;
-
-export module block_iter;
 
 namespace infinity {
 

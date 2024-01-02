@@ -14,6 +14,8 @@
 
 module;
 
+module irs_index_entry;
+
 import stl;
 import base_entry;
 import third_party;
@@ -25,8 +27,6 @@ import iresearch_datastore;
 import index_base;
 import index_full_text;
 import logger;
-
-module irs_index_entry;
 
 namespace infinity {
 

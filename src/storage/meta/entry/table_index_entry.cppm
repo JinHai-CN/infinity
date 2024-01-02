@@ -14,6 +14,8 @@
 
 module;
 
+export module table_index_entry;
+
 import stl;
 import index_def;
 import base_entry;
@@ -21,8 +23,6 @@ import third_party;
 import column_index_entry;
 import segment_column_index_entry;
 import irs_index_entry;
-
-export module table_index_entry;
 
 namespace infinity {
 

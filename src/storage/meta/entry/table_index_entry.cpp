@@ -17,6 +17,8 @@ module;
 #include <ctime>
 #include <memory>
 
+module table_index_entry;
+
 import stl;
 import index_def;
 import base_entry;
@@ -33,8 +35,6 @@ import column_index_entry;
 import segment_column_index_entry;
 import irs_index_entry;
 import index_full_text;
-
-module table_index_entry;
 
 namespace infinity {
 

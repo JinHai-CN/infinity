@@ -16,6 +16,8 @@ module;
 
 #include <algorithm>
 
+module base_meta;
+
 import stl;
 import base_entry;
 import infinity_exception;
@@ -26,8 +28,6 @@ import logger;
 import parser;
 import third_party;
 import status;
-
-module base_meta;
 
 #if 0
 
