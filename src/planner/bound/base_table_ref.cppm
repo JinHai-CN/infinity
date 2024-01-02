@@ -18,11 +18,10 @@ module;
 
 import stl;
 import table_ref;
-import table_collection_entry;
+import catalog;
 import parser;
 import table_function;
 import block_index;
-import db_entry;
 
 import infinity_exception;
 
@@ -32,7 +31,7 @@ namespace infinity {
 
 export class BaseTableRef : public TableRef {
 public:
-    explicit BaseTableRef(TableCollectionEntry *table_entry_ptr,
+    explicit BaseTableRef(TableEntry *table_entry_ptr,
                           Vector<SizeT> column_ids,
                           SharedPtr<BlockIndex> block_index,
                           const String &alias,
@@ -70,11 +69,11 @@ public:
         RetainColumnByIndices(Move(indices));
     }
 
-    SharedPtr<String> schema_name() const { return table_entry_ptr_->table_collection_meta_->db_entry_->db_name_; }
+    SharedPtr<String> schema_name() const { return table_entry_ptr_->GetDBName(); }
 
-    SharedPtr<String> table_name() const { return table_entry_ptr_->table_collection_name_; }
+    SharedPtr<String> table_name() const { return table_entry_ptr_->GetTableName(); }
 
-    TableCollectionEntry *table_entry_ptr_{};
+    TableEntry *table_entry_ptr_{};
     Vector<SizeT> column_ids_{};
     SharedPtr<BlockIndex> block_index_{};
 

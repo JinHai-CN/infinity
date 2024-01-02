@@ -34,6 +34,8 @@ class DataBlock;
 
 export class LimitCounter {
 public:
+    virtual ~LimitCounter() = default;
+
     // Returns the left index after offset
     virtual SizeT Offset(SizeT row_count) = 0;
 
@@ -43,9 +45,11 @@ public:
     virtual bool IsLimitOver() = 0;
 };
 
-export class AtomicCounter : public LimitCounter {
+export class AtomicCounter final : public LimitCounter {
 public:
     AtomicCounter(i64 offset, i64 limit) : offset_(offset), limit_(limit) {}
+
+    ~AtomicCounter() final = default;
 
     SizeT Offset(SizeT row_count);
 
@@ -58,9 +62,11 @@ private:
     ai64 limit_{};
 };
 
-export class UnSyncCounter : public LimitCounter {
+export class UnSyncCounter final: public LimitCounter {
 public:
     UnSyncCounter(i64 offset, i64 limit) : offset_(offset), limit_(limit) {}
+
+    ~UnSyncCounter() final = default;
 
     SizeT Offset(SizeT row_count);
 

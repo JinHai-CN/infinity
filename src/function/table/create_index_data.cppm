@@ -17,7 +17,7 @@ module;
 #include <algorithm>
 
 import stl;
-import segment_entry;
+import catalog;
 
 export module create_index_data;
 

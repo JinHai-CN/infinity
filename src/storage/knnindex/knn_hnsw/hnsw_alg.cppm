@@ -28,6 +28,8 @@ import hnsw_common;
 import plain_store;
 import graph_store;
 import lvq_store;
+//import third_party;
+//import logger;
 
 export module hnsw_alg;
 
@@ -158,6 +160,7 @@ private:
 
             SharedLock<RWMutex> lock;
             if constexpr (WithLock) {
+                // LOG_TRACE(Format("1 lock vertex_mutex_: {}", c_idx));
                 lock = SharedLock<RWMutex>(vertex_mutex_[c_idx]);
             }
 
@@ -204,6 +207,7 @@ private:
 
             SharedLock<RWMutex> lock;
             if constexpr (WithLock) {
+                // LOG_TRACE(Format("2 lock vertex_mutex_: {}", cur_p));
                 lock = SharedLock<RWMutex>(vertex_mutex_[cur_p]);
             }
 
@@ -261,6 +265,7 @@ private:
 
             UniqueLock<RWMutex> lock;
             if constexpr (WithLock) {
+                // LOG_TRACE(Format("3 lock vertex_mutex_: {}", n_idx));
                 lock = UniqueLock<RWMutex>(vertex_mutex_[n_idx]);
             }
 
@@ -339,6 +344,7 @@ public:
 
         UniqueLock<RWMutex> lock;
         if constexpr (WithLock) {
+            // LOG_TRACE(Format("4 lock vertex_mutex_: {}", vertex_i));
             lock = UniqueLock<RWMutex>(vertex_mutex_[vertex_i]);
         }
         StoreType query = data_store_.GetVec(vertex_i);
