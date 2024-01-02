@@ -88,13 +88,18 @@ bool PhysicalCreateIndexPrepare::Execute(QueryContext *query_context, OperatorSt
     TxnTimeStamp begin_ts = txn->BeginTS();
     BufferManager *buffer_mgr = txn->GetBufferMgr();
 
-    auto [table_index_entry, create_index_status] = txn->CreateIndex(*schema_name_, *table_name_, index_def_ptr_, conflict_type_);
-    if (!create_index_status.ok()) {
-        operator_state->error_message_ = Move(create_index_status.msg_);
+
+    auto [table_entry, table_status] = txn->GetTableEntry(*schema_name_, *table_name_);
+    if (!table_status.ok()) {
+        operator_state->error_message_ = Move(table_status.msg_);
         return false;
     }
 
-    TableEntry* table_entry = table_index_entry->GetTableEntry();
+    auto [table_index_entry, index_status] = txn->CreateIndex(table_entry, index_def_ptr_, conflict_type_);
+    if (!index_status.ok()) {
+        operator_state->error_message_ = Move(index_status.msg_);
+        return false;
+    }
 
     if (table_index_entry->irs_index_entry().get() != nullptr) {
         Error<NotImplementException>("TableCollectionEntry::CreateIndexFilePrepare");
