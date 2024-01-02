@@ -22,7 +22,6 @@ import knn_distance; // delete this
 import block_index;
 import catalog;
 import merge_knn;
-import segment_column_index_entry;
 import bitmask;
 import data_block;
 import column_vector;

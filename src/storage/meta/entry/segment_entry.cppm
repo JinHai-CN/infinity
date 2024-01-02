@@ -18,6 +18,7 @@ export module catalog:segment_entry;
 
 import :block_entry;
 import :column_index_entry;
+import :segment_column_index_entry;
 
 import stl;
 import default_values;
@@ -27,7 +28,6 @@ import buffer_manager;
 import index_base;
 import data_access_state;
 import parser;
-import segment_column_index_entry;
 import index_file_worker;
 import infinity_exception;
 

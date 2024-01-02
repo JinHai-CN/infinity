@@ -45,7 +45,6 @@ import index_def;
 import ann_ivf_flat;
 import annivfflat_index_data;
 import buffer_handle;
-import segment_column_index_entry;
 import data_block;
 import bitmask;
 import bitmask_buffer;

@@ -29,7 +29,6 @@ import table_entry_type;
 import base_entry;
 import block_index;
 import data_access_state;
-import segment_column_index_entry;
 import status;
 
 namespace infinity {

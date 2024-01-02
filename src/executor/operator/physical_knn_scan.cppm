@@ -32,8 +32,6 @@ export module physical_knn_scan;
 
 namespace infinity {
 
-class SegmentColumnIndexEntry;
-
 export class PhysicalKnnScan final : public PhysicalOperator {
 public:
     explicit PhysicalKnnScan(u64 id,

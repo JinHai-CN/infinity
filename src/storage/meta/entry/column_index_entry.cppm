@@ -16,12 +16,13 @@ module;
 
 export module catalog:column_index_entry;
 
+import :segment_column_index_entry;
+
 import stl;
 import parser;
 import index_base;
 import base_entry;
 import third_party;
-import segment_column_index_entry;
 import index_base;
 import index_file_worker;
 
@@ -32,7 +33,7 @@ export struct TableIndexEntry;
 class BufferManager;
 struct TableEntry;
 
-export struct ColumnIndexEntry : public BaseEntry {
+struct ColumnIndexEntry : public BaseEntry {
     friend struct TableEntry;
     friend struct TableIndexEntry;
 

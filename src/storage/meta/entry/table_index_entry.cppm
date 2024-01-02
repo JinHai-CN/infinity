@@ -17,12 +17,12 @@ module;
 export module catalog:table_index_entry;
 
 import :column_index_entry;
+import :segment_column_index_entry;
 
 import stl;
 import index_def;
 import base_entry;
 import third_party;
-import segment_column_index_entry;
 import irs_index_entry;
 
 namespace infinity {

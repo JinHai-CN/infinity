@@ -14,7 +14,7 @@
 
 module;
 
-module segment_column_index_entry;
+module catalog;
 
 import stl;
 import base_entry;
@@ -26,7 +26,6 @@ import third_party;
 import infinity_exception;
 
 import index_file_worker;
-import catalog;
 import status;
 
 namespace infinity {

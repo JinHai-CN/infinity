@@ -25,7 +25,6 @@ import data_block;
 import logger;
 import data_access_state;
 import txn;
-import segment_column_index_entry;
 import default_values;
 import catalog;
 

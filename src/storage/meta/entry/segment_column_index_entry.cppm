@@ -14,7 +14,7 @@
 
 module;
 
-export module segment_column_index_entry;
+export module catalog:segment_column_index_entry;
 
 import stl;
 import base_entry;
@@ -26,8 +26,9 @@ import index_file_worker;
 
 namespace infinity {
 
+export struct ColumnIndexEntry;
+
 struct TableEntry;
-struct ColumnIndexEntry;
 class FaissIndexPtr;
 class BufferManager;
 class IndexDef;

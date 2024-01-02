@@ -37,7 +37,6 @@ import status;
 import infinity_exception;
 import index_ivfflat;
 import txn_manager;
-import segment_column_index_entry;
 import iresearch_datastore;
 import irs_index_entry;
 import index_base;
