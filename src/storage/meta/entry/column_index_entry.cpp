@@ -189,4 +189,8 @@ UniquePtr<IndexFileWorker> ColumnIndexEntry::CreateFileWorker(CreateIndexParam *
 
 String ColumnIndexEntry::IndexFileName(const String &index_name, u32 segment_id) { return Format("seg{}.idx", segment_id, index_name); }
 
+void ColumnIndexEntry::Append(u32 segment_id, const SharedPtr<SegmentColumnIndexEntry>& segment_column_index_entry) {
+    index_by_segment_.emplace(segment_id, segment_column_index_entry);
+}
+
 } // namespace infinity

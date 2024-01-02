@@ -97,6 +97,10 @@ void BlockColumnEntry::AppendRaw(SizeT dst_offset, const_ptr_t src_p, SizeT data
     DataType *column_type = this->column_type_.get();
     switch (column_type->type()) {
         case kBoolean:
+        case kDate:
+        case kTime:
+        case kDateTime:
+        case kTimestamp:
         case kTinyInt:
         case kSmallInt:
         case kInteger:
@@ -199,7 +203,6 @@ void BlockColumnEntry::Flush(BlockColumnEntry *block_column_entry, SizeT) {
             //            SizeT buffer_size = row_count * column_type->Size();
             if (block_column_entry->buffer_->Save()) {
                 block_column_entry->buffer_->Sync();
-                LOG_WARN(Format("Close file {}", block_column_entry->FilePath()));
                 block_column_entry->buffer_->CloseFile();
             }
 

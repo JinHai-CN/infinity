@@ -80,7 +80,7 @@ public:
 
     void AppendWith(const DataBlock *other);
 
-    void AppendWith(const SharedPtr<DataBlock> &other, SizeT from, SizeT count);
+    void AppendWith(const DataBlock *other, SizeT from, SizeT count);
 
     void InsertVector(const SharedPtr<ColumnVector> &vector, SizeT index);
 
@@ -95,6 +95,16 @@ public:
             Error<StorageException>("Not finalized data block");
         }
         return row_count_;
+    }
+
+    [[nodiscard]] inline Vector<SharedPtr<DataType>> types() const {
+        Vector<SharedPtr<DataType>> types;
+
+        types.reserve(column_count());
+        for (SizeT colum_idx = 0; colum_idx < column_vectors.size(); ++colum_idx) {
+            types.push_back(column_vectors[colum_idx]->data_type());
+        }
+        return types;
     }
 
     [[nodiscard]] inline SizeT capacity() const { return capacity_; }

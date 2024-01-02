@@ -24,6 +24,7 @@ export enum class PhysicalOperatorType : i8 {
     kInvalid = 0,
 
     kAggregate,
+    kMergeAggregate,
 
     kParallelAggregate,
     kMergeParallelAggregate,
@@ -82,6 +83,10 @@ export enum class PhysicalOperatorType : i8 {
     kDropCollection,
     kDropDatabase,
     kDropView,
+
+    kCreateIndexPrepare,
+    kCreateIndexDo,
+    kCreateIndexFinish,
 
     // misc
     kExplain,

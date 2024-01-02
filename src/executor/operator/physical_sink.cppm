@@ -21,10 +21,13 @@ import operator_state;
 import physical_operator;
 import physical_operator_type;
 import load_meta;
+import infinity_exception;
 
 export module physical_sink;
 
 namespace infinity {
+
+class FragmentContext;
 
 export enum class SinkType {
     kInvalid,
@@ -45,11 +48,16 @@ public:
 
     bool Execute(QueryContext *query_context, OperatorState *output_state) final;
 
-    bool Execute(QueryContext *query_context, SinkState *sink_state);
+    bool Execute(QueryContext *query_context, FragmentContext *fragment_context, SinkState *sink_state);
 
     inline SharedPtr<Vector<String>> GetOutputNames() const final { return output_names_; }
 
     inline SharedPtr<Vector<SharedPtr<DataType>>> GetOutputTypes() const final { return output_types_; }
+
+    SizeT TaskletCount() override {
+        Error<NotImplementException>("TaskletCount not Implement");
+        return 0;
+    }
 
     inline SinkType sink_type() const { return type_; }
 
@@ -62,7 +70,7 @@ private:
 
     void FillSinkStateFromLastOperatorState(SummarySinkState *message_sink_state, OperatorState *task_operator_state);
 
-    void FillSinkStateFromLastOperatorState(QueueSinkState *queue_sink_state, OperatorState *task_operator_state);
+    void FillSinkStateFromLastOperatorState(FragmentContext *fragment_context, QueueSinkState *queue_sink_state, OperatorState *task_operator_state);
 
 private:
     SharedPtr<Vector<String>> output_names_{};

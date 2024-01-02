@@ -178,4 +178,8 @@ SharedPtr<String> TableIndexEntry::DetermineIndexDir(const String &parent_dir, c
     return index_dir;
 }
 
+TableEntry* TableIndexEntry::GetTableEntry() {
+    return table_index_meta_->GetTableEntry();
+}
+
 } // namespace infinity

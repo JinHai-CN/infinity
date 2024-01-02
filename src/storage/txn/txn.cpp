@@ -48,7 +48,7 @@ namespace infinity {
 Txn::Txn(TxnManager *txn_mgr, NewCatalog *catalog, u32 txn_id)
     : txn_mgr_(txn_mgr), catalog_(catalog), txn_id_(txn_id), wal_entry_(MakeShared<WalEntry>()) {}
 
-Tuple<TableEntry*, Status> Txn::GetTableEntry(const String &db_name, const String &table_name) {
+Tuple<TableEntry *, Status> Txn::GetTableEntry(const String &db_name, const String &table_name) {
     if (db_name_.empty()) {
         db_name_ = db_name;
     } else {
@@ -72,6 +72,20 @@ Tuple<TableEntry*, Status> Txn::GetTableEntry(const String &db_name, const Strin
     } else {
         return {(TableEntry *)table_iter->second, Status::OK()};
     }
+}
+
+Tuple<TableIndexEntry *, Status> Txn::GetTableIndexEntry(const String &db_name, const String &table_name, const String &index_name) {
+    auto [table_entry, table_status] = GetTableEntry(db_name, table_name);
+    if (!table_status.ok()) {
+        return {nullptr, table_status};
+    }
+
+    auto [index_entry, index_status] = table_entry->GetIndex(index_name, txn_id_, txn_context_.GetBeginTS());
+    if (!index_status.ok()) {
+        return {nullptr, index_status};
+    }
+
+    return {index_entry, index_status};
 }
 
 Status Txn::Append(const String &db_name, const String &table_name, const SharedPtr<DataBlock> &input_block) {
@@ -114,13 +128,13 @@ Status Txn::Delete(const String &db_name, const String &table_name, const Vector
     return Status::OK();
 }
 
-TxnTableStore *Txn::GetTxnTableStore(TableEntry *table_entry) {
+TxnTableStore *Txn::GetTxnTableStore(const TableEntry *table_entry) {
     UniqueLock<Mutex> lk(lock_);
     auto txn_table_iter = txn_tables_store_.find(*table_entry->GetTableName());
     if (txn_table_iter != txn_tables_store_.end()) {
         return txn_table_iter->second.get();
     }
-    txn_tables_store_[*table_entry->GetTableName()] = MakeUnique<TxnTableStore>(table_entry, this);
+    txn_tables_store_[*table_entry->GetTableName()] = MakeUnique<TxnTableStore>(const_cast<TableEntry *>(table_entry), this);
     TxnTableStore *txn_table_store = txn_tables_store_[*table_entry->GetTableName()].get();
     return txn_table_store;
 }
@@ -267,7 +281,7 @@ Status Txn::DropTableCollectionByName(const String &db_name, const String &table
     return Status::OK();
 }
 
-Status Txn::CreateIndex(const String &db_name, const String &table_name, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type) {
+Tuple<TableIndexEntry*, Status> Txn::CreateIndex(const String &db_name, const String &table_name, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type) {
     TxnState txn_state = txn_context_.GetTxnState();
 
     if (txn_state != TxnState::kStarted) {
@@ -275,13 +289,14 @@ Status Txn::CreateIndex(const String &db_name, const String &table_name, const S
     }
     TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
 
-    auto [table_entry, table_index_entry, index_status] = catalog_->CreateIndex(db_name, table_name, index_def, conflict_type, txn_id_, begin_ts, txn_mgr_);
+    auto [table_entry, table_index_entry, index_status] =
+        catalog_->CreateIndex(db_name, table_name, index_def, conflict_type, txn_id_, begin_ts, txn_mgr_);
     if (!index_status.ok()) {
-        return index_status;
+        return {nullptr, index_status};
     }
 
     if (index_status.ok() && table_index_entry == nullptr && conflict_type == ConflictType::kIgnore) {
-        return index_status;
+        return {nullptr, index_status};
     }
 
     txn_indexes_.emplace(*index_def->index_name_, table_index_entry);
@@ -296,7 +311,19 @@ Status Txn::CreateIndex(const String &db_name, const String &table_name, const S
     NewCatalog::CreateIndexFile(table_entry, table_store, table_index_entry, begin_ts, GetBufferMgr());
 
     wal_entry_->cmds.push_back(MakeShared<WalCmdCreateIndex>(db_name, table_name, index_def));
-    return index_status;
+    return {table_index_entry, index_status};
+}
+
+Tuple<TableIndexEntry *, Status> Txn::CreateIndex(TableEntry *table_entry, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type) {
+    TxnTimeStamp begin_ts = txn_context_.GetBeginTS();
+
+    auto [table_index_entry, index_status] = table_entry->CreateIndex(index_def, conflict_type, txn_id_, begin_ts, txn_mgr_);
+    if (!index_status.ok()) {
+        return {nullptr, index_status};
+    }
+
+    txn_indexes_.emplace(*index_def->index_name_, table_index_entry);
+    return {table_index_entry, index_status};
 }
 
 Status Txn::DropIndexByName(const String &db_name, const String &table_name, const String &index_name, ConflictType conflict_type) {

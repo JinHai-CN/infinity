@@ -53,6 +53,8 @@ import physical_merge_hash;
 import physical_merge_join;
 import physical_merge_knn;
 import physical_merge_limit;
+import physical_aggregate;
+import physical_merge_aggregate;
 import physical_merge_parallel_aggregate;
 import physical_merge_sort;
 import physical_merge_top;
@@ -73,6 +75,9 @@ import physical_drop_index;
 import physical_command;
 import physical_match;
 import physical_fusion;
+import physical_create_index_prepare;
+import physical_create_index_do;
+import physical_create_index_finish;
 
 import logical_node;
 import logical_node_type;
@@ -110,6 +115,8 @@ import logical_match;
 import logical_fusion;
 
 import parser;
+import value;
+import value_expression;
 import explain_physical_plan;
 
 import infinity_exception;
@@ -305,14 +312,48 @@ UniquePtr<PhysicalOperator> PhysicalPlanner::BuildCreateTable(const SharedPtr<Lo
 
 UniquePtr<PhysicalOperator> PhysicalPlanner::BuildCreateIndex(const SharedPtr<LogicalNode> &logical_operator) const {
     auto logical_create_index = static_pointer_cast<LogicalCreateIndex>(logical_operator);
-    return PhysicalCreateIndex::Make(logical_create_index->schema_name(),
-                                     logical_create_index->table_name(),
-                                     logical_create_index->index_definition(),
-                                     logical_create_index->conflict_type(),
-                                     logical_create_index->GetOutputNames(),
-                                     logical_create_index->GetOutputTypes(),
-                                     logical_create_index->node_id(),
-                                     logical_operator->load_metas());
+    SharedPtr<String> schema_name = logical_create_index->base_table_ref()->schema_name();
+    SharedPtr<String> table_name = logical_create_index->base_table_ref()->table_name();
+    const auto &index_def_ptr = logical_create_index->index_definition();
+    if (false || index_def_ptr->index_array_.size() != 1 || index_def_ptr->index_array_[0]->index_type_ != IndexType::kHnsw) {
+        // TODO: invalidate multiple index in one statement.
+        // TODO: support other index types build in parallel.
+        // use old `PhysicalCreateIndex`
+        return PhysicalCreateIndex::Make(schema_name,
+                                         table_name,
+                                         logical_create_index->index_definition(),
+                                         logical_create_index->conflict_type(),
+                                         logical_create_index->GetOutputNames(),
+                                         logical_create_index->GetOutputTypes(),
+                                         logical_create_index->node_id(),
+                                         logical_operator->load_metas());
+    }
+
+    // use new `PhysicalCreateIndexPrepare` `PhysicalCreateIndexDo` `PhysicalCreateIndexFinish`
+    auto create_index_prepare = MakeUnique<PhysicalCreateIndexPrepare>(logical_create_index->node_id(),
+                                                                       schema_name,
+                                                                       table_name,
+                                                                       logical_create_index->index_definition(),
+                                                                       logical_create_index->conflict_type(),
+                                                                       logical_create_index->GetOutputNames(),
+                                                                       logical_create_index->GetOutputTypes(),
+                                                                       logical_create_index->load_metas());
+    auto create_index_do = MakeUnique<PhysicalCreateIndexDo>(logical_create_index->node_id(),
+                                                             Move(create_index_prepare),
+                                                             logical_create_index->base_table_ref(),
+                                                             logical_create_index->index_definition()->index_name_,
+                                                             logical_create_index->GetOutputNames(),
+                                                             logical_create_index->GetOutputTypes(),
+                                                             logical_create_index->load_metas());
+    auto create_index_finish = MakeUnique<PhysicalCreateIndexFinish>(logical_create_index->node_id(),
+                                                                     Move(create_index_do),
+                                                                     schema_name,
+                                                                     table_name,
+                                                                     logical_create_index->index_definition(),
+                                                                     logical_create_index->GetOutputNames(),
+                                                                     logical_create_index->GetOutputTypes(),
+                                                                     logical_create_index->load_metas());
+    return create_index_finish;
 }
 
 UniquePtr<PhysicalOperator> PhysicalPlanner::BuildCreateCollection(const SharedPtr<LogicalNode> &logical_operator) const {
@@ -490,13 +531,26 @@ UniquePtr<PhysicalOperator> PhysicalPlanner::BuildAggregate(const SharedPtr<Logi
         input_physical_operator = BuildPhysicalOperator(input_logical_node);
     }
 
-    return MakeUnique<PhysicalAggregate>(logical_aggregate->node_id(),
-                                         Move(input_physical_operator),
-                                         logical_aggregate->groups_,
-                                         logical_aggregate->groupby_index_,
-                                         logical_aggregate->aggregates_,
-                                         logical_aggregate->aggregate_index_,
-                                         logical_operator->load_metas());
+    SizeT tasklet_count = input_physical_operator->TaskletCount();
+
+    auto physical_agg_op = MakeUnique<PhysicalAggregate>(logical_aggregate->node_id(),
+                                                         Move(input_physical_operator),
+                                                         logical_aggregate->groups_,
+                                                         logical_aggregate->groupby_index_,
+                                                         logical_aggregate->aggregates_,
+                                                         logical_aggregate->aggregate_index_,
+                                                         logical_operator->load_metas());
+
+    if (tasklet_count == 1) {
+        return physical_agg_op;
+    } else {
+        return MakeUnique<PhysicalMergeAggregate>(query_context_ptr_->GetNextNodeID(),
+                                                  logical_aggregate->base_table_ref_,
+                                                  Move(physical_agg_op),
+                                                  logical_aggregate->GetOutputNames(),
+                                                  logical_aggregate->GetOutputTypes(),
+                                                  logical_operator->load_metas());
+    }
 }
 
 UniquePtr<PhysicalOperator> PhysicalPlanner::BuildJoin(const SharedPtr<LogicalNode> &logical_operator) const {
@@ -586,11 +640,29 @@ UniquePtr<PhysicalOperator> PhysicalPlanner::BuildLimit(const SharedPtr<LogicalN
 
     SharedPtr<LogicalLimit> logical_limit = static_pointer_cast<LogicalLimit>(logical_operator);
     UniquePtr<PhysicalOperator> input_physical_operator = BuildPhysicalOperator(input_logical_node);
-    return MakeUnique<PhysicalLimit>(logical_operator->node_id(),
-                                     Move(input_physical_operator),
-                                     logical_limit->limit_expression_,
-                                     logical_limit->offset_expression_,
-                                     logical_operator->load_metas());
+    if (input_physical_operator->TaskletCount() <= 1) {
+        return MakeUnique<PhysicalLimit>(logical_operator->node_id(),
+                                         Move(input_physical_operator),
+                                         logical_limit->limit_expression_,
+                                         logical_limit->offset_expression_,
+                                         logical_operator->load_metas());
+    } else {
+        i64 child_limit = (static_pointer_cast<ValueExpression>(logical_limit->limit_expression_))->GetValue().value_.big_int;
+
+        if (logical_limit->offset_expression_ != nullptr) {
+            child_limit += (static_pointer_cast<ValueExpression>(logical_limit->offset_expression_))->GetValue().value_.big_int;
+        }
+        auto child_limit_op = MakeUnique<PhysicalLimit>(logical_operator->node_id(),
+                                                        Move(input_physical_operator),
+                                                        MakeShared<ValueExpression>(Value::MakeBigInt(child_limit)),
+                                                        nullptr,
+                                                        logical_operator->load_metas());
+        return MakeUnique<PhysicalMergeLimit>(query_context_ptr_->GetNextNodeID(),
+                                              Move(child_limit_op),
+                                              logical_limit->limit_expression_,
+                                              logical_limit->offset_expression_,
+                                              logical_operator->load_metas());
+    }
 }
 
 UniquePtr<PhysicalOperator> PhysicalPlanner::BuildProjection(const SharedPtr<LogicalNode> &logical_operator) const {
@@ -713,18 +785,18 @@ UniquePtr<PhysicalOperator> PhysicalPlanner::BuildFusion(const SharedPtr<Logical
 
 UniquePtr<PhysicalOperator> PhysicalPlanner::BuildKnn(const SharedPtr<LogicalNode> &logical_operator) const {
     auto *logical_knn_scan = (LogicalKnnScan *)(logical_operator.get());
-//    logical_knn_scan->
+    //    logical_knn_scan->
     UniquePtr<PhysicalKnnScan> knn_scan_op = MakeUnique<PhysicalKnnScan>(logical_knn_scan->node_id(),
-                                                                          logical_knn_scan->base_table_ref_,
-                                                                          logical_knn_scan->knn_expression_,
-                                                                          logical_knn_scan->filter_expression_,
-                                                                          logical_knn_scan->GetOutputNames(),
-                                                                          logical_knn_scan->GetOutputTypes(),
-                                                                          logical_knn_scan->knn_table_index_,
-                                                                          logical_operator->load_metas());
+                                                                         logical_knn_scan->base_table_ref_,
+                                                                         logical_knn_scan->knn_expression_,
+                                                                         logical_knn_scan->filter_expression_,
+                                                                         logical_knn_scan->GetOutputNames(),
+                                                                         logical_knn_scan->GetOutputTypes(),
+                                                                         logical_knn_scan->knn_table_index_,
+                                                                         logical_operator->load_metas());
 
     knn_scan_op->PlanWithIndex(query_context_ptr_);
-    if(knn_scan_op->TaskCount() == 1) {
+    if (knn_scan_op->TaskletCount() == 1) {
         return knn_scan_op;
     } else {
         return MakeUnique<PhysicalMergeKnn>(query_context_ptr_->GetNextNodeID(),

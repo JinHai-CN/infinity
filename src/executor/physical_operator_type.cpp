@@ -130,6 +130,14 @@ String PhysicalOperatorToString(PhysicalOperatorType type) {
             return "Match";
         case PhysicalOperatorType::kFusion:
             return "Fusion";
+        case PhysicalOperatorType::kMergeAggregate:
+            return "MergeAggregate";
+        case PhysicalOperatorType::kCreateIndexPrepare:
+            return "CreateIndexPrepare";
+        case PhysicalOperatorType::kCreateIndexDo:
+            return "CreateIndexDo";
+        case PhysicalOperatorType::kCreateIndexFinish:
+            return "CreateIndexFinish";
     }
 
     Error<NotImplementException>("Unknown physical operator type");

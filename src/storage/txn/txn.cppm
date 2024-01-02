@@ -89,10 +89,15 @@ public:
 
     Status GetCollectionByName(const String &db_name, const String &table_name, BaseEntry *&collection_entry);
 
-    Tuple<TableEntry*, Status> GetTableEntry(const String &db_name, const String &table_name);
+    Tuple<TableEntry *, Status> GetTableEntry(const String &db_name, const String &table_name);
+
+    Tuple<TableIndexEntry *, Status> GetTableIndexEntry(const String &db_name, const String &table_name, const String &index_name);
 
     // Index OPs
-    Status CreateIndex(const String &db_name, const String &table_name, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type);
+    Tuple<TableIndexEntry *, Status>
+    CreateIndex(const String &db_name, const String &table_name, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type);
+
+    Tuple<TableIndexEntry *, Status> CreateIndex(TableEntry *table_entry, const SharedPtr<IndexDef> &index_def, ConflictType conflict_type);
 
     Status DropIndexByName(const String &db_name, const String &table_name, const String &index_name, ConflictType conflict_type);
 
@@ -130,7 +135,7 @@ public:
     // Dangerous! only used during replaying wal.
     void FakeCommit(TxnTimeStamp commit_ts);
 
-    TxnTableStore *GetTxnTableStore(TableEntry *table_entry);
+    TxnTableStore *GetTxnTableStore(const TableEntry *table_entry);
 
     void AddWalCmd(const SharedPtr<WalCmd> &cmd);
 

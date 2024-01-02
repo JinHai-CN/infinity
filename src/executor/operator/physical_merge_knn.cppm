@@ -25,6 +25,7 @@ import data_table;
 import base_table_ref;
 import load_meta;
 import knn_expression;
+import infinity_exception;
 
 export module physical_merge_knn;
 
@@ -52,6 +53,11 @@ public:
     inline SharedPtr<Vector<String>> GetOutputNames() const final { return output_names_; }
 
     inline SharedPtr<Vector<SharedPtr<DataType>>> GetOutputTypes() const final { return output_types_; }
+
+    SizeT TaskletCount() override {
+        Error<NotImplementException>("TaskletCount not Implement");
+        return 0;
+    }
 
     inline u64 knn_table_index() const { return knn_table_index_; }
 
