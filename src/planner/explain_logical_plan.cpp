@@ -50,7 +50,7 @@ import logical_fusion;
 
 import third_party;
 import parser;
-import db_entry;
+
 import table_entry;
 import table_meta;
 

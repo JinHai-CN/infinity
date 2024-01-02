@@ -19,7 +19,6 @@ module;
 import stl;
 import column_binding;
 import parser;
-import db_entry;
 import table_meta;
 
 module logical_import;

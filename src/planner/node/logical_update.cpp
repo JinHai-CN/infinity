@@ -25,7 +25,6 @@ import base_table_ref;
 import column_binding;
 import logical_node_type;
 import table_entry;
-import db_entry;
 
 module logical_update;
 

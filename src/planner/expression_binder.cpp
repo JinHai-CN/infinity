@@ -53,7 +53,7 @@ import scalar_function_set;
 import scalar_function;
 import special_function;
 
-import new_catalog;
+import catalog;
 import query_context;
 import logger;
 import table_entry;

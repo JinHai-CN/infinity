@@ -31,7 +31,7 @@ import default_values;
 import txn_manager;
 import txn;
 import base_entry;
-import new_catalog;
+import catalog;
 import buffer_manager;
 import table_entry;
 import column_vector;

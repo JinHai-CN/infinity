@@ -29,7 +29,7 @@ import parser;
 import base_table_ref;
 import third_party;
 import infinity_exception;
-import new_catalog;
+import catalog;
 
 #include <algorithm>
 

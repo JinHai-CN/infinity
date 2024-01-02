@@ -28,12 +28,12 @@ import storage;
 import wal_entry;
 import infinity_exception;
 
-import new_catalog;
-import db_entry;
+import catalog;
+
 import table_entry_type;
 import parser;
 import txn_store;
-import db_entry;
+
 import segment_entry;
 import block_entry;
 import table_entry;

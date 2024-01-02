@@ -14,6 +14,8 @@
 
 module;
 
+export module catalog:db_meta;
+
 import stl;
 import parser;
 import base_entry;
@@ -23,11 +25,7 @@ import third_party;
 import status;
 import db_entry;
 
-export module db_meta;
-
 namespace infinity {
-
-struct NewCatalog;
 
 export struct DBMeta {
 

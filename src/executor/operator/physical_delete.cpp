@@ -26,7 +26,7 @@ import table_entry;
 import query_context;
 // import data_table;
 import operator_state;
-import db_entry;
+
 import data_block;
 import column_vector;
 

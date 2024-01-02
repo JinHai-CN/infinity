@@ -16,11 +16,12 @@ module;
 
 #include <vector>
 
+module catalog;
+
 import stl;
 import parser;
 import base_entry;
 import txn_manager;
-import db_meta;
 import db_entry;
 import logger;
 import third_party;
@@ -47,8 +48,6 @@ import data_access_state;
 import segment_entry;
 import block_column_entry;
 import block_entry;
-
-module new_catalog;
 
 namespace infinity {
 

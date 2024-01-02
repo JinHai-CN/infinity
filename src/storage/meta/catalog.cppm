@@ -14,11 +14,14 @@
 
 module;
 
+export module catalog;
+export import :db_meta;
+
+
 import stl;
 import parser;
 import base_entry;
 import db_entry;
-import db_meta;
 import table_entry;
 import table_def;
 import txn_manager;
@@ -38,8 +41,6 @@ import txn_store;
 import data_access_state;
 import segment_entry;
 import block_column_entry;
-
-export module new_catalog;
 
 namespace infinity {
 

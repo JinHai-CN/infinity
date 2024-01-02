@@ -30,7 +30,7 @@ import default_values;
 import txn_manager;
 import txn;
 import base_entry;
-import new_catalog;
+import catalog;
 import status;
 
 class CatalogTest : public BaseTest {

@@ -28,7 +28,6 @@ import table_entry;
 import query_context;
 // import data_table;
 import operator_state;
-import db_entry;
 import data_block;
 import column_vector;
 import expression_evaluator;
@@ -48,7 +47,7 @@ import block_entry;
 import column_buffer;
 import block_column_entry;
 import load_meta;
-import new_catalog;
+import catalog;
 
 module physical_match;
 

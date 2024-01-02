@@ -17,7 +17,6 @@ module;
 #include <string>
 
 import stl;
-import db_entry;
 
 import parser;
 import physical_operator;

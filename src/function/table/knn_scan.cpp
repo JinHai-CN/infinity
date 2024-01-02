@@ -20,7 +20,7 @@ import stl;
 import data_block;
 import table_function;
 import query_context;
-import new_catalog;
+import catalog;
 import knn_scan_data;
 import block_index;
 import global_block_id;

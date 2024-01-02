@@ -40,7 +40,7 @@ import table_meta;
 import table_entry;
 import table_detail;
 import table_entry_type;
-import new_catalog;
+import catalog;
 import database_detail;
 import status;
 import table_def;

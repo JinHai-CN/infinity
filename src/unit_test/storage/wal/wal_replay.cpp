@@ -38,7 +38,7 @@ import base_entry;
 import column_vector;
 import physical_import;
 import txn;
-import new_catalog;
+import catalog;
 
 class WalReplayTest : public BaseTest {
     void SetUp() override { system("rm -rf /tmp/infinity"); }

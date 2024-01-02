@@ -16,6 +16,8 @@ module;
 
 #include <algorithm>
 
+module catalog;
+
 import base_entry;
 import stl;
 import parser;
@@ -26,10 +28,7 @@ import third_party;
 import buffer_manager;
 import txn_state;
 import status;
-
 import infinity_exception;
-
-module db_meta;
 
 namespace infinity {
 

@@ -31,7 +31,7 @@ import txn;
 import segment_column_index_entry;
 import table_index_entry;
 import default_values;
-import new_catalog;
+import catalog;
 
 module txn_store;
 

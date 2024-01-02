@@ -26,7 +26,7 @@ import query_context;
 import block_entry;
 import block_column_entry;
 import column_buffer;
-import new_catalog;
+import catalog;
 
 module table_scan;
 
