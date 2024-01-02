@@ -86,11 +86,11 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn
 
 int main() {
     bool sift = true;
-    int ef = 100;
+    int ef = 200;
     int M = 16;
     int ef_construct = 200;
-    size_t thread_num = 1;
-    size_t total_times = 3;
+    size_t thread_num = 4;
+    size_t total_times = 5;
 
     std::cout << "benchmark: " << (sift ? "sift" : "gist") << std::endl;
     std::cout << "ef: " << ef << std::endl;
