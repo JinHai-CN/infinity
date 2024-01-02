@@ -14,7 +14,7 @@
 
 module;
 
-module irs_index_entry;
+module catalog;
 
 import stl;
 import base_entry;

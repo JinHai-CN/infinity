@@ -39,7 +39,6 @@ import iresearch_datastore;
 import value;
 import third_party;
 import iresearch_analyzer;
-import irs_index_entry;
 import base_table_ref;
 import column_buffer;
 import load_meta;

@@ -29,7 +29,6 @@ import random;
 import index_base;
 import parser;
 import infinity_exception;
-import irs_index_entry;
 import index_full_text;
 
 namespace infinity {

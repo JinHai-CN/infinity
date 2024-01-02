@@ -28,8 +28,8 @@ import third_party;
 import status;
 import logger;
 import iresearch_datastore;
-import irs_index_entry;
 import base_table_ref;
+import catalog;
 
 module physical_optimize;
 

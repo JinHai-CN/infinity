@@ -14,7 +14,7 @@
 
 module;
 
-export module irs_index_entry;
+export module catalog:irs_index_entry;
 
 import stl;
 import index_base;

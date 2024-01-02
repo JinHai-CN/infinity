@@ -17,7 +17,6 @@ module;
 import stl;
 import parser;
 import data_access_state;
-import irs_index_entry;
 // import catalog;
 
 export module txn_store;
@@ -26,6 +25,7 @@ namespace infinity {
 
 class Txn;
 struct TableIndexEntry;
+struct IrsIndexEntry;
 struct TableEntry;
 struct SegmentEntry;
 class DataBlock;

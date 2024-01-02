@@ -38,7 +38,6 @@ import infinity_exception;
 import index_ivfflat;
 import txn_manager;
 import iresearch_datastore;
-import irs_index_entry;
 import index_base;
 import index_full_text;
 
