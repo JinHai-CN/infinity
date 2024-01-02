@@ -36,7 +36,6 @@ import txn_store;
 
 import segment_entry;
 import block_entry;
-import table_entry;
 import data_access_state;
 import table_index_entry;
 import status;

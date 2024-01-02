@@ -18,7 +18,7 @@ module;
 
 import stl;
 import table_ref;
-import table_entry;
+import catalog;
 import parser;
 import table_function;
 import block_index;

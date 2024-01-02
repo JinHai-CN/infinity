@@ -24,11 +24,11 @@ import table_entry_type;
 import txn_manager;
 import buffer_manager;
 import status;
-import table_entry;
 
 namespace infinity {
 
 export class DBEntry;
+class TableEntry;
 
 export struct TableMeta {
 

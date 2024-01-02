@@ -29,7 +29,6 @@ import data_block;
 import txn;
 import data_access_state;
 import index_def;
-import table_entry;
 import base_entry;
 
 import infinity_exception;
@@ -59,6 +58,7 @@ import lvq_store;
 import plain_store;
 import block_column_entry;
 import segment_iter;
+import catalog;
 
 namespace infinity {
 

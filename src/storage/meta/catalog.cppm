@@ -18,12 +18,12 @@ export module catalog;
 export import :db_meta;
 export import :db_entry;
 export import :table_meta;
+export import :table_entry;
 
 import stl;
 import parser;
 import base_entry;
 
-import table_entry;
 import table_def;
 import txn_manager;
 import function;

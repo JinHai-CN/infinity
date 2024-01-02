@@ -30,7 +30,6 @@ import buffer_manager;
 import meta_state;
 import block_column_entry;
 import column_buffer;
-import table_entry;
 import wal_entry;
 import infinity_exception;
 import status;

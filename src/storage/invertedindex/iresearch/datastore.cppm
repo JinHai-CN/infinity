@@ -25,7 +25,7 @@ import column_vector;
 import query_context;
 import index_def;
 import segment_entry;
-import table_entry;
+import catalog;
 import buffer_manager;
 import default_values;
 

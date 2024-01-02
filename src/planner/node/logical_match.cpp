@@ -23,7 +23,6 @@ import logical_node_type;
 import match_expression;
 import parser;
 import default_values;
-import table_entry;
 import third_party;
 
 module logical_match;

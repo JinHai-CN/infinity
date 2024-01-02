@@ -17,7 +17,7 @@ module;
 import stl;
 import parser;
 import block_index;
-import table_entry;
+import catalog;
 
 import infinity_exception;
 

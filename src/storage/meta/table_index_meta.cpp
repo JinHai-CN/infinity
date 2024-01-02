@@ -30,7 +30,6 @@ import logger;
 import third_party;
 
 import infinity_exception;
-import table_entry;
 import status;
 import iresearch_datastore;
 import table_index_entry;

@@ -28,7 +28,7 @@ import infinity_exception;
 
 import index_file_worker;
 import column_index_entry;
-import table_entry;
+import catalog;
 import segment_entry;
 import status;
 

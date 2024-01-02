@@ -30,12 +30,12 @@ import default_values;
 import random;
 import buffer_manager;
 import infinity_exception;
-import table_entry;
 import index_file_worker;
 import parser;
 import annivfflat_index_file_worker;
 import hnsw_file_worker;
 import logger;
+import catalog;
 
 namespace infinity {
 
@@ -51,7 +51,7 @@ ColumnIndexEntry::ColumnIndexEntry(SharedPtr<IndexBase> index_base,
     txn_id_ = txn_id;
 }
 
-SharedPtr<ColumnIndexEntry> ColumnIndexEntry::NewColumnIndexEntry(SharedPtr<IndexBase> index_base,
+UniquePtr<ColumnIndexEntry> ColumnIndexEntry::NewColumnIndexEntry(SharedPtr<IndexBase> index_base,
                                                                   u64 column_id,
                                                                   TableIndexEntry *table_index_entry,
                                                                   u64 txn_id,
@@ -59,7 +59,7 @@ SharedPtr<ColumnIndexEntry> ColumnIndexEntry::NewColumnIndexEntry(SharedPtr<Inde
                                                                   TxnTimeStamp begin_ts) {
     //    SharedPtr<String> index_dir =
     //        DetermineIndexDir(*TableIndexMeta::GetTableEntry(table_index_meta)->table_entry_dir_, index_base->file_name_);
-    return MakeShared<ColumnIndexEntry>(index_base, table_index_entry, column_id, index_dir, txn_id, begin_ts);
+    return MakeUnique<ColumnIndexEntry>(index_base, table_index_entry, column_id, index_dir, txn_id, begin_ts);
 }
 
 void ColumnIndexEntry::CommitCreatedIndex(u32 segment_id, UniquePtr<SegmentColumnIndexEntry> index_entry) {

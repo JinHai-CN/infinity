@@ -21,7 +21,6 @@ import query_context;
 import operator_state;
 import physical_operator;
 import physical_operator_type;
-import table_entry;
 import query_context;
 // import data_table;
 import operator_state;

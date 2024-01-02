@@ -27,7 +27,6 @@ import join_table_ref;
 import base_table_ref;
 import query_context;
 import binding;
-import table_entry;
 import bound_select_statement;
 import bound_delete_statement;
 import bound_update_statement;

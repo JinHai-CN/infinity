@@ -19,7 +19,6 @@ module;
 import stl;
 import third_party;
 import parser;
-import table_entry;
 
 import infinity_exception;
 import segment_entry;

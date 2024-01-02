@@ -27,7 +27,7 @@ import block_entry;
 import block_iter;
 import segment_entry;
 import segment_iter;
-import table_entry;
+import catalog;
 
 using namespace infinity;
 

@@ -19,7 +19,7 @@ module;
 import stl;
 import column_binding;
 import parser;
-import table_entry;
+import catalog;
 
 module logical_import;
 

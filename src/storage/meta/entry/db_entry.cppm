@@ -21,7 +21,6 @@ import :table_meta;
 import base_entry;
 import stl;
 import table_entry_type;
-import table_entry;
 import parser;
 import third_party;
 import table_detail;

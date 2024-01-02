@@ -33,7 +33,6 @@ import txn;
 import base_entry;
 import catalog;
 import buffer_manager;
-import table_entry;
 import column_vector;
 import column_buffer;
 import block_column_entry;

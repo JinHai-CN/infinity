@@ -23,7 +23,6 @@ import table_entry_type;
 import stl;
 import parser;
 import txn_manager;
-import table_entry;
 import table_detail;
 import buffer_manager;
 import default_values;
@@ -31,7 +30,6 @@ import block_index;
 import logger;
 import third_party;
 import infinity_exception;
-import table_entry;
 import status;
 
 namespace infinity {

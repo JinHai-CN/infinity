@@ -43,7 +43,7 @@ public:
                      u64 txn_id,
                      TxnTimeStamp begin_ts);
 
-    static SharedPtr<ColumnIndexEntry> NewColumnIndexEntry(SharedPtr<IndexBase> index_base,
+    static UniquePtr<ColumnIndexEntry> NewColumnIndexEntry(SharedPtr<IndexBase> index_base,
                                                            u64 column_id,
                                                            TableIndexEntry *table_index_entry,
                                                            u64 txn_id,

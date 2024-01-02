@@ -35,7 +35,6 @@ import table_detail;
 import view_entry;
 import base_entry;
 import value;
-import table_entry;
 import table_def;
 import data_table;
 import third_party;

@@ -17,7 +17,6 @@ import stl;
 import base_entry;
 import parser;
 import table_detail;
-// import table_entry;
 import table_def;
 import index_def;
 import data_block;

@@ -34,7 +34,6 @@ import bound_cast_func;
 import base_expression;
 import base_entry;
 import txn;
-import table_entry;
 import table_entry_type;
 import third_party;
 import table_def;

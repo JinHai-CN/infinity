@@ -31,7 +31,7 @@ import local_file_system;
 import serialize;
 
 import infinity_exception;
-import table_entry;
+import catalog;
 import parser;
 
 

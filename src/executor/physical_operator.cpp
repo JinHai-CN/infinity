@@ -18,7 +18,6 @@ import stl;
 import physical_operator_type;
 import default_values;
 import operator_state;
-import table_entry;
 import column_buffer;
 import column_vector;
 import segment_entry;

@@ -18,7 +18,7 @@ module;
 #include <memory>
 #include <string>
 
-module table_entry;
+module catalog;
 
 import stl;
 import parser;
@@ -31,7 +31,7 @@ import segment_entry;
 import index_def;
 import block_index;
 import data_access_state;
-import catalog;
+
 import logger;
 import txn_store;
 import status;

@@ -30,7 +30,6 @@ import buffer_handle;
 import column_vector;
 import default_values;
 import third_party;
-import table_entry;
 import vector_buffer;
 import local_file_system;
 import infinity_exception;

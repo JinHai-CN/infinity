@@ -23,7 +23,6 @@ import parser;
 import operator_state;
 import infinity_exception;
 import base_entry;
-import table_entry;
 import table_def;
 import third_party;
 import status;

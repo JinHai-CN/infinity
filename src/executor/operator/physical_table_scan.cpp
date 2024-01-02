@@ -31,7 +31,7 @@ import base_table_ref;
 import column_buffer;
 import block_column_entry;
 import block_index;
-import table_entry;
+import catalog;
 import default_values;
 import infinity_exception;
 

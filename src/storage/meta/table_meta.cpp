@@ -20,7 +20,6 @@ module catalog;
 
 import base_entry;
 import stl;
-import table_entry;
 import table_entry_type;
 import parser;
 import logger;

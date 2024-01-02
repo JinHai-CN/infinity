@@ -23,7 +23,7 @@ import stl;
 import index_def;
 import base_entry;
 import table_index_meta;
-import table_entry;
+import catalog;
 import third_party;
 import local_file_system;
 import default_values;
@@ -66,9 +66,9 @@ TableIndexEntry::TableIndexEntry(const SharedPtr<IndexDef> &index_def,
             index_info_map.emplace(column_id, std::static_pointer_cast<IndexFullText>(index_base));
         } else {
             SharedPtr<String> column_index_path = MakeShared<String>(Format("{}/{}", *index_dir_, index_base->column_names_[0]));
-            SharedPtr<ColumnIndexEntry> column_index_entry =
+            UniquePtr<ColumnIndexEntry> column_index_entry =
                 ColumnIndexEntry::NewColumnIndexEntry(index_base, column_id, this, txn_id, column_index_path, begin_ts);
-            column_index_map_[column_id] = column_index_entry;
+            column_index_map_[column_id] = Move(column_index_entry);
         }
     }
     if (!index_info_map.empty()) {

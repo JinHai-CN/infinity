@@ -20,7 +20,7 @@ import query_context;
 import operator_state;
 import physical_operator;
 import physical_operator_type;
-import table_entry;
+import catalog;
 import load_meta;
 
 export module physical_delete;

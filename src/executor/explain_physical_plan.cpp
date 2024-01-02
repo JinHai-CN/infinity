@@ -78,7 +78,7 @@ import explain_logical_plan;
 import logical_show;
 
 import infinity_exception;
-import table_entry;
+import catalog;
 import base_expression;
 import knn_expression;
 import third_party;

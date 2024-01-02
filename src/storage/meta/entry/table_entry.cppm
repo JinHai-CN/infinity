@@ -14,7 +14,7 @@
 
 module;
 
-export module table_entry;
+export module catalog:table_entry;
 
 import stl;
 import parser;
@@ -41,7 +41,6 @@ class IndexDef;
 class TableIndexEntry;
 class IrsIndexEntry;
 class TableMeta;
-struct NewCatalog;
 
 export struct TableEntry : public BaseEntry {
     friend struct NewCatalog;

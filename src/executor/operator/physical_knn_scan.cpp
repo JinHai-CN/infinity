@@ -32,7 +32,7 @@ import knn_distance;
 import third_party;
 
 import infinity_exception;
-import table_entry;
+import catalog;
 import default_values;
 
 import segment_entry;
