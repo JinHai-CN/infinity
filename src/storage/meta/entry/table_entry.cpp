@@ -32,7 +32,7 @@ import segment_entry;
 import index_def;
 import block_index;
 import data_access_state;
-import db_entry;
+import catalog;
 import logger;
 import txn_store;
 import status;

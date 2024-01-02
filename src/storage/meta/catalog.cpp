@@ -22,7 +22,6 @@ import stl;
 import parser;
 import base_entry;
 import txn_manager;
-import db_entry;
 import logger;
 import third_party;
 import status;

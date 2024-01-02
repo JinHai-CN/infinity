@@ -29,7 +29,7 @@ import third_party;
 import txn_state;
 import txn_manager;
 import buffer_manager;
-import db_entry;
+import catalog;
 import third_party;
 import status;
 import infinity_exception;

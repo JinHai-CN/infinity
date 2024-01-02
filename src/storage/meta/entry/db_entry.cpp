@@ -16,7 +16,7 @@ module;
 
 #include <vector>
 
-module db_entry;
+module catalog;
 
 import base_entry;
 import table_entry_type;

@@ -14,7 +14,7 @@
 
 module;
 
-export module db_entry;
+export module catalog:db_entry;
 
 import base_entry;
 import stl;
@@ -28,10 +28,7 @@ import buffer_manager;
 import txn_manager;
 import status;
 
-
 namespace infinity {
-
-struct NewCatalog;
 
 export class DBEntry : public BaseEntry {
     friend struct NewCatalog;

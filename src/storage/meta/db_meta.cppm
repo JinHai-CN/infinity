@@ -15,6 +15,7 @@
 module;
 
 export module catalog:db_meta;
+import :db_entry;
 
 import stl;
 import parser;
@@ -23,7 +24,6 @@ import txn_manager;
 import buffer_manager;
 import third_party;
 import status;
-import db_entry;
 
 namespace infinity {
 
