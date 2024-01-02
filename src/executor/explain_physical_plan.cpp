@@ -78,8 +78,6 @@ import explain_logical_plan;
 import logical_show;
 
 import infinity_exception;
-
-import table_meta;
 import table_entry;
 import base_expression;
 import knn_expression;

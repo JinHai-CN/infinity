@@ -25,7 +25,6 @@ import parser;
 import txn_manager;
 import table_entry;
 import table_detail;
-import table_meta;
 import buffer_manager;
 import default_values;
 import block_index;

@@ -52,8 +52,6 @@ import third_party;
 import parser;
 
 import table_entry;
-import table_meta;
-
 import expression_type;
 import knn_expression;
 import aggregate_expression;

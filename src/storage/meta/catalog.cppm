@@ -17,6 +17,7 @@ module;
 export module catalog;
 export import :db_meta;
 export import :db_entry;
+export import :table_meta;
 
 import stl;
 import parser;

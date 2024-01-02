@@ -20,7 +20,6 @@ import stl;
 import third_party;
 import parser;
 import table_entry;
-import table_meta;
 
 import infinity_exception;
 import segment_entry;

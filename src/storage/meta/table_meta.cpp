@@ -16,7 +16,7 @@ module;
 
 #include <algorithm>
 
-module table_meta;
+module catalog;
 
 import base_entry;
 import stl;
@@ -29,7 +29,7 @@ import third_party;
 import txn_state;
 import txn_manager;
 import buffer_manager;
-import catalog;
+
 import third_party;
 import status;
 import infinity_exception;

@@ -23,7 +23,6 @@ module table_entry;
 import stl;
 import parser;
 import base_entry;
-import table_meta;
 import table_entry_type;
 import third_party;
 import txn;

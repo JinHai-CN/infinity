@@ -14,7 +14,7 @@
 
 module;
 
-export module table_meta;
+export module catalog:table_meta;
 
 import base_entry;
 import stl;
@@ -28,8 +28,7 @@ import table_entry;
 
 namespace infinity {
 
-class DBEntry;
-struct NewCatalog;
+export class DBEntry;
 
 export struct TableMeta {
 

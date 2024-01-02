@@ -16,6 +16,8 @@ module;
 
 export module catalog:db_entry;
 
+import :table_meta;
+
 import base_entry;
 import stl;
 import table_entry_type;
@@ -23,14 +25,13 @@ import table_entry;
 import parser;
 import third_party;
 import table_detail;
-import table_meta;
 import buffer_manager;
 import txn_manager;
 import status;
 
 namespace infinity {
 
-export class DBEntry : public BaseEntry {
+class DBEntry : public BaseEntry {
     friend struct NewCatalog;
 
 public:
