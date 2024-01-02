@@ -32,7 +32,7 @@ import table_entry_type;
 import value_expression;
 import logical_show;
 import table_detail;
-import view_entry;
+import catalog;
 import base_entry;
 import value;
 import table_def;

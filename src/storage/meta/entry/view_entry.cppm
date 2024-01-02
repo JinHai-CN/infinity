@@ -14,7 +14,7 @@
 
 module;
 
-export module view_entry;
+export module catalog:view_entry;
 
 import stl;
 import base_entry;

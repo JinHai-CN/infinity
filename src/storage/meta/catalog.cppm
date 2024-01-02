@@ -19,6 +19,8 @@ export import :db_meta;
 export import :db_entry;
 export import :table_meta;
 export import :table_entry;
+export import :view_meta;
+export import :view_entry;
 export import :segment_entry;
 export import :block_entry;
 export import :block_column_entry;

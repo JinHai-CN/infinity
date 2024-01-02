@@ -14,12 +14,11 @@
 
 module;
 
-export module view_meta;
+export module catalog:view_meta;
 
 import stl;
 import base_entry;
 import parser;
-import base_entry;
 import status;
 
 namespace infinity {
