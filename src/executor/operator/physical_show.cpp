@@ -660,8 +660,8 @@ void PhysicalShow::ExecuteShowColumns(QueryContext *query_context, ShowOperatorS
             ValueExpression value_expr(value);
             value_expr.AppendToChunk(output_block_ptr->column_vectors[output_column_idx]);
         }
-        output_block_ptr->Finalize();
     }
+    output_block_ptr->Finalize();
 
     show_operator_state->output_.emplace_back(Move(output_block_ptr));
 }
