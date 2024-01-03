@@ -57,6 +57,9 @@ public:
     static UniquePtr<ColumnIndexEntry>
     Deserialize(const Json &column_index_entry_json, TableIndexEntry *table_index_entry, BufferManager *buffer_mgr, TableEntry *table_entry);
 
+    // TODO: This need to be record by catalog
+    void Append(u32 segment_id, const SharedPtr<SegmentColumnIndexEntry>&);
+
 public:
     // Getter
     const SharedPtr<String> &index_dir() const { return index_dir_; }

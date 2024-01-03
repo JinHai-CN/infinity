@@ -55,8 +55,6 @@ public:
                         TxnTimeStamp begin_ts);
 
 private:
-    Tuple<TableIndexEntry *, Status>
-    CreateIndex(const SharedPtr<IndexDef> &index_def, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 
     Tuple<TableIndexEntry *, Status>
     DropIndex(const String &index_name, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
@@ -119,6 +117,8 @@ public:
                               SharedPtr<IrsIndexEntry> &irs_index_entry,
                               Map<String, String> &column2analyzer);
 
+    Tuple<TableIndexEntry *, Status>
+    CreateIndex(const SharedPtr<IndexDef> &index_def, ConflictType conflict_type, u64 txn_id, TxnTimeStamp begin_ts, TxnManager *txn_mgr);
 public:
     static Json Serialize(TableEntry *table_entry, TxnTimeStamp max_commit_ts, bool is_full_checkpoint);
 

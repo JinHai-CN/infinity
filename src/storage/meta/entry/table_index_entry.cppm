@@ -61,7 +61,7 @@ public:
     inline const IndexDef *index_def() const { return index_def_.get(); }
     const SharedPtr<IrsIndexEntry> &irs_index_entry() const { return irs_index_entry_; }
     HashMap<u64, UniquePtr<ColumnIndexEntry>> &column_index_map() { return column_index_map_; }
-
+    TableEntry* GetTableEntry();
 private:
     static SharedPtr<String> DetermineIndexDir(const String &parent_dir, const String &index_name);
 

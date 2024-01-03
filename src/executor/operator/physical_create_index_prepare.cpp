@@ -14,6 +14,8 @@
 
 module;
 
+#include <tuple>
+
 import stl;
 import parser;
 import physical_operator_type;
@@ -23,14 +25,9 @@ import operator_state;
 import load_meta;
 
 import index_def;
-import table_collection_entry;
+import catalog;
 import status;
 import infinity_exception;
-import base_entry;
-import segment_entry;
-import table_index_entry;
-import column_index_entry;
-import segment_column_index_entry;
 import index_base;
 import index_file_worker;
 import segment_iter;
@@ -70,13 +67,13 @@ void InsertHnswPrepare(BufferHandle buffer_handle, const SegmentEntry *segment_e
 
     u32 segment_offset = 0;
     Vector<u64> row_ids;
-    const auto &block_entries = segment_entry->block_entries_;
+    const auto &block_entries = segment_entry->block_entries();
     for (SizeT i = 0; i < block_entries.size(); ++i) {
         const auto &block_entry = block_entries[i];
-        SizeT block_row_cnt = block_entry->row_count_;
+        SizeT block_row_cnt = block_entry->row_count();
 
         for (SizeT block_offset = 0; block_offset < block_row_cnt; ++block_offset) {
-            RowID row_id(segment_entry->segment_id_, segment_offset + block_offset);
+            RowID row_id(segment_entry->segment_id(), segment_offset + block_offset);
             row_ids.push_back(row_id.ToUint64());
         }
         segment_offset += DEFAULT_BLOCK_CAPACITY;
@@ -91,48 +88,50 @@ bool PhysicalCreateIndexPrepare::Execute(QueryContext *query_context, OperatorSt
     TxnTimeStamp begin_ts = txn->BeginTS();
     BufferManager *buffer_mgr = txn->GetBufferMgr();
 
-    TableCollectionEntry *table_entry = nullptr;
-    Status get_table_status = txn->GetTableEntry(*schema_name_, *table_name_, table_entry);
-    if (!get_table_status.ok()) {
-        operator_state->error_message_ = Move(get_table_status.msg_);
+
+    auto [table_entry, table_status] = txn->GetTableEntry(*schema_name_, *table_name_);
+    if (!table_status.ok()) {
+        operator_state->error_message_ = Move(table_status.msg_);
         return false;
     }
 
-    TableIndexEntry *table_index_entry = nullptr;
-    Status create_index_status = txn->CreateIndex(table_entry, index_def_ptr_, conflict_type_, table_index_entry);
-    if (!create_index_status.ok()) {
-        operator_state->error_message_ = Move(create_index_status.msg_);
+    auto [table_index_entry, index_status] = txn->CreateIndex(table_entry, index_def_ptr_, conflict_type_);
+    if (!index_status.ok()) {
+        operator_state->error_message_ = Move(index_status.msg_);
         return false;
     }
 
-    if (table_index_entry->irs_index_entry_.get() != nullptr) {
+    if (table_index_entry->irs_index_entry().get() != nullptr) {
         Error<NotImplementException>("TableCollectionEntry::CreateIndexFilePrepare");
     }
-    if (table_index_entry->column_index_map_.size() != 1) {
+    if (table_index_entry->column_index_map().size() != 1) {
         Error<NotImplementException>("TableCollectionEntry::CreateIndexFilePrepare");
     }
-    auto [column_id, base_entry] = *table_index_entry->column_index_map_.begin();
-    SharedPtr<ColumnDef> column_def = table_entry->columns_[column_id];
-    auto *column_index_entry = static_cast<ColumnIndexEntry *>(base_entry.get());
+    const auto& column_index_pair = *(table_index_entry->column_index_map().begin());
 
-    for (const auto &[segment_id, segment_entry] : table_entry->segment_map_) {
-        u64 column_id = column_def->id();
-        IndexBase *index_base = column_index_entry->index_base_.get();
-        UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry.get(), index_base, column_def.get());
+    auto column_id = column_index_pair.first;
+    ColumnIndexEntry* column_index_entry = column_index_pair.second.get();
+
+    const ColumnDef* column_def = table_entry->GetColumnDefByID(column_id);
+
+    auto& segment_map_ref = table_entry->segment_map();
+    for (const auto &[segment_id, segment_entry] : segment_map_ref) {
+        const IndexBase *index_base = column_index_entry->index_base_ptr();
+        UniquePtr<CreateIndexParam> create_index_param = SegmentEntry::GetCreateIndexParam(segment_entry->row_count(), index_base, column_def);
         SharedPtr<SegmentColumnIndexEntry> segment_column_index_entry =
-            SegmentColumnIndexEntry::NewIndexEntry(column_index_entry, segment_entry->segment_id_, begin_ts, buffer_mgr, create_index_param.get());
+            SegmentColumnIndexEntry::NewIndexEntry(column_index_entry, segment_entry->segment_id(), begin_ts, buffer_mgr, create_index_param.get());
 
         if (index_base->index_type_ != IndexType::kHnsw) {
             Error<StorageException>("Only HNSW index is supported.");
         }
-        auto *index_hnsw = static_cast<IndexHnsw *>(index_base);
+        const auto *index_hnsw = static_cast<const IndexHnsw *>(index_base);
         if (column_def->type()->type() != LogicalType::kEmbedding) {
             Error<StorageException>("HNSW supports embedding type.");
         }
         TypeInfo *type_info = column_def->type()->type_info().get();
         auto embedding_info = static_cast<EmbeddingInfo *>(type_info);
 
-        BufferHandle buffer_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry.get(), buffer_mgr);
+        BufferHandle buffer_handle = segment_column_index_entry->GetIndex();
         switch (embedding_info->Type()) {
             case kElemFloat: {
                 switch (index_hnsw->encode_type_) {
@@ -191,7 +190,7 @@ bool PhysicalCreateIndexPrepare::Execute(QueryContext *query_context, OperatorSt
         TxnTableStore *table_store = txn->GetTxnTableStore(table_entry);
         table_store->CreateIndexFile(table_index_entry, column_id, segment_id, segment_column_index_entry);
 
-        column_index_entry->index_by_segment.emplace(segment_id, segment_column_index_entry);
+        column_index_entry->Append(segment_id, segment_column_index_entry);
     }
 
     operator_state->SetComplete();

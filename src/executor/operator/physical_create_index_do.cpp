@@ -14,6 +14,8 @@
 
 module;
 
+#include <tuple>
+
 import stl;
 import parser;
 import physical_operator_type;
@@ -25,9 +27,6 @@ import load_meta;
 import index_def;
 import create_index_data;
 import base_table_ref;
-import table_collection_entry;
-import table_index_entry;
-import segment_column_index_entry;
 import status;
 import infinity_exception;
 import buffer_handle;
@@ -43,6 +42,7 @@ import buffer_manager;
 import txn_store;
 import third_party;
 import logger;
+import catalog;
 
 module physical_create_index_do;
 
@@ -71,7 +71,7 @@ void InsertHnsw(HashMap<u32, atomic_u64> &create_index_idxes,
         }
         auto *segment_column_index_entry = iter->second.get();
 
-        auto buffer_handle = SegmentColumnIndexEntry::GetIndex(segment_column_index_entry, buffer_mgr);
+        auto buffer_handle = segment_column_index_entry->GetIndex();
         auto *hnsw_index = static_cast<Hnsw *>(buffer_handle.GetDataMut());
 
         SizeT vertex_n = hnsw_index->GetVertexNum();
@@ -93,10 +93,9 @@ bool PhysicalCreateIndexDo::Execute(QueryContext *query_context, OperatorState *
     auto *create_index_do_state = static_cast<CreateIndexDoOperatorState *>(operator_state);
     auto &create_index_idxes = create_index_do_state->create_index_shared_data_->create_index_idxes_;
 
-    TableCollectionEntry *table_entry = nullptr;
-    Status get_table_entry_status = txn->GetTableEntry(*base_table_ref_->schema_name(), *base_table_ref_->table_name(), table_entry);
-    if (!get_table_entry_status.ok()) {
-        operator_state->error_message_ = Move(get_table_entry_status.msg_);
+    auto [table_entry, table_status] = txn->GetTableEntry(*base_table_ref_->schema_name(), *base_table_ref_->table_name());
+    if (!table_status.ok()) {
+        operator_state->error_message_ = Move(table_status.msg_);
         return false;
     }
 
@@ -110,10 +109,10 @@ bool PhysicalCreateIndexDo::Execute(QueryContext *query_context, OperatorState *
     TxnIndexStore &txn_index_store = iter->second;
 
     auto *table_index_entry = txn_index_store.table_index_entry_;
-    if (table_index_entry->index_def_->index_array_.size() != 1) {
+    if (table_index_entry->index_def()->index_array_.size() != 1) {
         Error<NotImplementException>("Not implemented");
     }
-    auto *index_base = table_index_entry->index_def_->index_array_[0].get();
+    auto *index_base = table_index_entry->index_def()->index_array_[0].get();
     auto *hnsw_def = static_cast<IndexHnsw *>(index_base);
 
     if (txn_index_store.index_entry_map_.size() != 1) {
@@ -121,7 +120,7 @@ bool PhysicalCreateIndexDo::Execute(QueryContext *query_context, OperatorState *
     }
     const auto &[column_id, segment_column_index_entries] = *txn_index_store.index_entry_map_.begin();
 
-    auto *column_def = table_entry->columns_[column_id].get();
+    auto *column_def = table_entry->GetColumnDefByID(column_id);
     if (column_def->type()->type() != LogicalType::kEmbedding) {
         Error<ExecutorException>("Create index on non-embedding column is not supported yet.");
     }
