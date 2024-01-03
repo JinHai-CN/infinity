@@ -83,7 +83,9 @@ SharedPtr<LogicalNode> BoundSelectStatement::BuildPlan(QueryContext *query_conte
 
         if (!group_by_expressions_.empty() || !aggregate_expressions_.empty()) {
             // Build logical aggregate
+            auto base_table_ref = static_pointer_cast<BaseTableRef>(table_ref_ptr_);
             auto aggregate = MakeShared<LogicalAggregate>(bind_context->GetNewLogicalNodeId(),
+                                                          base_table_ref,
                                                           group_by_expressions_,
                                                           groupby_index_,
                                                           aggregate_expressions_,
@@ -106,6 +108,12 @@ SharedPtr<LogicalNode> BoundSelectStatement::BuildPlan(QueryContext *query_conte
             SharedPtr<LogicalNode> sort = MakeShared<LogicalSort>(bind_context->GetNewLogicalNodeId(), order_by_expressions_, order_by_types_);
             sort->set_left_node(root);
             root = sort;
+        }
+
+        if (limit_expression_ != nullptr) {
+            auto limit = MakeShared<LogicalLimit>(bind_context->GetNewLogicalNodeId(), limit_expression_, offset_expression_);
+            limit->set_left_node(root);
+            root = limit;
         }
 
         auto project = MakeShared<LogicalProject>(bind_context->GetNewLogicalNodeId(), projection_expressions_, projection_index_);

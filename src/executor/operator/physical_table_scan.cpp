@@ -32,6 +32,7 @@ import block_index;
 import catalog;
 import default_values;
 import infinity_exception;
+import infinity_exception;
 
 module physical_table_scan;
 
@@ -74,6 +75,8 @@ u64 PhysicalTableScan::TableIndex() const { return base_table_ref_->table_index_
 TableEntry *PhysicalTableScan::TableEntry() const { return base_table_ref_->table_entry_ptr_; }
 
 SizeT PhysicalTableScan::BlockEntryCount() const { return base_table_ref_->block_index_->BlockCount(); }
+
+SizeT PhysicalTableScan::TaskletCount() { return base_table_ref_->block_index_->BlockCount(); }
 
 BlockIndex *PhysicalTableScan::GetBlockIndex() const { return base_table_ref_->block_index_.get(); }
 

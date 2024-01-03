@@ -26,6 +26,7 @@ import txn_store;
 import catalog;
 import zsv;
 import load_meta;
+import infinity_exception;
 
 export module physical_import;
 
@@ -74,6 +75,11 @@ public:
     inline SharedPtr<Vector<String>> GetOutputNames() const final { return output_names_; }
 
     inline SharedPtr<Vector<SharedPtr<DataType>>> GetOutputTypes() const final { return output_types_; }
+
+    SizeT TaskletCount() override {
+        Error<NotImplementException>("TaskletCount not Implement");
+        return 0;
+    }
 
     void ImportFVECS(QueryContext *query_context, ImportOperatorState *import_op_state);
 

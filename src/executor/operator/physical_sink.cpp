@@ -20,6 +20,7 @@ import query_context;
 import parser;
 import operator_state;
 import physical_operator_type;
+import fragment_context;
 import third_party;
 import fragment_data;
 import data_block;
@@ -35,7 +36,7 @@ void PhysicalSink::Init() {}
 
 bool PhysicalSink::Execute(QueryContext *, OperatorState *) { return true; }
 
-bool PhysicalSink::Execute(QueryContext *, SinkState *sink_state) {
+bool PhysicalSink::Execute(QueryContext *, FragmentContext *fragment_context, SinkState *sink_state) {
     switch (sink_state->state_type_) {
         case SinkStateType::kInvalid: {
             Error<ExecutorException>("Invalid sinker type");
@@ -67,7 +68,7 @@ bool PhysicalSink::Execute(QueryContext *, SinkState *sink_state) {
         }
         case SinkStateType::kQueue: {
             QueueSinkState *queue_sink_state = static_cast<QueueSinkState *>(sink_state);
-            FillSinkStateFromLastOperatorState(queue_sink_state, queue_sink_state->prev_op_state_);
+            FillSinkStateFromLastOperatorState(fragment_context, queue_sink_state, queue_sink_state->prev_op_state_);
             break;
         }
     }
@@ -81,7 +82,10 @@ void PhysicalSink::FillSinkStateFromLastOperatorState(MaterializeSinkState *mate
         }
         case PhysicalOperatorType::kShow: {
             ShowOperatorState *show_output_state = static_cast<ShowOperatorState *>(task_op_state);
-            materialize_sink_state->data_block_array_ = Move(show_output_state->output_);
+            for (auto &data_block : show_output_state->output_) {
+                materialize_sink_state->data_block_array_.emplace_back(Move(data_block));
+            }
+            show_output_state->output_.clear();
             break;
         }
         case PhysicalOperatorType::kExplain: {
@@ -90,43 +94,51 @@ void PhysicalSink::FillSinkStateFromLastOperatorState(MaterializeSinkState *mate
                 Error<ExecutorException>("Empty explain output");
             }
 
-            materialize_sink_state->data_block_array_ = Move(explain_output_state->data_block_array_);
+            for (auto &data_block : explain_output_state->data_block_array_) {
+                materialize_sink_state->data_block_array_.emplace_back(Move(data_block));
+            }
+            explain_output_state->data_block_array_.clear();
             break;
         }
         case PhysicalOperatorType::kProjection: {
             ProjectionOperatorState *projection_output_state = static_cast<ProjectionOperatorState *>(task_op_state);
             if (projection_output_state->data_block_array_.empty()) {
-                if(materialize_sink_state->Error()) {
-                    materialize_sink_state->empty_result_ = true;
-                } else {
-                    Error<ExecutorException>("Empty projection output");
-                }
+                materialize_sink_state->empty_result_ = true;
             } else {
-                materialize_sink_state->data_block_array_ = Move(projection_output_state->data_block_array_);
+                for (auto &data_block : projection_output_state->data_block_array_) {
+                    materialize_sink_state->data_block_array_.emplace_back(Move(data_block));
+                }
+                projection_output_state->data_block_array_.clear();
             }
             break;
         }
         case PhysicalOperatorType::kSort: {
             SortOperatorState *sort_output_state = static_cast<SortOperatorState *>(task_op_state);
             if (sort_output_state->data_block_array_.empty()) {
-                if(materialize_sink_state->Error()) {
+                if (materialize_sink_state->Error()) {
                     materialize_sink_state->empty_result_ = true;
                 } else {
                     Error<ExecutorException>("Empty sort output");
                 }
             } else {
-                materialize_sink_state->data_block_array_ = Move(sort_output_state->data_block_array_);
+                for (auto &data_block : sort_output_state->data_block_array_) {
+                    materialize_sink_state->data_block_array_.emplace_back(Move(data_block));
+                }
+                sort_output_state->data_block_array_.clear();
             }
             break;
         }
-        case PhysicalOperatorType::kKnnScan: {
-            throw ExecutorException("KnnScan shouldn't be here");
-            KnnScanOperatorState *knn_output_state = static_cast<KnnScanOperatorState *>(task_op_state);
-            if (knn_output_state->data_block_array_.empty()) {
-                Error<ExecutorException>("Empty knn scan output");
+        case PhysicalOperatorType::kAggregate: {
+            AggregateOperatorState *agg_output_state = static_cast<AggregateOperatorState *>(task_op_state);
+            if (agg_output_state->data_block_array_.empty()) {
+                if (materialize_sink_state->Error()) {
+                    materialize_sink_state->empty_result_ = true;
+                } else {
+                    Error<ExecutorException>("Empty agg output");
+                }
+            } else {
+                materialize_sink_state->data_block_array_ = Move(agg_output_state->data_block_array_);
             }
-
-            materialize_sink_state->data_block_array_ = Move(knn_output_state->data_block_array_);
             break;
         }
         default: {
@@ -297,6 +309,17 @@ void PhysicalSink::FillSinkStateFromLastOperatorState(ResultSinkState *result_si
             }
             break;
         }
+        case PhysicalOperatorType::kCreateIndexFinish: {
+            auto *output_state = static_cast<CreateIndexFinishOperatorState *>(task_operator_state);
+            if (output_state->error_message_.get() != nullptr) {
+                result_sink_state->error_message_ = Move(output_state->error_message_);
+                break;
+            }
+            result_sink_state->result_def_ = {
+                MakeShared<ColumnDef>(0, MakeShared<DataType>(LogicalType::kInteger), "OK", HashSet<ConstraintType>()),
+            };
+            break;
+        }
         default: {
             Error<NotImplementException>(Format("{} isn't supported here.", PhysicalOperatorToString(task_operator_state->operator_type_)));
         }
@@ -322,35 +345,45 @@ void PhysicalSink::FillSinkStateFromLastOperatorState(MessageSinkState *message_
     }
 }
 
-void PhysicalSink::FillSinkStateFromLastOperatorState(QueueSinkState *queue_sink_state, OperatorState *task_operator_state) {
-    if(queue_sink_state->error_message_.get() != nullptr) {
+void PhysicalSink::FillSinkStateFromLastOperatorState(FragmentContext *fragment_context, QueueSinkState *queue_sink_state, OperatorState *task_operator_state) {
+    if (queue_sink_state->error_message_.get() != nullptr) {
         LOG_TRACE(Format("Error: {} is sent to notify next fragment", *queue_sink_state->error_message_));
-        SharedPtr<FragmentData> fragment_data = MakeShared<FragmentData>();
-        fragment_data->error_message_ = MakeUnique<String>(*queue_sink_state->error_message_);
-        fragment_data->fragment_id_ = queue_sink_state->fragment_id_;
+        auto fragment_error = MakeShared<FragmentError>(queue_sink_state->fragment_id_, MakeUnique<String>(*queue_sink_state->error_message_));
         for (const auto &next_fragment_queue : queue_sink_state->fragment_data_queues_) {
-            next_fragment_queue->Enqueue(fragment_data);
+            next_fragment_queue->Enqueue(fragment_error);
         }
-        return ;
+        return;
     }
 
-    if (!task_operator_state->Complete()) {
+    if (!task_operator_state->Complete() && fragment_context->IsMaterialize()) {
         LOG_TRACE("Task not completed");
         return;
     }
     SizeT output_data_block_count = task_operator_state->data_block_array_.size();
     if (output_data_block_count == 0) {
-        Error<ExecutorException>("No output from knn scan");
+        for (const auto &next_fragment_queue : queue_sink_state->fragment_data_queues_) {
+            next_fragment_queue->Enqueue(MakeShared<FragmentNone>(queue_sink_state->fragment_id_));
+        }
+        return;
+        // Error<ExecutorException>("No output from last operator.");
     }
     for (SizeT idx = 0; idx < output_data_block_count; ++idx) {
-        SharedPtr<FragmentData> fragment_data = MakeShared<FragmentData>();
-        fragment_data->fragment_id_ = queue_sink_state->fragment_id_;
-        fragment_data->task_id_ = queue_sink_state->task_id_;
-        fragment_data->data_block_ = Move(task_operator_state->data_block_array_[idx]);
-        fragment_data->data_count_ = output_data_block_count;
-        fragment_data->data_idx_ = idx;
+        auto fragment_data = MakeShared<FragmentData>(queue_sink_state->fragment_id_,
+                                                      Move(task_operator_state->data_block_array_[idx]),
+                                                      queue_sink_state->task_id_,
+                                                      idx,
+                                                      output_data_block_count);
+        if (task_operator_state->Complete() && !fragment_context->IsMaterialize()) {
+            fragment_data->data_idx_ = None;
+        }
+
         for (const auto &next_fragment_queue : queue_sink_state->fragment_data_queues_) {
-            next_fragment_queue->Enqueue(fragment_data);
+            // when the Enqueue returns false,
+            // it means that the downstream has collected enough data,
+            // preventing the Queue from Enqueue in data again to avoid redundant calculations.
+            if (!next_fragment_queue->Enqueue(fragment_data)) {
+                task_operator_state->SetComplete();
+            }
         }
     }
     task_operator_state->data_block_array_.clear();
